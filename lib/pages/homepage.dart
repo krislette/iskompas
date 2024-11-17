@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
+import '../utils/set_color.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -32,39 +33,33 @@ class _HomePageState extends State<HomePage> {
             child: Icon(
               Icons.map,
               size: 30,
-              color:
-                  _selectedIndex == 0 ? const Color(0xFFFFDE00) : Colors.white,
+              color: setColor(0, _selectedIndex),
             ),
             label: 'Map',
             labelStyle: TextStyle(
-              color:
-                  _selectedIndex == 0 ? const Color(0xFFFFDE00) : Colors.white,
+              color: setColor(0, _selectedIndex),
             ),
           ),
           CurvedNavigationBarItem(
             child: Icon(
               Icons.bookmark,
               size: 30,
-              color:
-                  _selectedIndex == 1 ? const Color(0xFFFFDE00) : Colors.white,
+              color: setColor(1, _selectedIndex),
             ),
             label: 'Saved',
             labelStyle: TextStyle(
-              color:
-                  _selectedIndex == 1 ? const Color(0xFFFFDE00) : Colors.white,
+              color: setColor(1, _selectedIndex),
             ),
           ),
           CurvedNavigationBarItem(
             child: Icon(
               Icons.image,
               size: 30,
-              color:
-                  _selectedIndex == 2 ? const Color(0xFFFFDE00) : Colors.white,
+              color: setColor(1, _selectedIndex),
             ),
             label: 'Facilities',
             labelStyle: TextStyle(
-              color:
-                  _selectedIndex == 2 ? const Color(0xFFFFDE00) : Colors.white,
+              color: setColor(1, _selectedIndex),
             ),
           ),
         ],
