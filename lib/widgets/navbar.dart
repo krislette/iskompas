@@ -2,17 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import '../utils/set_color.dart';
+import '../pages/map_page.dart';
+import '../pages/saved_page.dart';
+import '../pages/facilities_page.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class Navbar extends StatefulWidget {
+  const Navbar({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<Navbar> createState() => _NavbarState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _NavbarState extends State<Navbar> {
   // User-selected index
   int _selectedIndex = 0;
+
+  // List of pages to display based on selected index
+  final List<Widget> _pages = [
+    const MapPage(),
+    const SavedPage(),
+    const FacilitiesPage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +74,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+      body: _pages[_selectedIndex],
     );
   }
 }

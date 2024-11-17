@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pages/homepage.dart';
+import 'widgets/navbar.dart';
 
 void main() {
   runApp(const Iskompas());
@@ -12,7 +12,7 @@ class Iskompas extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      home: Navbar(),
     );
   }
 }
