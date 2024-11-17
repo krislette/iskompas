@@ -48,7 +48,7 @@ class _HomePageState extends State<HomePage> {
               color:
                   _selectedIndex == 1 ? const Color(0xFFFFDE00) : Colors.white,
             ),
-            label: 'Bookmarks',
+            label: 'Saved',
             labelStyle: TextStyle(
               color:
                   _selectedIndex == 1 ? const Color(0xFFFFDE00) : Colors.white,
