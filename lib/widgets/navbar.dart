@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
-import '../utils/set_color.dart';
 import '../pages/map_page.dart';
 import '../pages/saved_page.dart';
 import '../pages/facilities_page.dart';
+import '../utils/set_color.dart';
+import '../utils/colors.dart';
 
 class Navbar extends StatefulWidget {
   const Navbar({super.key});
@@ -27,10 +28,10 @@ class _NavbarState extends State<Navbar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(0, 16, 17, 16),
+      backgroundColor: Iskolors.colorBlack,
       bottomNavigationBar: CurvedNavigationBar(
-        backgroundColor: const Color.fromARGB(0, 16, 17, 16),
-        color: const Color.fromARGB(255, 101, 27, 27),
+        backgroundColor: Iskolors.colorBlack,
+        color: Iskolors.colorMaroon,
         animationDuration: const Duration(milliseconds: 200),
         onTap: (index) {
           // Update the selected index on tap
