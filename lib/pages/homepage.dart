@@ -55,11 +55,11 @@ class _HomePageState extends State<HomePage> {
             child: Icon(
               Icons.image,
               size: 30,
-              color: setColor(1, _selectedIndex),
+              color: setColor(2, _selectedIndex),
             ),
             label: 'Facilities',
             labelStyle: TextStyle(
-              color: setColor(1, _selectedIndex),
+              color: setColor(2, _selectedIndex),
             ),
           ),
         ],
