@@ -9,6 +9,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0; // Define the selected index
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,27 +22,31 @@ class _HomePageState extends State<HomePage> {
         animationDuration: const Duration(milliseconds: 450),
         onTap: (index) {
           print(index);
+          setState(() {
+            _selectedIndex = index; // Update the selected index on tap
+          });
         },
         items: [
           // Home icon
-          const Icon(
+          Icon(
             Icons.map, 
             size: 30, 
-            color: Colors.white
-            ), 
+            color: _selectedIndex == 0 ? const Color.fromARGB(255, 250, 234, 89) : Colors.white, 
+          ), 
           // Saved item icon
-          const Icon(
+          Icon(
             Icons.bookmark, 
             size: 30, 
-            color: Colors.white
-            ), 
+            color: _selectedIndex == 1 ? const Color.fromARGB(255, 250, 234, 89) : Colors.white, 
+          ), 
           // Images icon
-          const Icon(
+          Icon(
             Icons.image, 
             size: 30, 
-            color: Colors.white
-            ), 
-        ]),
+            color: _selectedIndex == 2 ? const Color.fromARGB(255, 250, 234, 89) : Colors.white, 
+          ), 
+        ],
+      ),
     );
   }
 }
