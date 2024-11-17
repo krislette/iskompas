@@ -2,7 +2,7 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -21,7 +21,6 @@ class _HomePageState extends State<HomePage> {
         color: const Color.fromARGB(255, 101, 27, 27),
         animationDuration: const Duration(milliseconds: 250),
         onTap: (index) {
-          print(index);
           setState(() {
             _selectedIndex = index; // Update the selected index on tap
           });
@@ -29,22 +28,28 @@ class _HomePageState extends State<HomePage> {
         items: [
           // Home icon
           Icon(
-            Icons.map, 
-            size: 30, 
-            color: _selectedIndex == 0 ? const Color.fromARGB(255, 250, 234, 89) : Colors.white, 
-          ), 
+            Icons.map,
+            size: 30,
+            color: _selectedIndex == 0
+                ? const Color.fromARGB(255, 250, 234, 89)
+                : Colors.white,
+          ),
           // Saved item icon
           Icon(
-            Icons.bookmark, 
-            size: 30, 
-            color: _selectedIndex == 1 ? const Color.fromARGB(255, 250, 234, 89) : Colors.white, 
-          ), 
+            Icons.bookmark,
+            size: 30,
+            color: _selectedIndex == 1
+                ? const Color.fromARGB(255, 250, 234, 89)
+                : Colors.white,
+          ),
           // Images icon
           Icon(
-            Icons.image, 
-            size: 30, 
-            color: _selectedIndex == 2 ? const Color.fromARGB(255, 250, 234, 89) : Colors.white, 
-          ), 
+            Icons.image,
+            size: 30,
+            color: _selectedIndex == 2
+                ? const Color.fromARGB(255, 250, 234, 89)
+                : Colors.white,
+          ),
         ],
       ),
     );
