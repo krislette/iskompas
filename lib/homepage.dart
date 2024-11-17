@@ -15,7 +15,9 @@ class _HomePageState extends State<HomePage> {
       // Adding a curved navigation bar at the bottom of the screen
       bottomNavigationBar: CurvedNavigationBar(
         items: [
-          // Navigation bar items will be added here
+          Icon(Icons.map, size: 30), // Home icon
+          Icon(Icons.bookmark, size: 30), // Saved item icon
+          Icon(Icons.image, size: 30), // Images icon
         ]),
     );
   }
