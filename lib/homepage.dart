@@ -16,8 +16,11 @@ class _HomePageState extends State<HomePage> {
       // Adding a curved navigation bar at the bottom of the screen
       bottomNavigationBar: CurvedNavigationBar(
         backgroundColor: Color(222222),
-        color: Color(0xFF4D1414),
+        color: Color.fromARGB(255, 101, 27, 27),
         animationDuration: Duration(milliseconds: 450),
+        onTap: (index) {
+          print(index);
+        },
         items: [
           // Home icon
           Icon(
