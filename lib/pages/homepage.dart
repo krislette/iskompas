@@ -1,5 +1,6 @@
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
+import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -9,46 +10,62 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0; // Define the selected index
+  // User-selected index
+  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(0, 16, 17, 16),
-      // Adding a curved navigation bar at the bottom of the screen
       bottomNavigationBar: CurvedNavigationBar(
         backgroundColor: const Color.fromARGB(0, 16, 17, 16),
         color: const Color.fromARGB(255, 101, 27, 27),
-        animationDuration: const Duration(milliseconds: 250),
+        animationDuration: const Duration(milliseconds: 200),
         onTap: (index) {
+          // Update the selected index on tap
           setState(() {
-            _selectedIndex = index; // Update the selected index on tap
+            _selectedIndex = index;
           });
         },
         items: [
-          // Home icon
-          Icon(
-            Icons.map,
-            size: 30,
-            color: _selectedIndex == 0
-                ? const Color.fromARGB(255, 250, 234, 89)
-                : Colors.white,
+          CurvedNavigationBarItem(
+            child: Icon(
+              Icons.map,
+              size: 30,
+              color:
+                  _selectedIndex == 0 ? const Color(0xFFFFDE00) : Colors.white,
+            ),
+            label: 'Map',
+            labelStyle: TextStyle(
+              color:
+                  _selectedIndex == 0 ? const Color(0xFFFFDE00) : Colors.white,
+            ),
           ),
-          // Saved item icon
-          Icon(
-            Icons.bookmark,
-            size: 30,
-            color: _selectedIndex == 1
-                ? const Color.fromARGB(255, 250, 234, 89)
-                : Colors.white,
+          CurvedNavigationBarItem(
+            child: Icon(
+              Icons.bookmark,
+              size: 30,
+              color:
+                  _selectedIndex == 1 ? const Color(0xFFFFDE00) : Colors.white,
+            ),
+            label: 'Bookmarks',
+            labelStyle: TextStyle(
+              color:
+                  _selectedIndex == 1 ? const Color(0xFFFFDE00) : Colors.white,
+            ),
           ),
-          // Images icon
-          Icon(
-            Icons.image,
-            size: 30,
-            color: _selectedIndex == 2
-                ? const Color.fromARGB(255, 250, 234, 89)
-                : Colors.white,
+          CurvedNavigationBarItem(
+            child: Icon(
+              Icons.image,
+              size: 30,
+              color:
+                  _selectedIndex == 2 ? const Color(0xFFFFDE00) : Colors.white,
+            ),
+            label: 'Facilities',
+            labelStyle: TextStyle(
+              color:
+                  _selectedIndex == 2 ? const Color(0xFFFFDE00) : Colors.white,
+            ),
           ),
         ],
       ),
