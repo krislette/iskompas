@@ -16,10 +16,11 @@ class _HomePageState extends State<HomePage> {
       // Adding a curved navigation bar at the bottom of the screen
       bottomNavigationBar: CurvedNavigationBar(
         backgroundColor: Color(222222),
+        color: Color(0xFF4D1414),
         items: [
-          Icon(Icons.map, size: 30), // Home icon
-          Icon(Icons.bookmark, size: 30), // Saved item icon
-          Icon(Icons.image, size: 30), // Images icon
+          Icon(Icons.map, size: 30, color: Colors.white), // Home icon
+          Icon(Icons.bookmark, size: 30, color: Colors.white), // Saved item icon
+          Icon(Icons.image, size: 30, color: Colors.white), // Images icon
         ]),
     );
   }
