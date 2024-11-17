@@ -12,8 +12,10 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(222222),
       // Adding a curved navigation bar at the bottom of the screen
       bottomNavigationBar: CurvedNavigationBar(
+        backgroundColor: Color(222222),
         items: [
           Icon(Icons.map, size: 30), // Home icon
           Icon(Icons.bookmark, size: 30), // Saved item icon
