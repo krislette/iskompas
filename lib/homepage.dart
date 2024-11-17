@@ -19,9 +19,24 @@ class _HomePageState extends State<HomePage> {
         color: Color(0xFF4D1414),
         animationDuration: Duration(milliseconds: 450),
         items: [
-          Icon(Icons.map, size: 30, color: Colors.white), // Home icon
-          Icon(Icons.bookmark, size: 30, color: Colors.white), // Saved item icon
-          Icon(Icons.image, size: 30, color: Colors.white), // Images icon
+          // Home icon
+          Icon(
+            Icons.map, 
+            size: 30, 
+            color: Colors.white
+            ), 
+          // Saved item icon
+          Icon(
+            Icons.bookmark, 
+            size: 30, 
+            color: Colors.white
+            ), 
+          // Images icon
+          Icon(
+            Icons.image, 
+            size: 30, 
+            color: Colors.white
+            ), 
         ]),
     );
   }
