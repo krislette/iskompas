@@ -17,6 +17,7 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: CurvedNavigationBar(
         backgroundColor: Color(222222),
         color: Color(0xFF4D1414),
+        animationDuration: Duration(milliseconds: 450),
         items: [
           Icon(Icons.map, size: 30, color: Colors.white), // Home icon
           Icon(Icons.bookmark, size: 30, color: Colors.white), // Saved item icon
