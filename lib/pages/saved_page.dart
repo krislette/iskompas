@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart' hide CarouselController;
 import 'package:carousel_slider/carousel_slider.dart';
-import '../utils/colors.dart';
+import 'package:iskompas/utils/colors.dart';
 
 class SavedPage extends StatelessWidget {
   const SavedPage({super.key});
