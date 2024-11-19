@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iskompas/utils/colors.dart';
 
 class MapPage extends StatelessWidget {
   const MapPage({super.key});
@@ -7,7 +8,7 @@ class MapPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Center(
       child: Text('Map Page',
-          style: TextStyle(fontSize: 24, color: Color(0xFFFFDE00))),
+          style: TextStyle(fontSize: 24, color: Iskolors.colorWhite)),
     );
   }
 }
