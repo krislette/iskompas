@@ -28,9 +28,10 @@ class _NavbarState extends State<Navbar> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Iskolors.colorBlack,
+      extendBody: true,
+      backgroundColor: Iskolors.colorTransparent,
       bottomNavigationBar: CurvedNavigationBar(
-        backgroundColor: Iskolors.colorBlack,
+        backgroundColor: Iskolors.colorTransparent,
         color: Iskolors.colorMaroon,
         animationDuration: const Duration(milliseconds: 200),
         onTap: (index) {

@@ -26,7 +26,7 @@ class _MapPageState extends State<MapPage> {
         TileLayer(
           urlTemplate:
               'https://api.mapbox.com/styles/v1/gggaysapdv/cm4uvrqe2001501sv3uqzfdmy/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZ2dnYXlzYXBkdiIsImEiOiJjbTN5OW9sYm8xczhmMmtvbjA2YXVleTdlIn0.BH20wdYmc54LOGLkLO6zBw',
-          additionalOptions: {
+          additionalOptions: const {
             'accessToken':
                 'pk.eyJ1IjoiZ2dnYXlzYXBkdiIsImEiOiJjbTN5OW9sYm8xczhmMmtvbjA2YXVleTdlIn0.BH20wdYmc54LOGLkLO6zBw',
             'id': 'cm4uvrqe2001501sv3uqzfdmy'
