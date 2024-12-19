@@ -36,6 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   curved_labeled_navigation_bar: ^2.0.5
   carousel_slider: ^5.0.0
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
 
 dev_dependencies:
   flutter_test:
