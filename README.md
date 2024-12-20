@@ -4,8 +4,8 @@ A navigation app for Polytechnic University of the Philippines
 
 # TODO
 
-- [ ] Navbar
-- [ ] Map Page
+- [x] Navbar
+- [x] Map Page
 - [ ] Saved Page
 - [ ] Facilities Page
 - [ ] Mapbox custome style
