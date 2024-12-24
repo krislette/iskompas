@@ -14,8 +14,8 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-  final accessToken = dotenv.env['ACCESS_TOKEN']!;
-  final datasetId = dotenv.env['DATASET_ID']!;
+  final datasetLink = dotenv.env['DATASET_LINK']!;
+  final tileLink = dotenv.env['TILE_LINK']!;
 
   final MapController controller = MapController();
   LatLng startingPoint = const LatLng(
@@ -25,8 +25,7 @@ class _MapPageState extends State<MapPage> {
   // Function to fetch map data (nodes and lines) from the dataset
   Future<Map<String, List>> fetchMapData() async {
     final response = await http.get(
-      Uri.parse(
-          'https://api.mapbox.com/datasets/v1/gggaysapdv/$datasetId/features?access_token=$accessToken'),
+      Uri.parse(datasetLink),
     );
 
     if (response.statusCode == 200) {
@@ -85,8 +84,7 @@ class _MapPageState extends State<MapPage> {
             children: [
               // Base map layer with custom tileset
               TileLayer(
-                urlTemplate:
-                    'https://api.mapbox.com/styles/v1/gggaysapdv/cm4uvrqe2001501sv3uqzfdmy/tiles/256/{z}/{x}/{y}@2x?access_token=$accessToken',
+                urlTemplate: tileLink,
               ),
               // Render markers for nodes
               MarkerLayer(
