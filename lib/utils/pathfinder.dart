@@ -44,7 +44,7 @@ class Pathfinder {
   }
 
   double _distance(LatLng a, LatLng b) {
-    final Distance distance = Distance();
+    const Distance distance = Distance();
     return distance(a, b);
   }
 

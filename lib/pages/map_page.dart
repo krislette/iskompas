@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class MapPage extends StatefulWidget {
@@ -13,16 +14,19 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
+  final accessToken = dotenv.env['ACCESS_TOKEN']!;
+  final datasetId = dotenv.env['DATASET_ID']!;
+
   final MapController controller = MapController();
-  LatLng startingPoint =
-      LatLng(14.599100484656496, 121.0117890766243); // Defined starting point
+  LatLng startingPoint = const LatLng(
+      14.599100484656496, 121.0117890766243); // Defined starting point
   List<LatLng> currentRoute = []; // For routing between starting point and pin
 
   // Function to fetch map data (nodes and lines) from the dataset
   Future<Map<String, List>> fetchMapData() async {
     final response = await http.get(
       Uri.parse(
-          'https://api.mapbox.com/datasets/v1/gggaysapdv/cm524x4pc657q1pnwyq88odrl/features?access_token=pk.eyJ1IjoiZ2dnYXlzYXBkdiIsImEiOiJjbTN5OW9sYm8xczhmMmtvbjA2YXVleTdlIn0.BH20wdYmc54LOGLkLO6zBw'),
+          'https://api.mapbox.com/datasets/v1/gggaysapdv/$datasetId/features?access_token=$accessToken'),
     );
 
     if (response.statusCode == 200) {
@@ -82,7 +86,7 @@ class _MapPageState extends State<MapPage> {
               // Base map layer with custom tileset
               TileLayer(
                 urlTemplate:
-                    'https://api.mapbox.com/styles/v1/gggaysapdv/cm4uvrqe2001501sv3uqzfdmy/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1IjoiZ2dnYXlzYXBkdiIsImEiOiJjbTN5OW9sYm8xczhmMmtvbjA2YXVleTdlIn0.BH20wdYmc54LOGLkLO6zBw',
+                    'https://api.mapbox.com/styles/v1/gggaysapdv/cm4uvrqe2001501sv3uqzfdmy/tiles/256/{z}/{x}/{y}@2x?access_token=$accessToken',
               ),
               // Render markers for nodes
               MarkerLayer(
@@ -135,7 +139,7 @@ class _MapPageState extends State<MapPage> {
                       color: Colors.red,
                       strokeWidth: 4,
                     );
-                  }).toList(),
+                  }),
                   if (currentRoute.isNotEmpty)
                     Polyline(
                       points: currentRoute,
