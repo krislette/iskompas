@@ -1,11 +1,11 @@
 import 'dart:convert';
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:iskompas/utils/colors.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:iskompas/utils/pathfinder.dart';
+import 'package:flutter/services.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -15,59 +15,68 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
+  late MapboxMap _mapboxMap;
+  late PointAnnotationManager _pointAnnotationManager;
+  late PolylineAnnotationManager _polylineAnnotationManager;
+
+  final datasetLink = dotenv.env['DATASET_LINK']!;
+  final startingPoint = Point(
+      coordinates: Position(
+          121.0117890766243, 14.599100484656496)); // Longitude, Latitude
+  List<Point> currentRoute = []; // Route for navigation
+  List<Point> pathfindingNodes = []; // Nodes for pathfinding
+
   @override
   void initState() {
     super.initState();
-    if (datasetLink.isEmpty || tileLink.isEmpty) {
-      throw Exception(
-          'Environment variables DATASET_LINK or TILE_LINK are missing.');
+
+    // Ensure the access token is not null
+    final accessToken = dotenv.env['ACCESS_TOKEN'];
+    if (accessToken == null) {
+      throw Exception('ACCESS_TOKEN is missing from the environment variables');
     }
+
+    // Set the Mapbox access token globally
+    MapboxOptions.setAccessToken(accessToken);
   }
 
-  final datasetLink = dotenv.env['DATASET_LINK']!;
-  final tileLink = dotenv.env['TILE_LINK']!;
-
-  final MapController controller = MapController();
-  LatLng startingPoint = const LatLng(
-      14.599100484656496, 121.0117890766243); // Defined starting point
-  List<LatLng> currentRoute = []; // For routing between starting point and pin
-  List<LatLng> pathfindingNodes = []; // Nodes used for pathfinding
-
-  // Function to fetch map data (nodes and lines) from the dataset
   Future<Map<String, dynamic>> fetchMapData() async {
-    final response = await http.get(
-      Uri.parse(datasetLink),
-    );
+    final response = await http.get(Uri.parse(datasetLink));
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
-      List<LatLng> facilities = [];
-      List<LatLng> nodes = [];
-      List<List<LatLng>> lines = [];
+      List<Point> facilities = [];
+      List<Point> nodes = [];
+      List<List<Point>> lines = [];
 
       for (var feature in data['features']) {
         if (feature['geometry']['type'] == 'Point') {
           final type = feature['properties']['type'];
           if (type == 'facility') {
-            facilities.add(LatLng(
-              feature['geometry']['coordinates'][1],
-              feature['geometry']['coordinates'][0],
+            facilities.add(Point(
+              coordinates: Position(
+                feature['geometry']['coordinates'][0],
+                feature['geometry']['coordinates'][1],
+              ),
             ));
           } else if (type == 'node') {
-            nodes.add(LatLng(
-              feature['geometry']['coordinates'][1],
-              feature['geometry']['coordinates'][0],
+            nodes.add(Point(
+              coordinates: Position(
+                feature['geometry']['coordinates'][0],
+                feature['geometry']['coordinates'][1],
+              ),
             ));
           }
         } else if (feature['geometry']['type'] == 'LineString') {
           lines.add((feature['geometry']['coordinates'] as List)
-              .map((coords) => LatLng(coords[1], coords[0]))
+              .map((coords) => Point(
+                    coordinates: Position(coords[0], coords[1]),
+                  ))
               .toList());
         }
       }
 
-      // Combine facilities and nodes into a single list for pathfinding
       pathfindingNodes = [...nodes, ...facilities];
 
       return {'facilities': facilities, 'lines': lines};
@@ -76,24 +85,115 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-// Function to calculate route between two points using A* algorithm
-  void calculateRoute(LatLng from, LatLng to) {
-    // Debug: Check input values
-    print('Calculating route from: $from to: $to');
+  Future<void> initializeManagers(MapboxMap mapboxMap) async {
+    _mapboxMap = mapboxMap;
 
-    // Compute the route using combined facilities and nodes
+    // Set a default style for the map
+    // await _mapboxMap.loadStyleURI(MapboxStyles.LIGHT);
+
+    // await _mapboxMap.style.setStyleImportConfigProperty(
+    // "basemap", "showPointOfInterestLabels", false);
+
+    // Initialize annotation managers
+    _pointAnnotationManager =
+        await _mapboxMap.annotations.createPointAnnotationManager();
+    _polylineAnnotationManager =
+        await _mapboxMap.annotations.createPolylineAnnotationManager();
+
+    _pointAnnotationManager.addOnPointAnnotationClickListener(
+      CustomPointAnnotationClickListener(
+        showMarkerPopup: showMarkerPopup,
+      ),
+    );
+
+    // var bounds = CoordinateBounds(
+    //     southwest:
+    //         Point(coordinates: Position(121.00814034481606, 14.59722716810296)),
+    //     northeast: Point(
+    //         coordinates: Position(121.01320393779709, 14.598189545981164)),
+    // infiniteBounds: false);
+
+    // // Set bounds
+    // _mapboxMap.setBounds(
+    //     CameraBoundsOptions(bounds: bounds, maxZoom: 10, minZoom: 6));
+  }
+
+  Future<void> addMarkers(List<Point> facilities) async {
+    // Load the image from assets
+    final ByteData bytes = await rootBundle.load('assets/pin.png');
+    final Uint8List imageData = bytes.buffer.asUint8List();
+
+    for (var facility in facilities) {
+      final PointAnnotationOptions markerOptions = PointAnnotationOptions(
+        geometry: facility,
+        image: imageData,
+        iconSize: 0.2,
+      );
+      _pointAnnotationManager.create(markerOptions);
+    }
+  }
+
+  void showMarkerPopup(Point geometry, String description) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                description,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // Close popup
+                },
+                style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25), // Capsule shape
+                    ),
+                    backgroundColor: Iskolors.colorMaroon,
+                    foregroundColor: Iskolors.colorWhite),
+                child: const Text(
+                  "Navigate",
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void addPolyline(List<Point> route) {
+    final polylineOptions = PolylineAnnotationOptions(
+      geometry: LineString(
+        coordinates: route.map((point) => point.coordinates).toList(),
+      ),
+      lineColor: 1,
+      lineWidth: 4.0,
+    );
+    _polylineAnnotationManager.create(polylineOptions);
+  }
+
+  void calculateRoute(Point from, Point to) {
     final route = PathFinder.findShortestPath(from, to, pathfindingNodes);
-
-    // Debug: Check the returned route
-    print('Computed route: $route');
-
     if (route.isNotEmpty) {
       setState(() {
         currentRoute = route;
       });
+      addPolyline(route);
     } else {
-      // Debug: No route found
-      print('No route found between the selected points.');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No route found')),
       );
@@ -112,99 +212,45 @@ class _MapPageState extends State<MapPage> {
             return const Center(child: Text('Error loading map data'));
           }
 
-          final facilities = snapshot.data!['facilities'] as List<LatLng>;
-          final lines = snapshot.data!['lines'] as List<List<LatLng>>;
+          final facilities = snapshot.data!['facilities'] as List<Point>;
+          final lines = snapshot.data!['lines'] as List<List<Point>>;
 
-          return FlutterMap(
-            mapController: controller,
-            options: MapOptions(
-              initialCenter: startingPoint,
-              initialZoom: 18,
-            ),
-            children: [
-              // Base map layer with custom tileset
-              TileLayer(
-                urlTemplate: tileLink,
-              ),
-              // Render markers for facilities
-              MarkerLayer(
-                markers: facilities.map((LatLng facility) {
-                  return Marker(
-                    point: facility,
-                    width: 60,
-                    height: 60,
-                    child: GestureDetector(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              title: const Text("Facility Details"),
-                              content: const Text(
-                                  "Do you want to navigate to this location?"),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    calculateRoute(startingPoint, facility);
-                                  },
-                                  child: const Text("Navigate"),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text("Cancel"),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                      child: const Icon(
-                        Icons.location_pin,
-                        color: Colors.blue,
-                        size: 50,
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              // Render polylines for lines
-              PolylineLayer(
-                polylines: [
-                  ...lines.map((line) {
-                    return Polyline(
-                      points: line,
-                      color: Colors.red,
-                      strokeWidth: 4,
-                    );
-                  }),
-                  if (currentRoute.isNotEmpty)
-                    Polyline(
-                      points: currentRoute,
-                      color: Colors.yellow,
-                      strokeWidth: 4,
-                    ),
-                ],
-              ),
-              // Render starting point marker
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    point: startingPoint,
-                    width: 60,
-                    height: 60,
-                    child: const Icon(
-                      Icons.star,
-                      color: Colors.orange,
-                      size: 40,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+          return MapWidget(
+            cameraOptions: CameraOptions(
+                center: Point(coordinates: startingPoint.coordinates),
+                zoom: 18.0,
+                pitch: 45),
+            onMapCreated: (mapboxMap) async {
+              await initializeManagers(mapboxMap); // Ensure initialization
+
+              // Add markers and polylines only after managers are initialized
+              if (facilities.isNotEmpty) {
+                addMarkers(facilities);
+              }
+              for (var line in lines) {
+                addPolyline(line);
+              }
+              addMarkers([startingPoint]); // Add the starting point marker
+            },
           );
         },
       ),
     );
+  }
+}
+
+class CustomPointAnnotationClickListener
+    extends OnPointAnnotationClickListener {
+  final Function(Point, String) showMarkerPopup;
+
+  CustomPointAnnotationClickListener({
+    required this.showMarkerPopup,
+  });
+
+  @override
+  void onPointAnnotationClick(PointAnnotation annotation) {
+    // Customize the popup description as needed
+    String description = "This is a sample description for ${annotation.id}";
+    showMarkerPopup(annotation.geometry, description);
   }
 }

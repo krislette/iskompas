@@ -1,24 +1,25 @@
-import 'package:latlong2/latlong.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'dart:math';
 
 class PathFinder {
-  static List<LatLng> findShortestPath(
-      LatLng start, LatLng goal, List<LatLng> nodes) {
+  static List<Point> findShortestPath(
+      Point start, Point goal, List<Point> nodes) {
     // Simplified A* algorithm for demonstration
-    List<LatLng> openSet = [start];
-    Map<LatLng, LatLng?> cameFrom = {};
-    Map<LatLng, double> gScore = {start: 0};
-    Map<LatLng, double> fScore = {start: _heuristic(start, goal)};
+    List<Point> openSet = [start];
+    Map<Point, Point?> cameFrom = {};
+    Map<Point, double> gScore = {start: 0.0};
+    Map<Point, double> fScore = {start: _heuristic(start, goal)};
 
     while (openSet.isNotEmpty) {
       openSet.sort((a, b) => fScore[a]!.compareTo(fScore[b]!));
-      LatLng current = openSet.first;
+      Point current = openSet.first;
 
       if (current == goal) {
         return _reconstructPath(cameFrom, current);
       }
 
       openSet.remove(current);
-      for (LatLng neighbor in _getNeighbors(current, nodes)) {
+      for (Point neighbor in _getNeighbors(current, nodes)) {
         double tentativeGScore =
             gScore[current]! + _distance(current, neighbor);
 
@@ -37,21 +38,26 @@ class PathFinder {
     return []; // Return an empty list if no path is found
   }
 
-  static double _heuristic(LatLng a, LatLng b) {
+  static double _heuristic(Point a, Point b) {
     return _distance(a, b);
   }
 
-  static double _distance(LatLng a, LatLng b) {
-    return const Distance().as(LengthUnit.Meter, a, b);
+  static double _distance(Point a, Point b) {
+    final dx = a.coordinates.lng - b.coordinates.lng;
+    final dy = a.coordinates.lat - b.coordinates.lat;
+    return sqrt(dx * dx + dy * dy); // Euclidean distance
   }
 
-  static List<LatLng> _getNeighbors(LatLng node, List<LatLng> nodes) {
-    return nodes.where((n) => _distance(node, n) < 50).toList();
+  static List<Point> _getNeighbors(Point node, List<Point> nodes) {
+    return nodes
+        .where((n) =>
+            _distance(node, n) < 50.0) // Adjust neighbor threshold as needed
+        .toList();
   }
 
-  static List<LatLng> _reconstructPath(
-      Map<LatLng, LatLng?> cameFrom, LatLng current) {
-    List<LatLng> path = [current];
+  static List<Point> _reconstructPath(
+      Map<Point, Point?> cameFrom, Point current) {
+    List<Point> path = [current];
     while (cameFrom[current] != null) {
       current = cameFrom[current]!;
       path.insert(0, current);
