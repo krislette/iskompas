@@ -69,6 +69,7 @@ flutter:
     - assets/pup-2.png
     - assets/pup-3.png
     - assets/pin.png
+    - assets/user-pin.png
     - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see

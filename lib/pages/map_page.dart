@@ -118,10 +118,12 @@ class _MapPageState extends State<MapPage> {
     //     CameraBoundsOptions(bounds: bounds, maxZoom: 10, minZoom: 6));
   }
 
-  Future<void> addMarkers(List<Point> facilities) async {
+  Future<void> addMarkers(List<Point> facilities, {Point? userLocation}) async {
     // Load the image from assets
     final ByteData bytes = await rootBundle.load('assets/pin.png');
+    final ByteData userBytes = await rootBundle.load('assets/user-pin.png');
     final Uint8List imageData = bytes.buffer.asUint8List();
+    final Uint8List userImageData = userBytes.buffer.asUint8List();
 
     for (var facility in facilities) {
       final PointAnnotationOptions markerOptions = PointAnnotationOptions(
@@ -130,6 +132,13 @@ class _MapPageState extends State<MapPage> {
         iconSize: 0.2,
       );
       _pointAnnotationManager.create(markerOptions);
+    }
+
+    // Add a circular marker for the user's location if provided
+    if (userLocation != null) {
+      final PointAnnotationOptions userMarkerOptions = PointAnnotationOptions(
+          geometry: userLocation, image: userImageData, iconSize: 0.03);
+      _pointAnnotationManager.create(userMarkerOptions);
     }
   }
 
@@ -156,6 +165,8 @@ class _MapPageState extends State<MapPage> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context); // Close popup
+                  calculateRoute(startingPoint,
+                      geometry); // Geometry represents the selected facility
                 },
                 style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
@@ -225,7 +236,7 @@ class _MapPageState extends State<MapPage> {
 
               // Add markers and polylines only after managers are initialized
               if (facilities.isNotEmpty) {
-                addMarkers(facilities);
+                addMarkers(facilities, userLocation: startingPoint);
               }
               for (var line in lines) {
                 addPolyline(line);
