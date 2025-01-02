@@ -213,6 +213,7 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
+    final styleUri = dotenv.env['STYLE_URI']!;
     return Scaffold(
       body: FutureBuilder<Map<String, dynamic>>(
         future: fetchMapData(),
@@ -231,6 +232,7 @@ class _MapPageState extends State<MapPage> {
                 center: Point(coordinates: startingPoint.coordinates),
                 zoom: 18.0,
                 pitch: 45),
+            styleUri: styleUri,
             onMapCreated: (mapboxMap) async {
               await initializeManagers(mapboxMap); // Ensure initialization
 
