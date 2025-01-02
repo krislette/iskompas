@@ -1,27 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:iskompas/utils/colors.dart';
 import 'package:iskompas/widgets/custom_search_bar.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart';
 
-class FacilitiesPage extends StatelessWidget {
+class FacilitiesPage extends StatefulWidget {
   const FacilitiesPage({super.key});
 
   @override
+  _FacilitiesPageState createState() => _FacilitiesPageState();
+}
+
+class _FacilitiesPageState extends State<FacilitiesPage> {
+  late List<dynamic> facilities;
+
+  @override
+  void initState() {
+    super.initState();
+    loadFacilities();
+  }
+
+  // Load the facilities from the JSON file
+  Future<void> loadFacilities() async {
+    // Load JSON data from assets
+    final String response = await rootBundle.loadString('assets/facilities.json');
+    final data = json.decode(response);
+    
+    // Set the facilities list
+    setState(() {
+      facilities = data;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Sample data for facilities
-    final facilities = [
-      {
-        'name': 'South Wing',
-        'description': 'The south wing of the main building',
-      },
-      {
-        'name': 'West Wing',
-        'description': 'The west wing of the main building',
-      },
-      {
-        'name': 'East Wing',
-        'description': 'The east wing of the main building',
-      },
-    ];
+    // If facilities are not loaded yet, show a loading indicator
+    if (facilities.isEmpty) {
+      return Scaffold(
+        backgroundColor: Iskolors.colorBlack,
+        appBar: AppBar(
+          centerTitle: true,
+          backgroundColor: Iskolors.colorBlack,
+          elevation: 0,
+        ),
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Iskolors.colorBlack,
@@ -62,11 +88,10 @@ class FacilitiesPage extends StatelessWidget {
   }
 }
 
-// Custom widget for each row
 class FacilityRow extends StatelessWidget {
   final String name;
   final String description;
-  final bool isLast; // Check if it's the last row to omit the bottom border
+  final bool isLast; 
 
   const FacilityRow({
     super.key,
@@ -82,10 +107,10 @@ class FacilityRow extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             border: Border(
-              top: BorderSide(color: Colors.white, width: 0.5), 
+              top: BorderSide(color: Colors.white, width: 0.5),
               bottom: isLast
-                  ? BorderSide(color: Colors.white, width: 1) 
-                  : BorderSide(color: Colors.white, width: 0.5), 
+                  ? BorderSide(color: Colors.white, width: 1)
+                  : BorderSide(color: Colors.white, width: 0.5),
             ),
           ),
           child: Padding(
@@ -120,7 +145,7 @@ class FacilityRow extends StatelessWidget {
                         style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 14,
-                          fontStyle: FontStyle.italic
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
                     ],

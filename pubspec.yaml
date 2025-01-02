@@ -65,6 +65,7 @@ flutter:
     - assets/pup-1.png
     - assets/pup-2.png
     - assets/pup-3.png
+    - assets/facilities.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
