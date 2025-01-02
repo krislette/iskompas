@@ -22,7 +22,7 @@ class _MapPageState extends State<MapPage> {
   final datasetLink = dotenv.env['DATASET_LINK']!;
   final startingPoint = Point(
       coordinates: Position(
-          121.0117890766243, 14.599100484656496)); // Longitude, Latitude
+          121.01150194357385, 14.598833219335527)); // Longitude, Latitude
   List<Point> currentRoute = []; // Route for navigation
   List<Point> pathfindingNodes = []; // Nodes for pathfinding
 
@@ -121,8 +121,9 @@ class _MapPageState extends State<MapPage> {
   Future<void> addMarkers(List<Point> facilities, {Point? userLocation}) async {
     // Load the image from assets
     final ByteData bytes = await rootBundle.load('assets/pin.png');
-    final ByteData userBytes = await rootBundle.load('assets/user-pin.png');
     final Uint8List imageData = bytes.buffer.asUint8List();
+
+    final ByteData userBytes = await rootBundle.load('assets/user-pin.png');
     final Uint8List userImageData = userBytes.buffer.asUint8List();
 
     for (var facility in facilities) {
@@ -134,10 +135,13 @@ class _MapPageState extends State<MapPage> {
       _pointAnnotationManager.create(markerOptions);
     }
 
-    // Add a circular marker for the user's location if provided
+    // Add only one user location marker
     if (userLocation != null) {
       final PointAnnotationOptions userMarkerOptions = PointAnnotationOptions(
-          geometry: userLocation, image: userImageData, iconSize: 0.03);
+        geometry: userLocation,
+        image: userImageData,
+        iconSize: 0.03,
+      );
       _pointAnnotationManager.create(userMarkerOptions);
     }
   }
@@ -232,7 +236,7 @@ class _MapPageState extends State<MapPage> {
                 center: Point(coordinates: startingPoint.coordinates),
                 zoom: 18.0,
                 pitch: 45),
-            styleUri: styleUri,
+            // styleUri: styleUri,
             onMapCreated: (mapboxMap) async {
               await initializeManagers(mapboxMap); // Ensure initialization
 
@@ -243,7 +247,6 @@ class _MapPageState extends State<MapPage> {
               for (var line in lines) {
                 addPolyline(line);
               }
-              addMarkers([startingPoint]); // Add the starting point marker
             },
           );
         },
