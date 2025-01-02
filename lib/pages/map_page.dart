@@ -18,6 +18,7 @@ class _MapPageState extends State<MapPage> {
   late MapboxMap _mapboxMap;
   late PointAnnotationManager _pointAnnotationManager;
   late PolylineAnnotationManager _polylineAnnotationManager;
+  late Future<Map<String, dynamic>> _mapDataFuture;
 
   final datasetLink = dotenv.env['DATASET_LINK']!;
   final startingPoint = Point(
@@ -38,6 +39,9 @@ class _MapPageState extends State<MapPage> {
 
     // Set the Mapbox access token globally
     MapboxOptions.setAccessToken(accessToken);
+
+    // Initialize the map data future
+    _mapDataFuture = fetchMapData();
   }
 
   Future<Map<String, dynamic>> fetchMapData() async {
@@ -192,26 +196,35 @@ class _MapPageState extends State<MapPage> {
 
   void addPolyline(List<Point> route) {
     final polylineOptions = PolylineAnnotationOptions(
-      geometry: LineString(
-        coordinates: route.map((point) => point.coordinates).toList(),
-      ),
-      lineColor: 1,
-      lineWidth: 4.0,
-    );
+        geometry: LineString(
+          coordinates: route.map((point) => point.coordinates).toList(),
+        ),
+        lineWidth: 8.0,
+        lineColor: Iskolors.colorYellow.value);
     _polylineAnnotationManager.create(polylineOptions);
   }
 
+  void clearPolylines() {
+    _polylineAnnotationManager.deleteAll();
+  }
+
   void calculateRoute(Point from, Point to) {
+    // Clear existing polyline before adding a new one
+    clearPolylines();
+
     final route = PathFinder.findShortestPath(from, to, pathfindingNodes);
     if (route.isNotEmpty) {
       setState(() {
         currentRoute = route;
       });
+      print("Route found: $route");
       addPolyline(route);
     } else {
+      print("No route found from $from to $to");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No route found')),
       );
+      clearPolylines();
     }
   }
 
@@ -220,7 +233,7 @@ class _MapPageState extends State<MapPage> {
     final styleUri = dotenv.env['STYLE_URI']!;
     return Scaffold(
       body: FutureBuilder<Map<String, dynamic>>(
-        future: fetchMapData(),
+        future: _mapDataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -238,15 +251,15 @@ class _MapPageState extends State<MapPage> {
                 pitch: 45),
             // styleUri: styleUri,
             onMapCreated: (mapboxMap) async {
-              await initializeManagers(mapboxMap); // Ensure initialization
-
-              // Add markers and polylines only after managers are initialized
-              if (facilities.isNotEmpty) {
-                addMarkers(facilities, userLocation: startingPoint);
-              }
-              for (var line in lines) {
-                addPolyline(line);
-              }
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                await initializeManagers(mapboxMap);
+                if (facilities.isNotEmpty) {
+                  addMarkers(facilities, userLocation: startingPoint);
+                }
+                for (var line in lines) {
+                  addPolyline(line);
+                }
+              });
             },
           );
         },

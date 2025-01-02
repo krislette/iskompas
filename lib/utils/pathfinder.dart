@@ -27,7 +27,7 @@ class PathFinder {
       openSet.remove(current);
       closedSet.add(current);
 
-      for (final neighbor in _getNeighbors(current, nodes)) {
+      for (final neighbor in _getNearestNeighbors(current, nodes, closedSet)) {
         if (closedSet.contains(neighbor)) continue;
 
         final tentativeGScore = gScore[current]! + _distance(current, neighbor);
@@ -72,12 +72,23 @@ class PathFinder {
     return path.reversed.toList();
   }
 
-  // Get neighbors from the dataset nodes
-  static List<Point> _getNeighbors(Point node, List<Point> nodes) {
-    const double radius = 0.0005; // Adjust this for road node proximity
-    return nodes
-        .where((n) => _distance(node, n) <= radius && !_isEqual(node, n))
+  // Get nearest neighbors from the dataset nodes
+  static List<Point> _getNearestNeighbors(
+      Point node, List<Point> nodes, Set<Point> closedSet) {
+    const double searchRadius = 0.0005; // Adjust this for tightness
+    const int maxNeighbors = 5; // Adjust this for density
+
+    // Filter nodes by proximity and exclude already-visited ones
+    final nearbyNodes = nodes
+        .where(
+            (n) => !closedSet.contains(n) && _distance(node, n) <= searchRadius)
         .toList();
+
+    // Sort by distance and limit to maxNeighbors
+    nearbyNodes
+        .sort((a, b) => _distance(node, a).compareTo(_distance(node, b)));
+
+    return nearbyNodes.take(maxNeighbors).toList();
   }
 
   // Check if two points are equal
