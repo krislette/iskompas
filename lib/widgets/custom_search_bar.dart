@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class CustomSearchBar extends StatelessWidget {
   final String hintText;
   final ValueChanged<String>? onChanged;
+  final TextEditingController? controller; 
 
   const CustomSearchBar({
     super.key,
     this.hintText = 'Search...',
     this.onChanged,
+    this.controller, 
   });
 
   @override
@@ -28,6 +30,7 @@ class CustomSearchBar extends StatelessWidget {
         ],
       ),
       child: TextField(
+        controller: controller, 
         style: const TextStyle(color: Colors.white), 
         cursorColor: Colors.white, 
         decoration: InputDecoration(

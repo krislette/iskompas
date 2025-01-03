@@ -12,13 +12,17 @@ class FacilitiesPage extends StatefulWidget {
 }
 
 class _FacilitiesPageState extends State<FacilitiesPage> {
-  late List<dynamic> facilities;
+  late List<dynamic> facilities; // Original list of all facilities
+  late List<dynamic> filteredFacilities; // Filtered list for search results
+  late TextEditingController searchController; // Controller for search bar input
 
   @override
   void initState() {
     super.initState();
     facilities = [];
-    loadFacilities();
+    filteredFacilities = []; // Initialize filtered list
+    searchController = TextEditingController(); // Initialize search controller
+    loadFacilities(); // Load the facilities
   }
 
   // Load the facilities from the JSON file
@@ -27,15 +31,32 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
     final String response = await rootBundle.loadString('assets/facilities.json');
     final data = json.decode(response);
 
-    // Set the facilities list
+    // Set both the facilities and filtered list
     setState(() {
       facilities = data;
+      filteredFacilities = data; 
     });
+  }
+
+  // Filter facilities based on search query
+  void filterFacilities(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        filteredFacilities = facilities; 
+      });
+    } else {
+      setState(() {
+        filteredFacilities = facilities
+            .where((facility) =>
+                facility['name'].toLowerCase().contains(query.toLowerCase()))
+            .toList(); // Filter based on name
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // If facilities are not loaded yet, show a loading indicator
+    // Loading indicator if facilities are not yet loaded
     if (facilities.isEmpty) {
       return Scaffold(
         backgroundColor: Iskolors.colorBlack,
@@ -62,23 +83,25 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Custom search bar to search through facilities
             CustomSearchBar(
+              controller: searchController, 
               hintText: 'Search facilities...',
               onChanged: (value) {
-                print('Search query: $value');
+                filterFacilities(value); 
               },
             ),
             const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
-                itemCount: facilities.length,
+                itemCount: filteredFacilities.length,
                 itemBuilder: (context, index) {
-                  final facility = facilities[index];
+                  final facility = filteredFacilities[index];
                   return FacilityRow(
                     name: facility['name']!,
                     description: facility['description']!,
                     imagePath: facility['image']!,
-                    isLast: index == facilities.length - 1,
+                    isLast: index == filteredFacilities.length - 1,
                   );
                 },
               ),
