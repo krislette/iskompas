@@ -72,6 +72,7 @@ flutter:
     - assets/user-pin.png
     - .env
     - assets/facilities.json
+    - assets/facilities/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -17,6 +17,7 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
   @override
   void initState() {
     super.initState();
+    facilities = [];
     loadFacilities();
   }
 
@@ -25,7 +26,7 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
     // Load JSON data from assets
     final String response = await rootBundle.loadString('assets/facilities.json');
     final data = json.decode(response);
-    
+
     // Set the facilities list
     setState(() {
       facilities = data;
@@ -57,7 +58,7 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
         elevation: 0,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -76,6 +77,7 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
                   return FacilityRow(
                     name: facility['name']!,
                     description: facility['description']!,
+                    imagePath: facility['image']!,
                     isLast: index == facilities.length - 1,
                   );
                 },
@@ -91,12 +93,14 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
 class FacilityRow extends StatelessWidget {
   final String name;
   final String description;
-  final bool isLast; 
+  final String imagePath;
+  final bool isLast;
 
   const FacilityRow({
     super.key,
     required this.name,
     required this.description,
+    required this.imagePath,
     required this.isLast,
   });
 
@@ -120,10 +124,23 @@ class FacilityRow extends StatelessWidget {
                 Container(
                   width: 50,
                   height: 50,
-                  color: Colors.grey, // Placeholder for image
-                  child: const Icon(
-                    Icons.image,
-                    color: Colors.white,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.grey,
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: imagePath.startsWith('http')
+                        ? Image.network(
+                            imagePath,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.broken_image, color: Colors.white),
+                          )
+                        : Image.asset(
+                            imagePath,
+                            fit: BoxFit.cover,
+                          ),
                   ),
                 ),
                 const SizedBox(width: 16),

@@ -2,197 +2,236 @@
     {
       "name": "Amphitheater",
       "description": "An area where students can gather, eat, and hold small gatherings such as meetings, jammings, etc.",
-      "location": "Inside Lagoon, near Non-Food Stalls Building"
+      "location": "Inside Lagoon, near Non-Food Stalls Building",
+      "image": "assets/facilities/Amphitheater.png"
     },
     {
       "name": "Campus Development and Maintenance Building",
       "description": "A building where campus development initiatives and maintenance services are planned and organized",
-      "location": "Behind East Wing, near Nutrition and Food Science Building"
+      "location": "Behind East Wing, near Nutrition and Food Science Building",
+      "image": "assets/facilities/Amphitheater.png" 
     },
     {
       "name": "Charlie Del Rosario Hall",
       "description": "A Freedom Hall Building, established in honor of late Charlie Del Rosario, a former student leader in PUP, which serves as a venue for various events and activities such as seminars, workshops, and other events",
-      "location": "Near canteen and Linear Park"
+      "location": "Near canteen and Linear Park",
+      "image": "assets/facilities/Charlie-Bldg.png"
     },
     {
       "name": "Dome",
       "description": "The circular offices at the center of the main building where faculty of some colleges are staying",
-      "location": "Center of the main building, each floor"
+      "location": "Center of the main building, each floor",
+      "image": "assets/facilities/Amphitheater.png"
     },
     {
       "name": "East Wing",
       "description": "The east wing of the main building",
-      "location": "Main building"
+      "location": "Main building",
+      "image": "assets/facilities/Main-East.png"
     },
     {
       "name": "Engineering Science Research Center (ESRC) Building",
       "description": "New building in front of gymnasium near the gate",
-      "location": "In front of gymnasium near the gate"
+      "location": "In front of gymnasium near the gate",
+      "image": "assets/facilities/ESRC.png"
     },
     {
       "name": "Flagpole",
       "description": "Under construction",
-      "location": "Near Obelisk"
+      "location": "Near Obelisk",
+      "image": "assets/facilities/ESRC.png"
     },
     {
       "name": "Grandstand",
       "description": "A wide area where students can gather for events and activities such as flag ceremonies, concerts, and other events",
-      "location": "East part of the Track and Field Oval from the entrance near the main gate"
+      "location": "East part of the Track and Field Oval from the entrance near the main gate",
+      "image": "assets/facilities/Grandstand.png"
     },
     {
       "name": "Guard House",
       "description": "A security post where the security guards are stationed to monitor the entrance and exit of the campus",
-      "location": "West part of the main gate"
+      "location": "West part of the main gate",
+      "image": "assets/facilities/Grandstand.png"
     },
     {
       "name": "Gymnasium and Sports Center",
       "description": "A hall where students train physically and a training ground for the student athletes that participate in the intercollegiate sports program",
-      "location": "In front of ESRC building; west part of the entrance"
+      "location": "In front of ESRC building; west part of the entrance",
+      "image": "assets/facilities/Gymnasium.png"
     },
     {
       "name": "Interfaith Chapel",
       "description": "A sacred space designed to provide a welcoming environment for people of all faiths and beliefs to come together for prayer, reflection, and meditation, fostering spiritual growth, understanding, and respect for diversity",
-      "location": "Near East Wing and Nutrition and Food Science Building"
+      "location": "Near East Wing and Nutrition and Food Science Building",
+      "image": "assets/facilities/Interfaith-Chapel.png"
     },
     {
       "name": "Laboratory High School",
       "description": "A high school building where the laboratory high school students are studying and having their classes",
-      "location": "Near NALLRC and beside"
+      "location": "Near NALLRC and beside",
+      "image": "assets/facilities/Laboratory-High.jpg"
     },
     {
       "name": "Lagoon",
       "description": "A wide area surrounding a lagoon where students can hang out and eat because most food stalls are located here",
-      "location": "Near Amphitheater, its entrance near Obelisk"
+      "location": "Near Amphitheater, its entrance near Obelisk",
+      "image": "assets/facilities/Lagoon.png"
     },
     {
       "name": "Linear Park",
       "description": "A straight path park near the Pasig River where students can hang out and eat",
-      "location": "Near canteen and Charlie Del Rosario Building"
+      "location": "Near canteen and Charlie Del Rosario Building",
+      "image": "assets/facilities/Linear-Park.png"
     },
     {
       "name": "Mabini Monument PUP Obelisk",
       "description": "A monument of the Philippine hero Apolinario Mabini and the PUP Obelisk that symbolizes the university's mission and vision",
-      "location": "Along University Avenue at the center, before entrance to Lagoon"
+      "location": "Along University Avenue at the center, before entrance to Lagoon",
+      "image": "assets/facilities/Obelisk.png"
     },
     {
       "name": "Nemesio E. Prudente Freedom Park",
       "description": "Under construction",
-      "location": "Near flagpole"
+      "location": "Near flagpole",
+      "image": "assets/facilities/Grandstand.png"
     },
     {
       "name": "Ninoy Aquino Library and Learning Resources Center",
       "description": "A studying area and arena of books available for students",
-      "location": "Near Charlie Del Rosario Building and Laboratory High School"
+      "location": "Near Charlie Del Rosario Building and Laboratory High School",
+      "image": "assets/facilities/NALLRC.jpg"
     },
     {
       "name": "Non-Food Stalls Building",
       "description": "An area where students can buy school supplies, photocopying services, and other services",
-      "location": "Beside NALLRC and near the end of Lagoon"
+      "location": "Beside NALLRC and near the end of Lagoon",
+      "image": "assets/facilities/Grandstand.png"
     },
     {
       "name": "North Parking Area",
       "description": "A parking area for students, faculty, staff, and visitors",
-      "location": "Near Physical Education Building and Lagoon"
+      "location": "Near Physical Education Building and Lagoon",
+      "image": "assets/facilities/Grandstand.png"
     },
     {
       "name": "North Wing",
       "description": "Under construction",
-      "location": "Main building"
+      "location": "Main building",
+      "image": "assets/facilities/Grandstand.png"
     },
     {
       "name": "Nutrition and Food Science Building",
       "description": "A building where students of Nutrition and Food Science are studying and having their classes",
-      "location": "Near Interfaith Chapel and East Wing"
+      "location": "Near Interfaith Chapel and East Wing",
+      "image": "assets/facilities/Nutrition.png"
     },
     {
       "name": "Open Court",
       "description": "Under construction",
-      "location": "Beside University Avenue and near Gymnasium"
+      "location": "Beside University Avenue and near Gymnasium",
+      "image": "assets/facilities/Open-Court.jpg"
     },
     {
       "name": "Physical Education Building",
       "description": "A building where PE students are conducting classes and faculty of College of Human Kinetics are staying",
-      "location": "Near North Parking Area and Tahanan ng Alumni"
+      "location": "Near North Parking Area and Tahanan ng Alumni",
+      "image": "assets/facilities/CHK-Building.jpg"
     },
     {
       "name": "Printing Press Building",
       "description": "A building for university printing services",
-      "location": "Near Property and Supply Building, behind Laboratory High School"
+      "location": "Near Property and Supply Building, behind Laboratory High School",
+      "image": "assets/facilities/Nutrition.png"
     },
     {
       "name": "Property and Supply Building",
       "description": "A building for university property and supply services",
-      "location": "Near Printing Press Building, behind Laboratory High School"
+      "location": "Near Printing Press Building, behind Laboratory High School",
+      "image": "assets/facilities/Nutrition.png"
     },
     {
       "name": "PUP Sta Mesa Ferry Station",
       "description": "A ferry station where people can ride a ferry boat to cross the Pasig River",
-      "location": "Behind South Wing and beside Pasig River"
+      "location": "Behind South Wing and beside Pasig River",
+      "image": "assets/facilities/Ferry.jpg"
     },
     {
       "name": "Pylon",
       "description": "The entrance of the campus where the three-block rectangular structure is located",
-      "location": "Main gate"
+      "location": "Main gate",
+      "image": "assets/facilities/Pylon.png"
     },
     {
       "name": "R.C. Overhead Water Tank",
       "description": "A water tank that supplies water to the campus",
-      "location": "In front of NALLRC"
+      "location": "In front of NALLRC",
+      "image": "assets/facilities/RCTank.jpg"
     },
     {
       "name": "Sampaguita Building",
       "description": "",
-      "location": ""
+      "location": "",
+      "image": "assets/facilities/Sampaguita-Bldg.png"
     },
     {
       "name": "South Wing",
       "description": "The south wing of the main building",
-      "location": "Main building"
+      "location": "Main building",
+      "image": "assets/facilities/Southwing.png"
     },
     {
       "name": "Souvenir Shop",
       "description": "A shop where PUPians can buy campus merchandise such as shirts, lanyards, mugs, etc.",
-      "location": "Along University Avenue and beside Bahay ni Mabini"
+      "location": "Along University Avenue and beside Bahay ni Mabini",
+      "image": "assets/facilities/Souvenir-Shop.png"
     },
     {
       "name": "Student Canteen",
       "description": "An eating area near the Linear Park",
-      "location": "Beside Sampaguita Building"
+      "location": "Beside Sampaguita Building",
+      "image": "assets/facilities/Student-Canteen.png"
     },
     {
       "name": "Swimming Pool",
       "description": "An olympic-sized swimming pool that is capable of handling several swimming classes and student athlete activities simultaneously",
-      "location": "Beside Gymnasium (right) and Tahanan ng Alumni (left)"
+      "location": "Beside Gymnasium (right) and Tahanan ng Alumni (left)",
+      "image": "assets/facilities/Pool.png"
     },
     {
       "name": "Tahanan ng Alumni",
       "description": "A building where alumni can stay and have their meetings and gatherings",
-      "location": "Beside Swimming Pool (right) and Physical Education Building (left)"
+      "location": "Beside Swimming Pool (right) and Physical Education Building (left)",
+      "image": "assets/facilities/tahanan.jpg"
     },
     {
       "name": "Tahanan ng Atleta",
       "description": "A building where student athletes can stay and have their meetings and gatherings",
-      "location": "West part of Track and Field Oval from Oval North Entrance"
+      "location": "West part of Track and Field Oval from Oval North Entrance",
+      "image": "assets/facilities/Atleta.png"
     },
     {
       "name": "Tennis Court",
       "description": "A court where students can play tennis",
-      "location": "Beside University Avenue and Open Court, near Gymnasium"
+      "location": "Beside University Avenue and Open Court, near Gymnasium",
+      "image": "assets/facilities/Tennis-Court.png"
     },
     {
       "name": "Track and Field Oval",
       "description": "A big grass area that can serve as softball, soccer, football, and running fields for students",
-      "location": "West part of the University Avenue; North Entrance near Guard House"
+      "location": "West part of the University Avenue; North Entrance near Guard House",
+      "image": "assets/facilities/Track.jpg"
     },
     {
       "name": "Visitors Information Center",
       "description": "A center where visitors can ask for directions and information about the university",
-      "location": "Near main gate, seen right after entering campus (left)"
+      "location": "Near main gate, seen right after entering campus (left)",
+      "image": "assets/facilities/Visitors-Info-Center.png"
     },
     {
       "name": "West Wing",
       "description": "The west wing of the main building",
-      "location": "Main building"
+      "location": "Main building",
+      "image": "assets/facilities/Main-West.png"
     }
   ]
   
