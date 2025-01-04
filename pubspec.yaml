@@ -65,13 +65,9 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/pup-1.png
-    - assets/pup-2.png
-    - assets/pup-3.png
-    - assets/pin.png
-    - assets/user-pin.png
     - .env
-    - assets/facilities.json
+    - assets/icons/
+    - assets/data/
     - assets/facilities/
 
   # An image asset can refer to one or more resolution-specific "variants", see

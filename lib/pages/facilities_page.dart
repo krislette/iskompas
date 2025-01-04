@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'dart:ui';
 
-
 class FacilitiesPage extends StatefulWidget {
   const FacilitiesPage({super.key});
 
@@ -28,7 +27,8 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
   }
 
   Future<void> loadFacilities() async {
-    final String response = await rootBundle.loadString('assets/facilities.json');
+    final String response =
+        await rootBundle.loadString('assets/data/facilities.json');
     final data = json.decode(response);
     setState(() {
       facilities = data;
@@ -155,7 +155,8 @@ class _FacilityRowState extends State<FacilityRow> {
                                 widget.imagePath,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.broken_image, color: Colors.white),
+                                    const Icon(Icons.broken_image,
+                                        color: Colors.white),
                               )
                             : Image.asset(
                                 widget.imagePath,
@@ -206,17 +207,19 @@ class _FacilityRowState extends State<FacilityRow> {
                     const SizedBox(height: 12),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Center( 
+                      child: Center(
                         child: ElevatedButton(
                           onPressed: () {
-                            Navigator.of(context).pop(); 
+                            Navigator.of(context).pop();
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(255, 128, 0, 0),
+                            backgroundColor:
+                                const Color.fromARGB(255, 128, 0, 0),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12.0),
                             ),
-                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30.0),
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 8.0, horizontal: 30.0),
                           ),
                           child: const Text(
                             "Close",
@@ -264,7 +267,8 @@ class _FacilityRowState extends State<FacilityRow> {
                               widget.imagePath,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.broken_image, color: Colors.white),
+                                  const Icon(Icons.broken_image,
+                                      color: Colors.white),
                             )
                           : Image.asset(
                               widget.imagePath,

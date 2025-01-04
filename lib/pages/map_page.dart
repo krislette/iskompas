@@ -124,10 +124,11 @@ class _MapPageState extends State<MapPage> {
 
   Future<void> addMarkers(List<Point> facilities, {Point? userLocation}) async {
     // Load the image from assets
-    final ByteData bytes = await rootBundle.load('assets/pin.png');
+    final ByteData bytes = await rootBundle.load('assets/icons/pin.png');
     final Uint8List imageData = bytes.buffer.asUint8List();
 
-    final ByteData userBytes = await rootBundle.load('assets/user-pin.png');
+    final ByteData userBytes =
+        await rootBundle.load('assets/icons/user-pin.png');
     final Uint8List userImageData = userBytes.buffer.asUint8List();
 
     for (var facility in facilities) {

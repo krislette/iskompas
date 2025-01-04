@@ -8,9 +8,9 @@ class SavedPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<String> images = [
-      'assets/pup-1.png',
-      'assets/pup-2.png',
-      'assets/pup-3.png',
+      'assets/facilities/pylon.png',
+      'assets/facilities/main-gate.png',
+      'assets/facilities/obelisk.png',
     ];
 
     return Scaffold(

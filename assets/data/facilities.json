@@ -123,7 +123,7 @@
     "name": "Nutrition and Food Science Building",
     "description": "A building where students of Nutrition and Food Science are studying and having their classes",
     "location": "Near Interfaith Chapel and East Wing",
-    "image": "assets/facilities/nutrition-food-bldg.png"
+    "image": "assets/facilities/nutrition-food-building.png"
   },
   {
     "name": "Open Court",
@@ -135,19 +135,19 @@
     "name": "Physical Education Building",
     "description": "A building where PE students are conducting classes and faculty of College of Human Kinetics are staying",
     "location": "Near North Parking Area and Tahanan ng Alumni",
-    "image": "assets/facilities/pe-chk-bldg.jpg"
+    "image": "assets/facilities/chk-building.jpg"
   },
   {
     "name": "Printing Press Building",
     "description": "A building for university printing services",
     "location": "Near Property and Supply Building, behind Laboratory High School",
-    "image": "assets/facilities/printing-press-bldg.png"
+    "image": "assets/facilities/printing-press-building.png"
   },
   {
     "name": "Property and Supply Building",
     "description": "A building for university property and supply services",
     "location": "Near Printing Press Building, behind Laboratory High School",
-    "image": "assets/facilities/property-bldg.png"
+    "image": "assets/facilities/property-building.png"
   },
   {
     "name": "PUP Sta Mesa Ferry Station",
@@ -171,7 +171,7 @@
     "name": "Sampaguita Building",
     "description": "Also formerly known as the University Canteen located at the northern right of Main Building, West Wing",
     "location": "Beside linear park and near the canteen",
-    "image": "assets/facilities/sampaguita-bldg.png"
+    "image": "assets/facilities/sampaguita-building.png"
   },
   {
     "name": "South Wing",
