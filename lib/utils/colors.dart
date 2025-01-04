@@ -6,4 +6,6 @@ class Iskolors {
   static const Color colorYellow = Color(0xFFFFDE00);
   static const Color colorBlack = Color(0x00101110);
   static const Color colorTransparent = Color(0x00000000);
+  static const Color colorGrey = Color(0xFF9E9E9E);
+  static const Color colorDarkGrey = Color(0xFF424242);
 }
