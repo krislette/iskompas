@@ -140,7 +140,10 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
           elevation: 0,
         ),
         body: const Center(
-          child: CircularProgressIndicator(),
+          child: CircularProgressIndicator(
+            color: Iskolors.colorMaroon,
+            backgroundColor: Iskolors.colorTransparent,
+          ),
         ),
       );
     }
@@ -174,7 +177,7 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
                     return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 16.0),
                       child: Center(
-                        child: CircularProgressIndicator(),
+                        child: FacilityRowSkeleton(),
                       ),
                     );
                   }
@@ -238,13 +241,8 @@ class _FacilityRowState extends State<FacilityRow> {
         placeholder: (context, url) => Container(
           color: Colors.grey[800],
           child: const Center(
-            child: SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-              ),
-            ),
+            child:
+                SizedBox(width: 20, height: 20, child: FacilityRowSkeleton()),
           ),
         ),
         errorWidget: (context, url, error) => const Icon(
@@ -433,6 +431,55 @@ class _FacilityRowState extends State<FacilityRow> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class FacilityRowSkeleton extends StatelessWidget {
+  const FacilityRowSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        // Image skeleton
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: Colors.grey[800],
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+        const SizedBox(width: 16),
+        // Content skeleton
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title skeleton
+              Container(
+                width: 120,
+                height: 16,
+                decoration: BoxDecoration(
+                  color: Colors.grey[800],
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Description skeleton
+              Container(
+                width: double.infinity,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: Colors.grey[800],
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
