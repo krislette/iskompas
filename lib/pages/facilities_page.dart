@@ -10,10 +10,10 @@ class FacilitiesPage extends StatefulWidget {
   const FacilitiesPage({super.key});
 
   @override
-  _FacilitiesPageState createState() => _FacilitiesPageState();
+  FacilitiesPageState createState() => FacilitiesPageState();
 }
 
-class _FacilitiesPageState extends State<FacilitiesPage> {
+class FacilitiesPageState extends State<FacilitiesPage> {
   static const int itemsPerPage = 10;
 
   late List<dynamic> facilities;
@@ -31,7 +31,11 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
     filteredFacilities = [];
     searchController = TextEditingController();
     _scrollController.addListener(_scrollListener);
-    loadInitialFacilities();
+
+    // Preload facilities immediately
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      loadInitialFacilities();
+    });
   }
 
   @override
@@ -131,23 +135,6 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (facilities.isEmpty && isLoading) {
-      return Scaffold(
-        backgroundColor: Iskolors.colorBlack,
-        appBar: AppBar(
-          centerTitle: true,
-          backgroundColor: Iskolors.colorBlack,
-          elevation: 0,
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(
-            color: Iskolors.colorMaroon,
-            backgroundColor: Iskolors.colorTransparent,
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
       backgroundColor: Iskolors.colorBlack,
       appBar: AppBar(
@@ -229,17 +216,17 @@ class FacilityRow extends StatefulWidget {
   });
 
   @override
-  _FacilityRowState createState() => _FacilityRowState();
+  FacilityRowState createState() => FacilityRowState();
 }
 
-class _FacilityRowState extends State<FacilityRow> {
+class FacilityRowState extends State<FacilityRow> {
   Widget _buildImage(String imagePath, {bool isLarge = false}) {
     if (imagePath.startsWith('http')) {
       return CachedNetworkImage(
         imageUrl: imagePath,
         fit: BoxFit.cover,
         placeholder: (context, url) => Container(
-          color: Colors.grey[800],
+          color: Iskolors.colorDarkGrey,
           child: const Center(
             child:
                 SizedBox(width: 20, height: 20, child: FacilityRowSkeleton()),
@@ -309,7 +296,7 @@ class _FacilityRowState extends State<FacilityRow> {
                       widget.description,
                       textAlign: TextAlign.justify,
                       style: const TextStyle(
-                        color: Colors.grey,
+                        color: Iskolors.colorGrey,
                         fontSize: 16,
                         fontStyle: FontStyle.italic,
                       ),
@@ -386,7 +373,7 @@ class _FacilityRowState extends State<FacilityRow> {
                     height: 50,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      color: Colors.grey[800],
+                      color: Iskolors.colorDarkGrey,
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
@@ -413,7 +400,7 @@ class _FacilityRowState extends State<FacilityRow> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            color: Colors.grey,
+                            color: Iskolors.colorGrey,
                             fontSize: 14,
                             fontStyle: FontStyle.italic,
                           ),
@@ -447,7 +434,7 @@ class FacilityRowSkeleton extends StatelessWidget {
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: Colors.grey[800],
+            color: Iskolors.colorDarkGrey,
             borderRadius: BorderRadius.circular(8),
           ),
         ),
@@ -462,7 +449,7 @@ class FacilityRowSkeleton extends StatelessWidget {
                 width: 120,
                 height: 16,
                 decoration: BoxDecoration(
-                  color: Colors.grey[800],
+                  color: Iskolors.colorDarkGrey,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -472,7 +459,7 @@ class FacilityRowSkeleton extends StatelessWidget {
                 width: double.infinity,
                 height: 14,
                 decoration: BoxDecoration(
-                  color: Colors.grey[800],
+                  color: Iskolors.colorDarkGrey,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
