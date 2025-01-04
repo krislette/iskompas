@@ -3,7 +3,8 @@ import 'package:iskompas/utils/colors.dart';
 import 'package:iskompas/widgets/custom_search_bar.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'dart:ui';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 class FacilitiesPage extends StatefulWidget {
   const FacilitiesPage({super.key});
@@ -13,9 +14,15 @@ class FacilitiesPage extends StatefulWidget {
 }
 
 class _FacilitiesPageState extends State<FacilitiesPage> {
+  static const int itemsPerPage = 10;
+
   late List<dynamic> facilities;
   late List<dynamic> filteredFacilities;
   late TextEditingController searchController;
+  bool isLoading = false;
+  int currentPage = 0;
+  bool hasMore = true;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -23,17 +30,88 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
     facilities = [];
     filteredFacilities = [];
     searchController = TextEditingController();
-    loadFacilities();
+    _scrollController.addListener(_scrollListener);
+    loadInitialFacilities();
   }
 
-  Future<void> loadFacilities() async {
-    final String response =
-        await rootBundle.loadString('assets/data/facilities.json');
-    final data = json.decode(response);
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    searchController.dispose();
+    super.dispose();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !isLoading &&
+        hasMore) {
+      loadMoreFacilities();
+    }
+  }
+
+  Future<void> loadInitialFacilities() async {
     setState(() {
-      facilities = data;
-      filteredFacilities = data;
+      isLoading = true;
     });
+
+    try {
+      final String response =
+          await rootBundle.loadString('assets/data/facilities.json');
+      final allData = json.decode(response);
+
+      setState(() {
+        facilities = allData;
+        // Load first batch of facilities
+        filteredFacilities = allData.take(itemsPerPage).toList();
+        currentPage = 1;
+        hasMore = allData.length > itemsPerPage;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> loadMoreFacilities() async {
+    if (isLoading) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // Simulate network delay
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      final startIndex = currentPage * itemsPerPage;
+      final endIndex = startIndex + itemsPerPage;
+
+      if (startIndex < facilities.length) {
+        final newItems = facilities.sublist(
+          startIndex,
+          endIndex > facilities.length ? facilities.length : endIndex,
+        );
+
+        setState(() {
+          filteredFacilities.addAll(newItems);
+          currentPage++;
+          hasMore = endIndex < facilities.length;
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          hasMore = false;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   void filterFacilities(String query) {
@@ -53,7 +131,7 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (facilities.isEmpty) {
+    if (facilities.isEmpty && isLoading) {
       return Scaffold(
         backgroundColor: Iskolors.colorBlack,
         appBar: AppBar(
@@ -89,15 +167,25 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
             const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
-                itemCount: filteredFacilities.length,
+                controller: _scrollController,
+                itemCount: filteredFacilities.length + (hasMore ? 1 : 0),
                 itemBuilder: (context, index) {
+                  if (index >= filteredFacilities.length) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16.0),
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  }
+
                   final facility = filteredFacilities[index];
                   return FacilityRow(
                     name: facility['name']!,
                     description: facility['description']!,
-                    location: facility['location']!, // Include location
+                    location: facility['location']!,
                     imagePath: facility['image']!,
-                    isLast: index == filteredFacilities.length - 1,
+                    isLast: index == filteredFacilities.length - 1 && !hasMore,
                   );
                 },
               ),
@@ -107,6 +195,18 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
       ),
     );
   }
+}
+
+class CustomCacheManager {
+  static final customCacheManager = CacheManager(
+    Config(
+      'customCacheKey',
+      stalePeriod: const Duration(days: 7),
+      maxNrOfCacheObjects: 100,
+      repo: JsonCacheInfoRepository(databaseName: 'facilities_cache'),
+      fileService: HttpFileService(),
+    ),
+  );
 }
 
 class FacilityRow extends StatefulWidget {
@@ -130,6 +230,48 @@ class FacilityRow extends StatefulWidget {
 }
 
 class _FacilityRowState extends State<FacilityRow> {
+  Widget _buildImage(String imagePath, {bool isLarge = false}) {
+    if (imagePath.startsWith('http')) {
+      return CachedNetworkImage(
+        imageUrl: imagePath,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          color: Colors.grey[800],
+          child: const Center(
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+              ),
+            ),
+          ),
+        ),
+        errorWidget: (context, url, error) => const Icon(
+          Icons.broken_image,
+          color: Iskolors.colorWhite,
+        ),
+        cacheManager: CustomCacheManager.customCacheManager,
+        memCacheHeight: isLarge ? 1024 : 200,
+        memCacheWidth: isLarge ? 1024 : 200,
+        maxWidthDiskCache: isLarge ? 1024 : 200,
+        maxHeightDiskCache: isLarge ? 1024 : 200,
+        // Add these properties
+        fadeOutDuration: const Duration(milliseconds: 0),
+        fadeInDuration: const Duration(milliseconds: 0),
+        cacheKey: '${imagePath}_${isLarge ? 'large' : 'small'}',
+      );
+    } else {
+      return Image.asset(
+        imagePath,
+        fit: BoxFit.cover,
+        cacheHeight: isLarge ? 1024 : 200,
+        cacheWidth: isLarge ? 1024 : 200,
+        gaplessPlayback: true, // Add this property
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -144,24 +286,12 @@ class _FacilityRowState extends State<FacilityRow> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Fixed-size Facility image
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: SizedBox(
                         width: double.infinity,
                         height: 200.0,
-                        child: widget.imagePath.startsWith('http')
-                            ? Image.network(
-                                widget.imagePath,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.broken_image,
-                                        color: Colors.white),
-                              )
-                            : Image.asset(
-                                widget.imagePath,
-                                fit: BoxFit.cover,
-                              ),
+                        child: _buildImage(widget.imagePath, isLarge: true),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -170,7 +300,7 @@ class _FacilityRowState extends State<FacilityRow> {
                         widget.name,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: Iskolors.colorWhite,
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
@@ -187,17 +317,17 @@ class _FacilityRowState extends State<FacilityRow> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    // Location text without truncation
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.location_on, color: Colors.white),
+                        const Icon(Icons.location_on,
+                            color: Iskolors.colorWhite),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             widget.location,
                             style: const TextStyle(
-                              color: Colors.white,
+                              color: Iskolors.colorWhite,
                               fontSize: 16,
                             ),
                           ),
@@ -224,7 +354,7 @@ class _FacilityRowState extends State<FacilityRow> {
                           child: const Text(
                             "Close",
                             style: TextStyle(
-                              color: Colors.white,
+                              color: Iskolors.colorWhite,
                               fontSize: 16,
                             ),
                           ),
@@ -243,10 +373,10 @@ class _FacilityRowState extends State<FacilityRow> {
           Container(
             decoration: BoxDecoration(
               border: Border(
-                top: const BorderSide(color: Colors.white, width: 0.5),
+                top: const BorderSide(color: Iskolors.colorWhite, width: 0.5),
                 bottom: widget.isLast
-                    ? const BorderSide(color: Colors.white, width: 1)
-                    : const BorderSide(color: Colors.white, width: 0.5),
+                    ? const BorderSide(color: Iskolors.colorWhite, width: 1)
+                    : const BorderSide(color: Iskolors.colorWhite, width: 0.5),
               ),
             ),
             child: Padding(
@@ -258,22 +388,11 @@ class _FacilityRowState extends State<FacilityRow> {
                     height: 50,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      color: Colors.grey,
+                      color: Colors.grey[800],
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: widget.imagePath.startsWith('http')
-                          ? Image.network(
-                              widget.imagePath,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.broken_image,
-                                      color: Colors.white),
-                            )
-                          : Image.asset(
-                              widget.imagePath,
-                              fit: BoxFit.cover,
-                            ),
+                      child: _buildImage(widget.imagePath),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -284,7 +403,7 @@ class _FacilityRowState extends State<FacilityRow> {
                         Text(
                           widget.name,
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: Iskolors.colorWhite,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -306,7 +425,7 @@ class _FacilityRowState extends State<FacilityRow> {
                   ),
                   const Icon(
                     Icons.arrow_forward_ios,
-                    color: Colors.yellow,
+                    color: Iskolors.colorYellow,
                   ),
                 ],
               ),

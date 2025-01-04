@@ -39,7 +39,7 @@
     "name": "Flagpole",
     "description": "Under construction",
     "location": "Near Obelisk",
-    "image": "assets/facilities/esrc-building.png"
+    "image": "assets/facilities/flagpole.jpg"
   },
   {
     "name": "Grandstand",
@@ -93,7 +93,7 @@
     "name": "Nemesio E. Prudente Freedom Park",
     "description": "Under construction",
     "location": "Near flagpole and North Wing of the Main Building",
-    "image": "assets/facilities/freedom-park.jpg"
+    "image": "assets/facilities/freedom-park.png"
   },
   {
     "name": "Ninoy Aquino Library and Learning Resources Center",
@@ -105,19 +105,19 @@
     "name": "Non-Food Stalls Building",
     "description": "An area where students can buy school supplies, photocopying services, and other services",
     "location": "Beside NALLRC and near the end of Lagoon",
-    "image": "assets/facilities/non-food-stalls.png"
+    "image": "assets/facilities/flagpole.jpg"
   },
   {
     "name": "North Parking Area",
     "description": "A parking area for students, faculty, staff, and visitors",
     "location": "Near Physical Education Building and Lagoon",
-    "image": "assets/facilities/north-parking.png"
+    "image": "assets/facilities/flagpole.jpg"
   },
   {
     "name": "North Wing",
     "description": "Under construction",
     "location": "Main building",
-    "image": "assets/facilities/main-north.png"
+    "image": "assets/facilities/north-wing.png"
   },
   {
     "name": "Nutrition and Food Science Building",
@@ -141,13 +141,13 @@
     "name": "Printing Press Building",
     "description": "A building for university printing services",
     "location": "Near Property and Supply Building, behind Laboratory High School",
-    "image": "assets/facilities/printing-press-building.png"
+    "image": "assets/facilities/flagpole.jpg"
   },
   {
     "name": "Property and Supply Building",
     "description": "A building for university property and supply services",
     "location": "Near Printing Press Building, behind Laboratory High School",
-    "image": "assets/facilities/property-building.png"
+    "image": "assets/facilities/flagpole.jpg"
   },
   {
     "name": "PUP Sta Mesa Ferry Station",
