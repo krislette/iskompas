@@ -3,7 +3,8 @@ import 'package:iskompas/utils/colors.dart';
 import 'package:iskompas/widgets/custom_search_bar.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'facility_details_page.dart';
+import 'dart:ui';
+
 
 class FacilitiesPage extends StatefulWidget {
   const FacilitiesPage({super.key});
@@ -108,7 +109,7 @@ class _FacilitiesPageState extends State<FacilitiesPage> {
   }
 }
 
-class FacilityRow extends StatelessWidget {
+class FacilityRow extends StatefulWidget {
   final String name;
   final String description;
   final String location;
@@ -125,19 +126,113 @@ class FacilityRow extends StatelessWidget {
   });
 
   @override
+  _FacilityRowState createState() => _FacilityRowState();
+}
+
+class _FacilityRowState extends State<FacilityRow> {
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => FacilityDetailsPage(
-              name: name,
-              description: description,
-              location: location, 
-              imagePath: imagePath,
-            ),
-          ),
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: const Color.fromARGB(255, 21, 21, 21),
+              contentPadding: const EdgeInsets.all(16.0),
+              content: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Fixed-size Facility image
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 200.0,
+                        child: widget.imagePath.startsWith('http')
+                            ? Image.network(
+                                widget.imagePath,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.broken_image, color: Colors.white),
+                              )
+                            : Image.asset(
+                                widget.imagePath,
+                                fit: BoxFit.cover,
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Center(
+                      child: Text(
+                        widget.name,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      widget.description,
+                      textAlign: TextAlign.justify,
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontSize: 16,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    // Location text without truncation
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.location_on, color: Colors.white),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            widget.location,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Center( 
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(); 
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color.fromARGB(255, 128, 0, 0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 30.0),
+                          ),
+                          child: const Text(
+                            "Close",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
       child: Column(
@@ -146,7 +241,7 @@ class FacilityRow extends StatelessWidget {
             decoration: BoxDecoration(
               border: Border(
                 top: const BorderSide(color: Colors.white, width: 0.5),
-                bottom: isLast
+                bottom: widget.isLast
                     ? const BorderSide(color: Colors.white, width: 1)
                     : const BorderSide(color: Colors.white, width: 0.5),
               ),
@@ -164,16 +259,15 @@ class FacilityRow extends StatelessWidget {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: imagePath.startsWith('http')
+                      child: widget.imagePath.startsWith('http')
                           ? Image.network(
-                              imagePath,
+                              widget.imagePath,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.broken_image,
-                                      color: Colors.white),
+                                  const Icon(Icons.broken_image, color: Colors.white),
                             )
                           : Image.asset(
-                              imagePath,
+                              widget.imagePath,
                               fit: BoxFit.cover,
                             ),
                     ),
@@ -184,7 +278,7 @@ class FacilityRow extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          name,
+                          widget.name,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -193,7 +287,10 @@ class FacilityRow extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          description,
+                          widget.description,
+                          textAlign: TextAlign.justify,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 14,
@@ -212,75 +309,6 @@ class FacilityRow extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class FacilityDetailsPage extends StatelessWidget {
-  final String name;
-  final String description;
-  final String location;
-  final String imagePath;
-
-  const FacilityDetailsPage({
-    super.key,
-    required this.name,
-    required this.description,
-    required this.location,
-    required this.imagePath,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(name),
-        backgroundColor: Colors.black,
-      ),
-      backgroundColor: Colors.black,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Load the image from the assets/facilities folder
-            Image.asset('assets/$imagePath'),
-            
-            const SizedBox(height: 20),
-         
-            Center(
-              child: Text(
-                name,
-                style: const TextStyle(color: Colors.white, fontSize: 24),
-              ),
-            ),
-            
-            const SizedBox(height: 10),
-            
-            Text(
-              description,
-              style: const TextStyle(color: Colors.grey, fontSize: 16, fontStyle: FontStyle.italic),
-            ),
-            
-            const SizedBox(height: 10),
-            
-            // Prevent overflow for location text
-            Row(
-              children: [
-                const Icon(Icons.location_on, color: Colors.white),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    location,
-                    overflow: TextOverflow.ellipsis, 
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
