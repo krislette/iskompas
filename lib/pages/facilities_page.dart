@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iskompas/utils/colors.dart';
 import 'package:iskompas/widgets/custom_search_bar.dart';
+import 'package:iskompas/pages/facility_details_page.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -32,7 +33,6 @@ class FacilitiesPageState extends State<FacilitiesPage> {
     searchController = TextEditingController();
     _scrollController.addListener(_scrollListener);
 
-    // Preload facilities immediately
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadInitialFacilities();
     });
@@ -66,7 +66,6 @@ class FacilitiesPageState extends State<FacilitiesPage> {
 
       setState(() {
         facilities = allData;
-        // Load first batch of facilities
         filteredFacilities = allData.take(itemsPerPage).toList();
         currentPage = 1;
         hasMore = allData.length > itemsPerPage;
@@ -87,7 +86,6 @@ class FacilitiesPageState extends State<FacilitiesPage> {
     });
 
     try {
-      // Simulate network delay
       await Future.delayed(const Duration(milliseconds: 500));
 
       final startIndex = currentPage * itemsPerPage;
@@ -121,7 +119,7 @@ class FacilitiesPageState extends State<FacilitiesPage> {
   void filterFacilities(String query) {
     if (query.isEmpty) {
       setState(() {
-        filteredFacilities = facilities;
+        filteredFacilities = facilities.take(currentPage * itemsPerPage).toList();
       });
     } else {
       setState(() {
@@ -228,8 +226,7 @@ class FacilityRowState extends State<FacilityRow> {
         placeholder: (context, url) => Container(
           color: Iskolors.colorDarkGrey,
           child: const Center(
-            child:
-                SizedBox(width: 20, height: 20, child: FacilityRowSkeleton()),
+            child: SizedBox(width: 20, height: 20, child: FacilityRowSkeleton()),
           ),
         ),
         errorWidget: (context, url, error) => const Icon(
@@ -241,7 +238,6 @@ class FacilityRowState extends State<FacilityRow> {
         memCacheWidth: isLarge ? 1024 : 200,
         maxWidthDiskCache: isLarge ? 1024 : 200,
         maxHeightDiskCache: isLarge ? 1024 : 200,
-        // Add these properties
         fadeOutDuration: const Duration(milliseconds: 0),
         fadeInDuration: const Duration(milliseconds: 0),
         cacheKey: '${imagePath}_${isLarge ? 'large' : 'small'}',
@@ -252,7 +248,114 @@ class FacilityRowState extends State<FacilityRow> {
         fit: BoxFit.cover,
         cacheHeight: isLarge ? 1024 : 200,
         cacheWidth: isLarge ? 1024 : 200,
-        gaplessPlayback: true, // Add this property
+        gaplessPlayback: true,
+      );
+    }
+  }
+
+  void _handleFacilityTap(BuildContext context) {
+    if (widget.name.toLowerCase() == 'main building') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => FacilityDetailsPage(
+            name: widget.name,
+            description: widget.description,
+            location: widget.location,
+            imagePath: widget.imagePath,
+            isMainBuilding: true,
+          ),
+        ),
+      );
+    } else {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: const Color.fromARGB(255, 21, 21, 21),
+            contentPadding: const EdgeInsets.all(16.0),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 200.0,
+                      child: _buildImage(widget.imagePath, isLarge: true),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: Text(
+                      widget.name,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Iskolors.colorWhite,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    widget.description,
+                    textAlign: TextAlign.justify,
+                    style: const TextStyle(
+                      color: Iskolors.colorGrey,
+                      fontSize: 16,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.location_on, color: Iskolors.colorWhite),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          widget.location,
+                          style: const TextStyle(
+                            color: Iskolors.colorWhite,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Center(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(255, 128, 0, 0),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 30.0),
+                        ),
+                        child: const Text(
+                          "Close",
+                          style: TextStyle(
+                            color: Iskolors.colorWhite,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       );
     }
   }
@@ -260,99 +363,7 @@ class FacilityRowState extends State<FacilityRow> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              backgroundColor: const Color.fromARGB(255, 21, 21, 21),
-              contentPadding: const EdgeInsets.all(16.0),
-              content: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: 200.0,
-                        child: _buildImage(widget.imagePath, isLarge: true),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Center(
-                      child: Text(
-                        widget.name,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Iskolors.colorWhite,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      widget.description,
-                      textAlign: TextAlign.justify,
-                      style: const TextStyle(
-                        color: Iskolors.colorGrey,
-                        fontSize: 16,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(Icons.location_on,
-                            color: Iskolors.colorWhite),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            widget.location,
-                            style: const TextStyle(
-                              color: Iskolors.colorWhite,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: Center(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color.fromARGB(255, 128, 0, 0),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.0),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 8.0, horizontal: 30.0),
-                          ),
-                          child: const Text(
-                            "Close",
-                            style: TextStyle(
-                              color: Iskolors.colorWhite,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
+      onTap: () => _handleFacilityTap(context),
       child: Column(
         children: [
           Container(
@@ -429,7 +440,6 @@ class FacilityRowSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Image skeleton
         Container(
           width: 50,
           height: 50,
@@ -439,12 +449,10 @@ class FacilityRowSkeleton extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 16),
-        // Content skeleton
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title skeleton
               Container(
                 width: 120,
                 height: 16,
@@ -454,7 +462,6 @@ class FacilityRowSkeleton extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              // Description skeleton
               Container(
                 width: double.infinity,
                 height: 14,
