@@ -32,7 +32,7 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: Colors.black, 
+              color: Colors.black,
               borderRadius: BorderRadius.circular(8),
             ),
             child: InteractiveViewer(
@@ -52,7 +52,7 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
               widget.name,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Colors.black, 
+                color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -92,53 +92,15 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
   Widget _buildMainBuildingContent() {
     return Column(
       children: [
-        Container(
-          height: 60,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: maxFloors,
-            itemBuilder: (context, index) {
-              final floor = index + 1;
-              final isSelected = floor == selectedFloor;
-
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      selectedFloor = floor;
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isSelected
-                        ? const Color.fromARGB(255, 128, 0, 0)
-                        : Colors.grey[800],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    'Floor $floor',
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.grey,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                border: Border.all(color: const Color.fromARGB(255, 158, 158, 158), width: 0.5),
+                border: Border.all(
+                    color: const Color.fromARGB(255, 158, 158, 158),
+                    width: 0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ClipRRect(
@@ -179,6 +141,48 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
             ),
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16.0), 
+          child: Container(
+            height: 60,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: maxFloors,
+              itemBuilder: (context, index) {
+                final floor = index + 1;
+                final isSelected = floor == selectedFloor;
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        selectedFloor = floor;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isSelected
+                          ? const Color.fromARGB(255, 128, 0, 0)
+                          : Colors.grey[800],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Floor $floor',
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.grey,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -192,7 +196,7 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
           widget.name,
           style: const TextStyle(color: Colors.white),
         ),
-        backgroundColor: Colors.black, 
+        backgroundColor: Colors.black,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
