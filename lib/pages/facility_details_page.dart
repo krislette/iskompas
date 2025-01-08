@@ -1,4 +1,3 @@
-// facility_details_page.dart
 import 'package:flutter/material.dart';
 import 'package:iskompas/utils/colors.dart';
 
@@ -143,7 +142,7 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.asset(
-                  'assets/images/floor_plans/floor_$selectedFloor.png',
+                  'assets/floor_plans/floor_$selectedFloor.png',
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
                     return Center(

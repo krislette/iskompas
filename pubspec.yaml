@@ -72,6 +72,7 @@ flutter:
     - assets/icons/
     - assets/data/
     - assets/facilities/
+    - assets/floor_plans/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
