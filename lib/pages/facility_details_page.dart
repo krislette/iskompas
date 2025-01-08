@@ -97,9 +97,9 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
             padding: const EdgeInsets.all(16.0),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.black,
                 border: Border.all(
-                    color: const Color.fromARGB(255, 158, 158, 158),
+                    color: const Color.fromARGB(255, 15, 14, 14),
                     width: 0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
