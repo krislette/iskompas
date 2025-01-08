@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:iskompas/utils/colors.dart';
 
 class FacilityDetailsPage extends StatefulWidget {
   final String name;
@@ -31,14 +30,19 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: SizedBox(
-              width: double.infinity,
-              height: 200.0,
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.black, 
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: InteractiveViewer(
+              panEnabled: true,
+              boundaryMargin: const EdgeInsets.all(8.0),
+              minScale: 1.0,
+              maxScale: 5.0,
               child: Image.asset(
                 widget.imagePath,
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
               ),
             ),
           ),
@@ -48,8 +52,7 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
               widget.name,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Iskolors.colorWhite,
-                fontSize: 24,
+                color: Colors.black, 
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -59,7 +62,7 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
             widget.description,
             textAlign: TextAlign.justify,
             style: const TextStyle(
-              color: Iskolors.colorGrey,
+              color: Colors.grey,
               fontSize: 16,
               fontStyle: FontStyle.italic,
             ),
@@ -68,13 +71,13 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.location_on, color: Iskolors.colorWhite),
+              const Icon(Icons.location_on, color: Colors.black),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   widget.location,
                   style: const TextStyle(
-                    color: Iskolors.colorWhite,
+                    color: Colors.black,
                     fontSize: 16,
                   ),
                 ),
@@ -98,7 +101,7 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
             itemBuilder: (context, index) {
               final floor = index + 1;
               final isSelected = floor == selectedFloor;
-              
+
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: ElevatedButton(
@@ -108,9 +111,9 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
                     });
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isSelected 
+                    backgroundColor: isSelected
                         ? const Color.fromARGB(255, 128, 0, 0)
-                        : Iskolors.colorDarkGrey,
+                        : Colors.grey[800],
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -118,10 +121,8 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
                   child: Text(
                     'Floor $floor',
                     style: TextStyle(
-                      color: isSelected 
-                          ? Iskolors.colorWhite
-                          : Iskolors.colorGrey,
-                      fontWeight: isSelected 
+                      color: isSelected ? Colors.white : Colors.grey,
+                      fontWeight: isSelected
                           ? FontWeight.bold
                           : FontWeight.normal,
                     ),
@@ -136,36 +137,43 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
             padding: const EdgeInsets.all(16.0),
             child: Container(
               decoration: BoxDecoration(
-                border: Border.all(color: Iskolors.colorWhite, width: 0.5),
+                color: Colors.white,
+                border: Border.all(color: const Color.fromARGB(255, 158, 158, 158), width: 0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  'assets/floor_plans/floor_$selectedFloor.png',
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.image_not_supported,
-                            color: Iskolors.colorGrey,
-                            size: 48,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Floor $selectedFloor plan not available',
-                            style: const TextStyle(
-                              color: Iskolors.colorGrey,
-                              fontSize: 16,
+                child: InteractiveViewer(
+                  panEnabled: true,
+                  boundaryMargin: const EdgeInsets.all(8.0),
+                  minScale: 1.0,
+                  maxScale: 5.0,
+                  child: Image.asset(
+                    'assets/floor_plans/floor_$selectedFloor.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.image_not_supported,
+                              color: Colors.grey,
+                              size: 48,
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                            const SizedBox(height: 16),
+                            Text(
+                              'Floor $selectedFloor plan not available',
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -178,14 +186,14 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Iskolors.colorBlack,
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: Text(
           widget.name,
-          style: const TextStyle(color: Iskolors.colorWhite),
+          style: const TextStyle(color: Colors.white),
         ),
-        backgroundColor: Iskolors.colorBlack,
-        iconTheme: const IconThemeData(color: Iskolors.colorWhite),
+        backgroundColor: Colors.black, 
+        iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
       body: widget.isMainBuilding
