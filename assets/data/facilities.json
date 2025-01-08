@@ -1,5 +1,11 @@
 [
   {
+    "name": "Main Building",
+    "description": "Shaped like a three-point star with a rectangle in its south; the main academic building of the campus, containing most of the lecture and laboratory rooms and offices",
+    "location": "Near the flagpole and freedom park; beside the lagoon",
+    "image": "assets/facilities/main-gate.png"
+  },
+  {
     "name": "Amphitheater",
     "description": "An area where students can gather, eat, and hold small gatherings such as meetings, jammings, etc.",
     "location": "Inside Lagoon, near Non-Food Stalls Building",
