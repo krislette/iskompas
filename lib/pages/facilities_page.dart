@@ -141,6 +141,7 @@ class FacilitiesPageState extends State<FacilitiesPage> {
         centerTitle: true,
         backgroundColor: Iskolors.colorBlack,
         elevation: 0,
+        toolbarHeight: 11,
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -154,7 +155,7 @@ class FacilitiesPageState extends State<FacilitiesPage> {
                 filterFacilities(value);
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
             Expanded(
               child: filteredFacilities.isEmpty && !isLoading
                   ? const Align(
