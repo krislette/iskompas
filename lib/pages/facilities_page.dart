@@ -117,18 +117,19 @@ class FacilitiesPageState extends State<FacilitiesPage> {
   }
 
   void filterFacilities(String query) {
-    if (query.isEmpty) {
-      setState(() {
-        filteredFacilities = facilities.take(currentPage * itemsPerPage).toList();
-      });
-    } else {
-      setState(() {
+    setState(() {
+      if (query.isEmpty) {
+        filteredFacilities =
+            facilities.take(currentPage * itemsPerPage).toList();
+        hasMore = facilities.length > currentPage * itemsPerPage;
+      } else {
         filteredFacilities = facilities
             .where((facility) =>
                 facility['name'].toLowerCase().contains(query.toLowerCase()))
             .toList();
-      });
-    }
+        hasMore = false; // Prevent loading skeletons during filtering
+      }
+    });
   }
 
   @override
@@ -154,30 +155,45 @@ class FacilitiesPageState extends State<FacilitiesPage> {
             ),
             const SizedBox(height: 20),
             Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                itemCount: filteredFacilities.length + (hasMore ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index >= filteredFacilities.length) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16.0),
-                      child: Center(
-                        child: FacilityRowSkeleton(),
+              child: filteredFacilities.isEmpty && !isLoading
+                  ? const Align(
+                      alignment: Alignment(0, -0.2),
+                      child: Text(
+                        'No matching facility found',
+                        style: TextStyle(
+                          color: Iskolors.colorGrey,
+                          fontSize: 16,
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
-                    );
-                  }
+                    )
+                  : ListView.builder(
+                      controller: _scrollController,
+                      itemCount: filteredFacilities.length + (hasMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index >= filteredFacilities.length) {
+                          return hasMore
+                              ? const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                                  child: Center(
+                                    child: FacilityRowSkeleton(),
+                                  ),
+                                )
+                              : const SizedBox();
+                        }
 
-                  final facility = filteredFacilities[index];
-                  return FacilityRow(
-                    name: facility['name']!,
-                    description: facility['description']!,
-                    location: facility['location']!,
-                    imagePath: facility['image']!,
-                    isLast: index == filteredFacilities.length - 1 && !hasMore,
-                  );
-                },
-              ),
-            ),
+                        final facility = filteredFacilities[index];
+                        return FacilityRow(
+                          name: facility['name']!,
+                          description: facility['description']!,
+                          location: facility['location']!,
+                          imagePath: facility['image']!,
+                          isLast: index == filteredFacilities.length - 1 &&
+                              !hasMore,
+                        );
+                      },
+                    ),
+            )
           ],
         ),
       ),
@@ -226,7 +242,8 @@ class FacilityRowState extends State<FacilityRow> {
         placeholder: (context, url) => Container(
           color: Iskolors.colorDarkGrey,
           child: const Center(
-            child: SizedBox(width: 20, height: 20, child: FacilityRowSkeleton()),
+            child:
+                SizedBox(width: 20, height: 20, child: FacilityRowSkeleton()),
           ),
         ),
         errorWidget: (context, url, error) => const Icon(
