@@ -99,8 +99,7 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
               decoration: BoxDecoration(
                 color: Colors.black,
                 border: Border.all(
-                    color: const Color.fromARGB(255, 15, 14, 14),
-                    width: 0.5),
+                    color: const Color.fromARGB(255, 15, 14, 14), width: 0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ClipRRect(
@@ -111,7 +110,7 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
                   minScale: 1.0,
                   maxScale: 5.0,
                   child: Image.asset(
-                    'assets/floor_plans/floor_$selectedFloor.png',
+                    'assets/floorplans/floor-$selectedFloor.png',
                     fit: BoxFit.contain,
                     errorBuilder: (context, error, stackTrace) {
                       return Center(
@@ -142,7 +141,7 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.only(bottom: 16.0), 
+          padding: const EdgeInsets.only(bottom: 16.0),
           child: Container(
             height: 60,
             padding: const EdgeInsets.symmetric(horizontal: 16),
