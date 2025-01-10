@@ -252,6 +252,9 @@ class _MapPageState extends State<MapPage> {
                 pitch: 45),
             // styleUri: styleUri,
             onMapCreated: (mapboxMap) async {
+              mapboxMap.scaleBar
+                  .updateSettings(ScaleBarSettings(enabled: false));
+              mapboxMap.compass.updateSettings(CompassSettings(enabled: false));
               WidgetsBinding.instance.addPostFrameCallback((_) async {
                 await initializeManagers(mapboxMap);
                 if (facilities.isNotEmpty) {
