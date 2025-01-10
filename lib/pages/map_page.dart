@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:iskompas/utils/colors.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import 'package:iskompas/utils/pathfinder.dart';
 import 'package:flutter/services.dart';
+import 'package:iskompas/utils/colors.dart';
+import 'package:iskompas/utils/pathfinder.dart';
+import 'package:iskompas/utils/annotation_listener.dart';
+import 'package:iskompas/widgets/search_bar.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -93,7 +95,7 @@ class _MapPageState extends State<MapPage> {
     _mapboxMap = mapboxMap;
 
     // Set a default style for the map
-    // await _mapboxMap.loadStyleURI(MapboxStyles.LIGHT);
+    // await _mapboxMap.loadStyleURI(MapboxStyles.DARK);
 
     // await _mapboxMap.style.setStyleImportConfigProperty(
     // "basemap", "showPointOfInterestLabels", false);
@@ -233,54 +235,62 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     final styleUri = dotenv.env['STYLE_URI']!;
     return Scaffold(
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _mapDataFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return const Center(child: Text('Error loading map data'));
-          }
+      resizeToAvoidBottomInset: false,
+      body: Stack(
+        children: [
+          // Map as the bottom layer
+          FutureBuilder<Map<String, dynamic>>(
+            future: _mapDataFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return const Center(child: Text('Error loading map data'));
+              }
 
-          final facilities = snapshot.data!['facilities'] as List<Point>;
-          final lines = snapshot.data!['lines'] as List<List<Point>>;
+              final facilities = snapshot.data!['facilities'] as List<Point>;
+              final lines = snapshot.data!['lines'] as List<List<Point>>;
 
-          return MapWidget(
-            cameraOptions: CameraOptions(
-                center: Point(coordinates: startingPoint.coordinates),
-                zoom: 18.0,
-                pitch: 45),
-            // styleUri: styleUri,
-            onMapCreated: (mapboxMap) async {
-              WidgetsBinding.instance.addPostFrameCallback((_) async {
-                await initializeManagers(mapboxMap);
-                if (facilities.isNotEmpty) {
-                  addMarkers(facilities, userLocation: startingPoint);
-                }
-                for (var line in lines) {
-                  addPolyline(line);
-                }
-              });
+              return MapWidget(
+                cameraOptions: CameraOptions(
+                  center: Point(coordinates: startingPoint.coordinates),
+                  zoom: 18.0,
+                  pitch: 45,
+                ),
+                // styleUri: styleUri,
+                onMapCreated: (mapboxMap) async {
+                  mapboxMap.scaleBar
+                      .updateSettings(ScaleBarSettings(enabled: false));
+                  mapboxMap.compass
+                      .updateSettings(CompassSettings(enabled: false));
+                  WidgetsBinding.instance.addPostFrameCallback((_) async {
+                    await initializeManagers(mapboxMap);
+                    if (facilities.isNotEmpty) {
+                      addMarkers(facilities, userLocation: startingPoint);
+                    }
+                    for (var line in lines) {
+                      addPolyline(line);
+                    }
+                  });
+                },
+              );
             },
-          );
-        },
+          ),
+          // Search bar as the top layer
+          SafeArea(
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 11.0, horizontal: 16.0),
+              child: CustomSearchBar(
+                hintText: 'Search location...',
+                onChanged: (value) {
+                  print('Searching for: $value');
+                },
+              ),
+            ),
+          ),
+        ],
       ),
     );
-  }
-}
-
-class CustomPointAnnotationClickListener
-    extends OnPointAnnotationClickListener {
-  final Function(Point, String) showMarkerPopup;
-
-  CustomPointAnnotationClickListener({
-    required this.showMarkerPopup,
-  });
-
-  @override
-  void onPointAnnotationClick(PointAnnotation annotation) {
-    // Customize the popup description as needed
-    String description = "This is a sample description for ${annotation.id}";
-    showMarkerPopup(annotation.geometry, description);
   }
 }

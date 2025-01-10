@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:iskompas/utils/colors.dart';
-import 'package:iskompas/widgets/custom_search_bar.dart';
-import 'package:iskompas/pages/facility_details_page.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:iskompas/utils/cache_manager.dart';
+import 'package:iskompas/utils/colors.dart';
+import 'package:iskompas/widgets/search_bar.dart';
+import 'package:iskompas/pages/facility_details_page.dart';
+import 'package:iskompas/widgets/facility_row_skeleton.dart';
 
 class FacilitiesPage extends StatefulWidget {
   const FacilitiesPage({super.key});
@@ -140,6 +141,7 @@ class FacilitiesPageState extends State<FacilitiesPage> {
         centerTitle: true,
         backgroundColor: Iskolors.colorBlack,
         elevation: 0,
+        toolbarHeight: 11,
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -153,7 +155,7 @@ class FacilitiesPageState extends State<FacilitiesPage> {
                 filterFacilities(value);
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
             Expanded(
               child: filteredFacilities.isEmpty && !isLoading
                   ? const Align(
@@ -199,18 +201,6 @@ class FacilitiesPageState extends State<FacilitiesPage> {
       ),
     );
   }
-}
-
-class CustomCacheManager {
-  static final customCacheManager = CacheManager(
-    Config(
-      'customCacheKey',
-      stalePeriod: const Duration(days: 7),
-      maxNrOfCacheObjects: 100,
-      repo: JsonCacheInfoRepository(databaseName: 'facilities_cache'),
-      fileService: HttpFileService(),
-    ),
-  );
 }
 
 class FacilityRow extends StatefulWidget {
@@ -446,51 +436,6 @@ class FacilityRowState extends State<FacilityRow> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class FacilityRowSkeleton extends StatelessWidget {
-  const FacilityRowSkeleton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: Iskolors.colorDarkGrey,
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 120,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: Iskolors.colorDarkGrey,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                height: 14,
-                decoration: BoxDecoration(
-                  color: Iskolors.colorDarkGrey,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }
