@@ -276,7 +276,6 @@ class _MapPageState extends State<MapPage> {
               );
             },
           ),
-
           // Search bar as the top layer
           SafeArea(
             child: Padding(
