@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
 import 'package:iskompas/utils/colors.dart';
 import 'package:iskompas/utils/pathfinder.dart';
+import 'package:iskompas/utils/annotation_listener.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -269,21 +270,5 @@ class _MapPageState extends State<MapPage> {
         },
       ),
     );
-  }
-}
-
-class CustomPointAnnotationClickListener
-    extends OnPointAnnotationClickListener {
-  final Function(Point, String) showMarkerPopup;
-
-  CustomPointAnnotationClickListener({
-    required this.showMarkerPopup,
-  });
-
-  @override
-  void onPointAnnotationClick(PointAnnotation annotation) {
-    // Customize the popup description as needed
-    String description = "This is a sample description for ${annotation.id}";
-    showMarkerPopup(annotation.geometry, description);
   }
 }
