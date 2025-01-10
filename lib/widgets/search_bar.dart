@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:iskompas/utils/colors.dart';
 
 class CustomSearchBar extends StatelessWidget {
   final String hintText;
   final ValueChanged<String>? onChanged;
-  final TextEditingController? controller; 
+  final TextEditingController? controller;
 
   const CustomSearchBar({
     super.key,
     this.hintText = 'Search...',
     this.onChanged,
-    this.controller, 
+    this.controller,
   });
 
   @override
@@ -17,27 +18,26 @@ class CustomSearchBar extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 30, 30, 30), 
-        border: Border.all(color: Colors.grey.shade700), 
+        color: const Color.fromARGB(255, 30, 30, 30),
+        border: Border.all(color: Iskolors.colorGreyShade),
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
-            spreadRadius: 2,
-            blurRadius: 5,
-            offset: const Offset(0, 3), 
+            color: Iskolors.colorShadow,
+            spreadRadius: 1,
+            blurRadius: 3,
           ),
         ],
       ),
       child: TextField(
-        controller: controller, 
-        style: const TextStyle(color: Colors.white), 
-        cursorColor: Colors.white, 
+        controller: controller,
+        style: const TextStyle(color: Iskolors.colorWhite),
+        cursorColor: Iskolors.colorWhite,
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(color: Color.fromARGB(255, 197, 197, 197)), 
+          hintStyle: const TextStyle(color: Iskolors.colorLightGrey),
           border: InputBorder.none,
-          icon: const Icon(Icons.search, color: Color.fromARGB(255, 197, 197, 197)), 
+          icon: const Icon(Icons.search, color: Iskolors.colorLightGrey),
         ),
         onChanged: onChanged,
       ),
