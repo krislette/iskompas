@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
+// import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
 import 'package:location/location.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -24,7 +24,7 @@ class _MapPageState extends State<MapPage> {
   late PolylineAnnotationManager _polylineAnnotationManager;
   late Future<Map<String, dynamic>> _mapDataFuture;
 
-  final datasetLink = dotenv.env['DATASET_LINK']!;
+  // final datasetLink = dotenv.env['DATASET_LINK']!;
   final Location location = Location();
   Point? startingPoint;
   bool isLocationPermissionGranted = false;
@@ -52,10 +52,11 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<Map<String, dynamic>> fetchMapData() async {
-    final response = await http.get(Uri.parse(datasetLink));
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+    try {
+      // Load the local GeoJSON file
+      final geoJsonString =
+          await rootBundle.loadString('assets/data/nodes.geojson');
+      final data = jsonDecode(geoJsonString);
 
       List<Point> facilities = [];
       List<Point> nodes = [];
@@ -91,8 +92,8 @@ class _MapPageState extends State<MapPage> {
       pathfindingNodes = [...nodes, ...facilities];
 
       return {'facilities': facilities, 'lines': lines};
-    } else {
-      throw Exception('Failed to load map data');
+    } catch (e) {
+      throw Exception('Failed to load map data from local file: $e');
     }
   }
 
