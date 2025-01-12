@@ -118,34 +118,12 @@ class _MapPageState extends State<MapPage> {
           ),
         );
       });
-
-      // If map is already initialized, update the user marker
-      if (_mapboxMap != null && startingPoint != null) {
-        await updateUserLocationMarker();
-      }
     } catch (e) {
       print('Error getting location: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Unable to get your location')),
       );
     }
-  }
-
-  Future<void> updateUserLocationMarker() async {
-    if (startingPoint == null) return;
-
-    // Load user location pin image
-    final ByteData userBytes =
-        await rootBundle.load('assets/icons/user-pin.png');
-    final Uint8List userImageData = userBytes.buffer.asUint8List();
-
-    // Remove existing user markers
-    await _pointAnnotationManager.deleteAll();
-
-    // Add facility markers back
-    final mapData = await _mapDataFuture;
-    final facilities = mapData['facilities'] as List<Point>;
-    await addMarkers(facilities, userLocation: startingPoint);
   }
 
   Future<void> requestLocationAndNavigate(Point destination) async {
@@ -267,6 +245,14 @@ class _MapPageState extends State<MapPage> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context); // Close popup
+                  // Note: Added guard here
+                  if (startingPoint == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Starting location is not set')),
+                    );
+                    return;
+                  }
                   calculateRoute(startingPoint!,
                       geometry); // Geometry represents the selected facility
                 },
