@@ -1,8 +1,5 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-// import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
 import 'package:location/location.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -12,7 +9,8 @@ import 'package:iskompas/utils/annotation_listener.dart';
 import 'package:iskompas/widgets/search_bar.dart';
 
 class MapPage extends StatefulWidget {
-  const MapPage({super.key});
+  final Map<String, dynamic> mapData;
+  const MapPage({super.key, required this.mapData});
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -22,7 +20,6 @@ class _MapPageState extends State<MapPage> {
   late MapboxMap _mapboxMap;
   late PointAnnotationManager _pointAnnotationManager;
   late PolylineAnnotationManager _polylineAnnotationManager;
-  late Future<Map<String, dynamic>> _mapDataFuture;
 
   // final datasetLink = dotenv.env['DATASET_LINK']!;
   final Location location = Location();
@@ -35,66 +32,12 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
 
-    // Ensure the access token is not null
-    final accessToken = dotenv.env['ACCESS_TOKEN'];
-    if (accessToken == null) {
-      throw Exception('ACCESS_TOKEN is missing from the environment variables');
-    }
+    // Set pathfindingNodes from widget.mapData
+    final nodes = (widget.mapData['nodes'] as List).cast<Point>();
+    final facilities = (widget.mapData['facilities'] as List).cast<Point>();
+    pathfindingNodes = [...nodes, ...facilities];
 
-    // Set the Mapbox access token globally
-    MapboxOptions.setAccessToken(accessToken);
-
-    // Initialize the map data future
-    _mapDataFuture = fetchMapData();
-
-    // Check location permission on init
     checkLocationPermission();
-  }
-
-  Future<Map<String, dynamic>> fetchMapData() async {
-    try {
-      // Load the local GeoJSON file
-      final geoJsonString =
-          await rootBundle.loadString('assets/data/nodes.geojson');
-      final data = jsonDecode(geoJsonString);
-
-      List<Point> facilities = [];
-      List<Point> nodes = [];
-      List<List<Point>> lines = [];
-
-      for (var feature in data['features']) {
-        if (feature['geometry']['type'] == 'Point') {
-          final type = feature['properties']['type'];
-          if (type == 'facility') {
-            facilities.add(Point(
-              coordinates: Position(
-                feature['geometry']['coordinates'][0],
-                feature['geometry']['coordinates'][1],
-              ),
-            ));
-          } else if (type == 'node') {
-            nodes.add(Point(
-              coordinates: Position(
-                feature['geometry']['coordinates'][0],
-                feature['geometry']['coordinates'][1],
-              ),
-            ));
-          }
-        } else if (feature['geometry']['type'] == 'LineString') {
-          lines.add((feature['geometry']['coordinates'] as List)
-              .map((coords) => Point(
-                    coordinates: Position(coords[0], coords[1]),
-                  ))
-              .toList());
-        }
-      }
-
-      pathfindingNodes = [...nodes, ...facilities];
-
-      return {'facilities': facilities, 'lines': lines};
-    } catch (e) {
-      throw Exception('Failed to load map data from local file: $e');
-    }
   }
 
   Future<void> checkLocationPermission() async {
@@ -111,6 +54,7 @@ class _MapPageState extends State<MapPage> {
   Future<void> getUserLocation() async {
     try {
       final userLocation = await location.getLocation();
+      if (!mounted) return;
       setState(() {
         startingPoint = Point(
           coordinates: Position(
@@ -164,13 +108,6 @@ class _MapPageState extends State<MapPage> {
   Future<void> initializeManagers(MapboxMap mapboxMap) async {
     _mapboxMap = mapboxMap;
 
-    // Set a default style for the map
-    // await _mapboxMap.loadStyleURI(MapboxStyles.DARK);
-
-    // await _mapboxMap.style.setStyleImportConfigProperty(
-    // "basemap", "showPointOfInterestLabels", false);
-
-    // Initialize annotation managers
     _pointAnnotationManager =
         await _mapboxMap.annotations.createPointAnnotationManager();
     _polylineAnnotationManager =
@@ -181,27 +118,12 @@ class _MapPageState extends State<MapPage> {
         showMarkerPopup: showMarkerPopup,
       ),
     );
-
-    // var bounds = CoordinateBounds(
-    //     southwest:
-    //         Point(coordinates: Position(121.00814034481606, 14.59722716810296)),
-    //     northeast: Point(
-    //         coordinates: Position(121.01320393779709, 14.598189545981164)),
-    // infiniteBounds: false);
-
-    // // Set bounds
-    // _mapboxMap.setBounds(
-    //     CameraBoundsOptions(bounds: bounds, maxZoom: 10, minZoom: 6));
   }
 
   Future<void> addMarkers(List<Point> facilities, {Point? userLocation}) async {
     // Load the image from assets
     final ByteData bytes = await rootBundle.load('assets/icons/pin.png');
     final Uint8List imageData = bytes.buffer.asUint8List();
-
-    final ByteData userBytes =
-        await rootBundle.load('assets/icons/user-pin.png');
-    final Uint8List userImageData = userBytes.buffer.asUint8List();
 
     for (var facility in facilities) {
       final PointAnnotationOptions markerOptions = PointAnnotationOptions(
@@ -210,16 +132,6 @@ class _MapPageState extends State<MapPage> {
         iconSize: 0.2,
       );
       _pointAnnotationManager.create(markerOptions);
-    }
-
-    // Add only one user location marker
-    if (userLocation != null) {
-      final PointAnnotationOptions userMarkerOptions = PointAnnotationOptions(
-        geometry: userLocation,
-        image: userImageData,
-        iconSize: 0.03,
-      );
-      _pointAnnotationManager.create(userMarkerOptions);
     }
   }
 
@@ -311,65 +223,65 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
-    final styleUri = dotenv.env['STYLE_URI']!;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           // Map as the bottom layer
-          FutureBuilder<Map<String, dynamic>>(
-            future: _mapDataFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return const Center(child: Text('Error loading map data'));
-              }
+          MapWidget(
+            cameraOptions: CameraOptions(
+              center: startingPoint ??
+                  Point(
+                    coordinates:
+                        Position(121.01067214130658, 14.597708356992062),
+                  ),
+              zoom: 18.0,
+              pitch: 45,
+            ),
+            onMapCreated: (mapboxMap) async {
+              final facilities =
+                  (widget.mapData['facilities'] as List).cast<Point>();
+              final lines =
+                  (widget.mapData['lines'] as List).cast<List<Point>>();
 
-              final facilities = snapshot.data!['facilities'] as List<Point>;
-              final lines = snapshot.data!['lines'] as List<List<Point>>;
+              mapboxMap.scaleBar
+                  .updateSettings(ScaleBarSettings(enabled: false));
+              mapboxMap.compass.updateSettings(CompassSettings(enabled: false));
 
-              return MapWidget(
-                cameraOptions: CameraOptions(
-                  center: startingPoint ??
-                      Point(
-                          coordinates:
-                              Position(121.01067214130658, 14.597708356992062)),
-                  zoom: 18.0,
-                  pitch: 45,
+              // Enable the location component
+              await mapboxMap.location.updateSettings(
+                LocationComponentSettings(
+                  enabled: true,
+                  pulsingEnabled: true,
+                  puckBearingEnabled: true,
+                  showAccuracyRing: true,
                 ),
-                // styleUri: styleUri,
-                onMapCreated: (mapboxMap) async {
-                  mapboxMap.scaleBar
-                      .updateSettings(ScaleBarSettings(enabled: false));
-                  mapboxMap.compass
-                      .updateSettings(CompassSettings(enabled: false));
-
-                  // Enable the location component
-                  await mapboxMap.location.updateSettings(
-                    LocationComponentSettings(
-                      enabled: true,
-                      pulsingEnabled: true,
-                      puckBearingEnabled: true,
-                      showAccuracyRing: true,
-                    ),
-                  );
-
-                  await initializeManagers(mapboxMap);
-
-                  // Initialize managers and markers
-                  WidgetsBinding.instance.addPostFrameCallback((_) async {
-                    if (facilities.isNotEmpty) {
-                      addMarkers(facilities, userLocation: startingPoint);
-                    }
-                    for (var line in lines) {
-                      addPolyline(line);
-                    }
-                  });
-                },
               );
+
+              await initializeManagers(mapboxMap);
+
+              // Initialize managers and markers
+              bool markersAdded = false;
+              bool linesAdded = false;
+
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                if (!markersAdded && facilities.isNotEmpty) {
+                  await addMarkers(facilities, userLocation: startingPoint);
+                  markersAdded = true;
+                }
+                if (!linesAdded && lines.isNotEmpty) {
+                  for (var line in lines) {
+                    addPolyline(line);
+                  }
+                  linesAdded = true;
+                }
+              });
             },
           ),
+          // Permission check and loading overlay
+          if (!isLocationPermissionGranted || startingPoint == null)
+            const Center(child: CircularProgressIndicator()),
+
           // Search bar as the top layer
           SafeArea(
             child: Padding(
