@@ -8,7 +8,8 @@ import '../utils/set_color.dart';
 import '../utils/colors.dart';
 
 class Navbar extends StatefulWidget {
-  const Navbar({super.key});
+  final Map<String, dynamic> mapData;
+  const Navbar({super.key, required this.mapData});
 
   @override
   State<Navbar> createState() => _NavbarState();
@@ -19,11 +20,16 @@ class _NavbarState extends State<Navbar> {
   int _selectedIndex = 0;
 
   // List of pages to display based on selected index
-  final List<Widget> _pages = [
-    const MapPage(),
-    const SavedPage(),
-    const FacilitiesPage(),
-  ];
+  final List<Widget> _pages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the pages with mapData passed as a parameter
+    _pages.add(MapPage(mapData: widget.mapData));
+    _pages.add(const SavedPage());
+    _pages.add(const FacilitiesPage());
+  }
 
   @override
   Widget build(BuildContext context) {
