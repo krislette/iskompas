@@ -1,16 +1,16 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart';
+import 'package:location/location.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:iskompas/utils/colors.dart';
 import 'package:iskompas/utils/pathfinder.dart';
 import 'package:iskompas/utils/annotation_listener.dart';
 import 'package:iskompas/widgets/search_bar.dart';
 
 class MapPage extends StatefulWidget {
-  const MapPage({super.key});
+  final Map<String, dynamic> mapData;
+  const MapPage({super.key, required this.mapData});
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -20,12 +20,11 @@ class _MapPageState extends State<MapPage> {
   late MapboxMap _mapboxMap;
   late PointAnnotationManager _pointAnnotationManager;
   late PolylineAnnotationManager _polylineAnnotationManager;
-  late Future<Map<String, dynamic>> _mapDataFuture;
 
-  final datasetLink = dotenv.env['DATASET_LINK']!;
-  final startingPoint = Point(
-      coordinates: Position(
-          121.01150194357385, 14.598833219335527)); // Longitude, Latitude
+  // final datasetLink = dotenv.env['DATASET_LINK']!;
+  final Location location = Location();
+  Point? startingPoint;
+  bool isLocationPermissionGranted = false;
   List<Point> currentRoute = []; // Route for navigation
   List<Point> pathfindingNodes = []; // Nodes for pathfinding
 
@@ -33,74 +32,82 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
 
-    // Ensure the access token is not null
-    final accessToken = dotenv.env['ACCESS_TOKEN'];
-    if (accessToken == null) {
-      throw Exception('ACCESS_TOKEN is missing from the environment variables');
-    }
+    // Set pathfindingNodes from widget.mapData
+    final nodes = (widget.mapData['nodes'] as List).cast<Point>();
+    final facilities = (widget.mapData['facilities'] as List).cast<Point>();
+    pathfindingNodes = [...nodes, ...facilities];
 
-    // Set the Mapbox access token globally
-    MapboxOptions.setAccessToken(accessToken);
-
-    // Initialize the map data future
-    _mapDataFuture = fetchMapData();
+    checkLocationPermission();
   }
 
-  Future<Map<String, dynamic>> fetchMapData() async {
-    final response = await http.get(Uri.parse(datasetLink));
+  Future<void> checkLocationPermission() async {
+    final permissionStatus = await Permission.locationWhenInUse.request();
+    setState(() {
+      isLocationPermissionGranted = permissionStatus.isGranted;
+    });
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+    if (isLocationPermissionGranted) {
+      await getUserLocation();
+    }
+  }
 
-      List<Point> facilities = [];
-      List<Point> nodes = [];
-      List<List<Point>> lines = [];
+  Future<void> getUserLocation() async {
+    try {
+      final userLocation = await location.getLocation();
+      if (!mounted) return;
+      setState(() {
+        startingPoint = Point(
+          coordinates: Position(
+            userLocation.longitude!,
+            userLocation.latitude!,
+          ),
+        );
+      });
+    } catch (e) {
+      print('Error getting location: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to get your location')),
+      );
+    }
+  }
 
-      for (var feature in data['features']) {
-        if (feature['geometry']['type'] == 'Point') {
-          final type = feature['properties']['type'];
-          if (type == 'facility') {
-            facilities.add(Point(
-              coordinates: Position(
-                feature['geometry']['coordinates'][0],
-                feature['geometry']['coordinates'][1],
+  Future<void> requestLocationAndNavigate(Point destination) async {
+    if (startingPoint == null) {
+      // Show dialog asking for location permission
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Location Required'),
+            content: const Text(
+                'Navigation requires access to your location. Would you like to enable location services?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
               ),
-            ));
-          } else if (type == 'node') {
-            nodes.add(Point(
-              coordinates: Position(
-                feature['geometry']['coordinates'][0],
-                feature['geometry']['coordinates'][1],
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await checkLocationPermission();
+                  if (startingPoint != null) {
+                    calculateRoute(startingPoint!, destination);
+                  }
+                },
+                child: const Text('Enable Location'),
               ),
-            ));
-          }
-        } else if (feature['geometry']['type'] == 'LineString') {
-          lines.add((feature['geometry']['coordinates'] as List)
-              .map((coords) => Point(
-                    coordinates: Position(coords[0], coords[1]),
-                  ))
-              .toList());
-        }
-      }
-
-      pathfindingNodes = [...nodes, ...facilities];
-
-      return {'facilities': facilities, 'lines': lines};
+            ],
+          );
+        },
+      );
     } else {
-      throw Exception('Failed to load map data');
+      calculateRoute(startingPoint!, destination);
     }
   }
 
   Future<void> initializeManagers(MapboxMap mapboxMap) async {
     _mapboxMap = mapboxMap;
 
-    // Set a default style for the map
-    // await _mapboxMap.loadStyleURI(MapboxStyles.DARK);
-
-    // await _mapboxMap.style.setStyleImportConfigProperty(
-    // "basemap", "showPointOfInterestLabels", false);
-
-    // Initialize annotation managers
     _pointAnnotationManager =
         await _mapboxMap.annotations.createPointAnnotationManager();
     _polylineAnnotationManager =
@@ -111,27 +118,12 @@ class _MapPageState extends State<MapPage> {
         showMarkerPopup: showMarkerPopup,
       ),
     );
-
-    // var bounds = CoordinateBounds(
-    //     southwest:
-    //         Point(coordinates: Position(121.00814034481606, 14.59722716810296)),
-    //     northeast: Point(
-    //         coordinates: Position(121.01320393779709, 14.598189545981164)),
-    // infiniteBounds: false);
-
-    // // Set bounds
-    // _mapboxMap.setBounds(
-    //     CameraBoundsOptions(bounds: bounds, maxZoom: 10, minZoom: 6));
   }
 
   Future<void> addMarkers(List<Point> facilities, {Point? userLocation}) async {
     // Load the image from assets
     final ByteData bytes = await rootBundle.load('assets/icons/pin.png');
     final Uint8List imageData = bytes.buffer.asUint8List();
-
-    final ByteData userBytes =
-        await rootBundle.load('assets/icons/user-pin.png');
-    final Uint8List userImageData = userBytes.buffer.asUint8List();
 
     for (var facility in facilities) {
       final PointAnnotationOptions markerOptions = PointAnnotationOptions(
@@ -140,16 +132,6 @@ class _MapPageState extends State<MapPage> {
         iconSize: 0.2,
       );
       _pointAnnotationManager.create(markerOptions);
-    }
-
-    // Add only one user location marker
-    if (userLocation != null) {
-      final PointAnnotationOptions userMarkerOptions = PointAnnotationOptions(
-        geometry: userLocation,
-        image: userImageData,
-        iconSize: 0.03,
-      );
-      _pointAnnotationManager.create(userMarkerOptions);
     }
   }
 
@@ -176,7 +158,15 @@ class _MapPageState extends State<MapPage> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context); // Close popup
-                  calculateRoute(startingPoint,
+                  // Note: Added guard here
+                  if (startingPoint == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Starting location is not set')),
+                    );
+                    return;
+                  }
+                  calculateRoute(startingPoint!,
                       geometry); // Geometry represents the selected facility
                 },
                 style: ElevatedButton.styleFrom(
@@ -224,65 +214,81 @@ class _MapPageState extends State<MapPage> {
       addPolyline(route);
     } else {
       print("No route found from $from to $to");
+      clearPolylines();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No route found')),
       );
-      clearPolylines();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final styleUri = dotenv.env['STYLE_URI']!;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           // Map as the bottom layer
-          FutureBuilder<Map<String, dynamic>>(
-            future: _mapDataFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return const Center(child: Text('Error loading map data'));
-              }
+          MapWidget(
+            cameraOptions: CameraOptions(
+              center: startingPoint ??
+                  Point(
+                    coordinates:
+                        Position(121.01067214130658, 14.597708356992062),
+                  ),
+              zoom: 18.0,
+              pitch: 45,
+            ),
+            onMapCreated: (mapboxMap) async {
+              final facilities =
+                  (widget.mapData['facilities'] as List).cast<Point>();
+              final lines =
+                  (widget.mapData['lines'] as List).cast<List<Point>>();
 
-              final facilities = snapshot.data!['facilities'] as List<Point>;
-              final lines = snapshot.data!['lines'] as List<List<Point>>;
+              mapboxMap.scaleBar
+                  .updateSettings(ScaleBarSettings(enabled: false));
+              mapboxMap.compass.updateSettings(CompassSettings(enabled: false));
 
-              return MapWidget(
-                cameraOptions: CameraOptions(
-                  center: Point(coordinates: startingPoint.coordinates),
-                  zoom: 18.0,
-                  pitch: 45,
+              // Enable the location component
+              await mapboxMap.location.updateSettings(
+                LocationComponentSettings(
+                  enabled: true,
+                  pulsingEnabled: true,
+                  puckBearingEnabled: true,
+                  showAccuracyRing: true,
                 ),
-                // styleUri: styleUri,
-                onMapCreated: (mapboxMap) async {
-                  mapboxMap.scaleBar
-                      .updateSettings(ScaleBarSettings(enabled: false));
-                  mapboxMap.compass
-                      .updateSettings(CompassSettings(enabled: false));
-                  WidgetsBinding.instance.addPostFrameCallback((_) async {
-                    await initializeManagers(mapboxMap);
-                    if (facilities.isNotEmpty) {
-                      addMarkers(facilities, userLocation: startingPoint);
-                    }
-                    for (var line in lines) {
-                      addPolyline(line);
-                    }
-                  });
-                },
               );
+
+              await initializeManagers(mapboxMap);
+
+              // Initialize managers and markers
+              bool markersAdded = false;
+              bool linesAdded = false;
+
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                if (!markersAdded && facilities.isNotEmpty) {
+                  await addMarkers(facilities, userLocation: startingPoint);
+                  markersAdded = true;
+                }
+                if (!linesAdded && lines.isNotEmpty) {
+                  for (var line in lines) {
+                    addPolyline(line);
+                  }
+                  linesAdded = true;
+                }
+              });
             },
           ),
+          // Permission check and loading overlay
+          if (!isLocationPermissionGranted || startingPoint == null)
+            const Center(child: CircularProgressIndicator()),
+
           // Search bar as the top layer
           SafeArea(
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 11.0, horizontal: 16.0),
+              padding: const EdgeInsets.symmetric(vertical: 11.0, horizontal: 16.0),
               child: CustomSearchBar(
                 hintText: 'Search location...',
+                isDarkMode: false, 
                 onChanged: (value) {
                   print('Searching for: $value');
                 },
