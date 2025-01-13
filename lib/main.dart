@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'widgets/navbar.dart';
+import 'pages/splash_screen.dart';
 import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:iskompas/utils/geojson_parser.dart';
@@ -47,7 +48,7 @@ class Iskompas extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Navbar(mapData: mapData),
+      home: SplashScreen(mapData: mapData),
     );
   }
 }

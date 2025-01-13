@@ -285,10 +285,10 @@ class _MapPageState extends State<MapPage> {
           // Search bar as the top layer
           SafeArea(
             child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 11.0, horizontal: 16.0),
+              padding: const EdgeInsets.symmetric(vertical: 11.0, horizontal: 16.0),
               child: CustomSearchBar(
                 hintText: 'Search location...',
+                isDarkMode: false, 
                 onChanged: (value) {
                   print('Searching for: $value');
                 },
