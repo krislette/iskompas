@@ -5,25 +5,44 @@ class CustomSearchBar extends StatelessWidget {
   final String hintText;
   final ValueChanged<String>? onChanged;
   final TextEditingController? controller;
+  final bool isDarkMode; // Add a theme toggle
 
   const CustomSearchBar({
     super.key,
     this.hintText = 'Search...',
     this.onChanged,
     this.controller,
+    this.isDarkMode = true, 
   });
 
   @override
   Widget build(BuildContext context) {
+    final backgroundColor = isDarkMode
+        ? const Color.fromARGB(255, 30, 30, 30)
+        : Colors.white;
+    final textColor = isDarkMode
+        ? Iskolors.colorWhite
+        : Colors.black;
+    final hintColor = isDarkMode
+        ? Iskolors.colorLightGrey
+        : Colors.grey;
+    final borderColor = isDarkMode
+        ? Iskolors.colorGreyShade
+        : Colors.black12;
+
+    final shadowColor = isDarkMode
+        ? Iskolors.colorShadow
+        : Colors.black.withOpacity(0.1); 
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 30, 30, 30),
-        border: Border.all(color: Iskolors.colorGreyShade),
+        color: backgroundColor,
+        border: Border.all(color: borderColor),
         borderRadius: BorderRadius.circular(24),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Iskolors.colorShadow,
+            color: shadowColor,
             spreadRadius: 1,
             blurRadius: 3,
           ),
@@ -31,13 +50,13 @@ class CustomSearchBar extends StatelessWidget {
       ),
       child: TextField(
         controller: controller,
-        style: const TextStyle(color: Iskolors.colorWhite),
-        cursorColor: Iskolors.colorWhite,
+        style: TextStyle(color: textColor),
+        cursorColor: textColor,
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(color: Iskolors.colorLightGrey),
+          hintStyle: TextStyle(color: hintColor),
           border: InputBorder.none,
-          icon: const Icon(Icons.search, color: Iskolors.colorLightGrey),
+          icon: Icon(Icons.search, color: hintColor),
         ),
         onChanged: onChanged,
       ),
