@@ -15,7 +15,7 @@
     "name": "Campus Development and Maintenance Building",
     "description": "A building where campus development initiatives and maintenance services are planned and organized",
     "location": "Behind East Wing, near Nutrition and Food Science Building",
-    "image": "assets/facilities/amphitheater.png"
+    "image": "assets/facilities/famo.jpg"
   },
   {
     "name": "Charlie Del Rosario Hall",
@@ -57,7 +57,7 @@
     "name": "Guard House",
     "description": "A security post where the security guards are stationed to monitor the entrance and exit of the campus",
     "location": "West part of the main gate",
-    "image": "assets/facilities/grandstand.png"
+    "image": "assets/facilities/guard-house.jpg"
   },
   {
     "name": "Gymnasium and Sports Center",
@@ -111,13 +111,13 @@
     "name": "Non-Food Stalls Building",
     "description": "An area where students can buy school supplies, photocopying services, and other services",
     "location": "Beside NALLRC and near the end of Lagoon",
-    "image": "assets/facilities/flagpole.jpg"
+    "image": "assets/facilities/non-food-stalls-bldg.jpg"
   },
   {
     "name": "North Parking Area",
     "description": "A parking area for students, faculty, staff, and visitors",
     "location": "Near Physical Education Building and Lagoon",
-    "image": "assets/facilities/flagpole.jpg"
+    "image": "assets/facilities/north-parking-area.jpg"
   },
   {
     "name": "North Wing",
@@ -147,12 +147,6 @@
     "name": "Printing Press Building",
     "description": "A building for university printing services",
     "location": "Near Property and Supply Building, behind Laboratory High School",
-    "image": "assets/facilities/flagpole.jpg"
-  },
-  {
-    "name": "Property and Supply Building",
-    "description": "A building for university property and supply services",
-    "location": "Near Printing Press Building, behind Laboratory High School",
     "image": "assets/facilities/flagpole.jpg"
   },
   {
