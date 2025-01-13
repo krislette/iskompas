@@ -150,12 +150,6 @@
     "image": "assets/facilities/flagpole.jpg"
   },
   {
-    "name": "Property and Supply Building",
-    "description": "A building for university property and supply services",
-    "location": "Near Printing Press Building, behind Laboratory High School",
-    "image": "assets/facilities/flagpole.jpg"
-  },
-  {
     "name": "PUP Sta Mesa Ferry Station",
     "description": "A ferry station where people can ride a ferry boat to cross the Pasig River",
     "location": "Behind South Wing and beside Pasig River",
