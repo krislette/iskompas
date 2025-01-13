@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'widgets/navbar.dart';
+import 'pages/splash_screen.dart';
 
 void main() async {
   await dotenv.load(fileName: '.env');
@@ -14,7 +15,7 @@ class Iskompas extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Navbar(),
+      home: SplashScreen(), 
     );
   }
 }
