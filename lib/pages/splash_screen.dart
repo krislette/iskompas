@@ -4,20 +4,21 @@ import 'package:iskompas/widgets/navbar.dart';
 
 class SplashScreen extends StatefulWidget {
   final Map<String, dynamic> mapData;
-  const SplashScreen({Key? key, required this.mapData}) : super(key: key);
+  const SplashScreen({super.key, required this.mapData});
 
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  SplashScreenState createState() => SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
     Timer(const Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Navbar(mapData: widget.mapData)), 
+        MaterialPageRoute(
+            builder: (context) => Navbar(mapData: widget.mapData)),
       );
     });
   }
