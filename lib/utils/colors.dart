@@ -12,4 +12,7 @@ class Iskolors {
   static const Color colorDarkShade = Color.fromARGB(255, 30, 30, 30);
   static const Color colorLightGrey = Color.fromARGB(255, 197, 197, 197);
   static const Color colorShadow = Color(0x80000000);
+  static const Color colorLightShadow = Color(0x1A000000);
+  static const Color colorLightBlack = Color(0x1F000000);
+  static const Color colorPureWhite = Color(0xFFFFFFFF);
 }
