@@ -7,6 +7,8 @@ import 'package:iskompas/utils/colors.dart';
 import 'package:iskompas/utils/pathfinder.dart';
 import 'package:iskompas/utils/annotation_listener.dart';
 import 'package:iskompas/widgets/search_bar.dart';
+import 'package:iskompas/utils/feature_model.dart';
+import 'package:iskompas/widgets/category_filter.dart';
 
 class MapPage extends StatefulWidget {
   final Map<String, dynamic> mapData;
@@ -28,14 +30,46 @@ class _MapPageState extends State<MapPage> {
   List<Point> currentRoute = []; // Route for navigation
   List<Point> pathfindingNodes = []; // Nodes for pathfinding
 
+  // Pin categories
+  String? selectedCategory;
+  Map<String, List<GeoFeature>> categorizedFeatures = {};
+  List<GeoFeature> allFeatures = [];
+
   @override
   void initState() {
     super.initState();
 
-    // Set pathfindingNodes from widget.mapData
-    final nodes = (widget.mapData['nodes'] as List).cast<Point>();
-    final facilities = (widget.mapData['facilities'] as List).cast<Point>();
-    pathfindingNodes = [...nodes, ...facilities];
+    try {
+      // Retrieve facilities and nodes
+      final facilities =
+          (widget.mapData['facilities'] as List<Point>).map((point) {
+        return GeoFeature(
+          id: '', // Update this later! (If an ID is required in the future)
+          properties: {}, // Give default or empty properties
+          geometry: point,
+        );
+      }).toList();
+
+      final nodes = (widget.mapData['nodes'] as List<Point>).map((point) {
+        return GeoFeature(
+          id: '',
+          properties: {},
+          geometry: point,
+        );
+      }).toList();
+
+      // Combine nodes and facilities into pathfindingNodes
+      pathfindingNodes =
+          [...facilities, ...nodes].map((feature) => feature.geometry).toList();
+
+      // Categorize features
+      categorizedFeatures = {
+        'facility': facilities,
+        'node': nodes,
+      };
+    } catch (e) {
+      throw ('Error in processing mapData: $e');
+    }
 
     checkLocationPermission();
   }
@@ -54,7 +88,6 @@ class _MapPageState extends State<MapPage> {
   Future<void> getUserLocation() async {
     try {
       final userLocation = await location.getLocation();
-      if (!mounted) return;
       setState(() {
         startingPoint = Point(
           coordinates: Position(
@@ -64,44 +97,10 @@ class _MapPageState extends State<MapPage> {
         );
       });
     } catch (e) {
-      print('Error getting location: $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Unable to get your location')),
       );
-    }
-  }
-
-  Future<void> requestLocationAndNavigate(Point destination) async {
-    if (startingPoint == null) {
-      // Show dialog asking for location permission
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Location Required'),
-            content: const Text(
-                'Navigation requires access to your location. Would you like to enable location services?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () async {
-                  Navigator.pop(context);
-                  await checkLocationPermission();
-                  if (startingPoint != null) {
-                    calculateRoute(startingPoint!, destination);
-                  }
-                },
-                child: const Text('Enable Location'),
-              ),
-            ],
-          );
-        },
-      );
-    } else {
-      calculateRoute(startingPoint!, destination);
     }
   }
 
@@ -120,18 +119,26 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  Future<void> addMarkers(List<Point> facilities, {Point? userLocation}) async {
-    // Load the image from assets
+  Future<void> addMarkersFromFeatures(List<GeoFeature> features) async {
     final ByteData bytes = await rootBundle.load('assets/icons/pin.png');
     final Uint8List imageData = bytes.buffer.asUint8List();
 
-    for (var facility in facilities) {
-      final PointAnnotationOptions markerOptions = PointAnnotationOptions(
-        geometry: facility,
-        image: imageData,
-        iconSize: 0.2,
-      );
-      _pointAnnotationManager.create(markerOptions);
+    final markerOptionsList = features.map((feature) {
+      return PointAnnotationOptions(
+          geometry: feature.geometry, image: imageData, iconSize: 0.2);
+    }).toList();
+
+    await _pointAnnotationManager.createMulti(markerOptionsList);
+  }
+
+  void updateMarkers(String? category) {
+    _pointAnnotationManager.deleteAll();
+    setState(() {
+      selectedCategory = category;
+    });
+
+    if (category != null && categorizedFeatures.containsKey(category)) {
+      addMarkersFromFeatures(categorizedFeatures[category]!);
     }
   }
 
@@ -156,18 +163,31 @@ class _MapPageState extends State<MapPage> {
               ),
               const SizedBox(height: 16),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // Close popup
-                  // Note: Added guard here
+                onPressed: () async {
+                  Navigator.pop(context); // Close the popup
+
+                  // Check if starting point is null (no location set)
                   if (startingPoint == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Starting location is not set')),
-                    );
-                    return;
+                    // Ask for location permission again
+                    await checkLocationPermission();
+
+                    // If permission granted, get user location
+                    if (startingPoint != null) {
+                      calculateRoute(
+                          startingPoint!, geometry); // Proceed with routing
+                    } else {
+                      // Show a snackbar or alert if no location is still available
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Unable to get your location')),
+                        );
+                      });
+                    }
+                  } else {
+                    // Proceed with routing if location is already available
+                    calculateRoute(startingPoint!, geometry);
                   }
-                  calculateRoute(startingPoint!,
-                      geometry); // Geometry represents the selected facility
                 },
                 style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
@@ -239,11 +259,6 @@ class _MapPageState extends State<MapPage> {
               pitch: 45,
             ),
             onMapCreated: (mapboxMap) async {
-              final facilities =
-                  (widget.mapData['facilities'] as List).cast<Point>();
-              final lines =
-                  (widget.mapData['lines'] as List).cast<List<Point>>();
-
               mapboxMap.scaleBar
                   .updateSettings(ScaleBarSettings(enabled: false));
               mapboxMap.compass.updateSettings(CompassSettings(enabled: false));
@@ -259,40 +274,63 @@ class _MapPageState extends State<MapPage> {
               );
 
               await initializeManagers(mapboxMap);
-
-              // Initialize managers and markers
-              bool markersAdded = false;
-              bool linesAdded = false;
-
-              WidgetsBinding.instance.addPostFrameCallback((_) async {
-                if (!markersAdded && facilities.isNotEmpty) {
-                  await addMarkers(facilities, userLocation: startingPoint);
-                  markersAdded = true;
-                }
-                if (!linesAdded && lines.isNotEmpty) {
-                  for (var line in lines) {
-                    addPolyline(line);
-                  }
-                  linesAdded = true;
-                }
-              });
             },
           ),
+
           // Permission check and loading overlay
           if (!isLocationPermissionGranted || startingPoint == null)
             const Center(child: CircularProgressIndicator()),
 
           // Search bar as the top layer
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 11.0, horizontal: 16.0),
-              child: CustomSearchBar(
-                hintText: 'Search location...',
-                isDarkMode: false, 
-                onChanged: (value) {
-                  print('Searching for: $value');
-                },
-              ),
+            child: Column(
+              children: [
+                // Search Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 11.0, horizontal: 16.0),
+                  child: CustomSearchBar(
+                    hintText: 'Search location...',
+                    isDarkMode: false,
+                    onChanged: (value) {
+                      print('Searching for: $value');
+                    },
+                  ),
+                ),
+
+                // Category filters
+                SizedBox(
+                  height: 40,
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      CategoryFilter(
+                          icon: Icons.image,
+                          label: 'Facilities',
+                          isSelected: selectedCategory == 'facility',
+                          onTap: () {
+                            clearPolylines();
+                            updateMarkers(selectedCategory == 'facility'
+                                ? null
+                                : 'facility');
+                          }),
+                      CategoryFilter(
+                        icon: Icons.bathroom,
+                        label: 'Bathrooms',
+                        isSelected: selectedCategory == 'bathroom',
+                        onTap: () {
+                          clearPolylines();
+                          updateMarkers(selectedCategory == 'bathroom'
+                              ? null
+                              : 'bathroom');
+                        },
+                      ),
+                      // To be added: Stalls, Labs, etc.
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
