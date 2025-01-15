@@ -277,10 +277,6 @@ class _MapPageState extends State<MapPage> {
             },
           ),
 
-          // Permission check and loading overlay
-          if (!isLocationPermissionGranted || startingPoint == null)
-            const Center(child: CircularProgressIndicator()),
-
           // Search bar as the top layer
           SafeArea(
             child: Column(
