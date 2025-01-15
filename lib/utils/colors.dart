@@ -15,4 +15,5 @@ class Iskolors {
   static const Color colorLightShadow = Color(0x1A000000);
   static const Color colorLightBlack = Color(0x1F000000);
   static const Color colorPureWhite = Color(0xFFFFFFFF);
+  static const Color colorPurple = Color(0xFFCE93D8);
 }

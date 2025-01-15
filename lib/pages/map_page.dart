@@ -142,66 +142,136 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  void showMarkerPopup(Point geometry, String description) {
+  void showMarkerPopup(Point geometry, String title, String description) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (BuildContext context) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                description,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.pop(context); // Close the popup
-
-                  // Check if starting point is null (no location set)
-                  if (startingPoint == null) {
-                    // Ask for location permission again
-                    await checkLocationPermission();
-
-                    // If permission granted, get user location
-                    if (startingPoint != null) {
-                      calculateRoute(
-                          startingPoint!, geometry); // Proceed with routing
-                    } else {
-                      // Show a snackbar or alert if no location is still available
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Unable to get your location')),
-                        );
-                      });
-                    }
-                  } else {
-                    // Proceed with routing if location is already available
-                    calculateRoute(startingPoint!, geometry);
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25), // Capsule shape
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Main content
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
+              child: SizedBox(
+                height: 150,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Title
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    backgroundColor: Iskolors.colorMaroon,
-                    foregroundColor: Iskolors.colorWhite),
-                child: const Text(
-                  "Navigate",
-                  style: TextStyle(fontSize: 16),
+                    const SizedBox(height: 8),
+                    // Description
+                    Text(
+                      description,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Iskolors.colorDarkShade,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    const Spacer(),
+                    // Buttons row
+                    Row(
+                      children: [
+                        // Save button
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: const BoxDecoration(
+                            color: Iskolors.colorDarkShade,
+                            shape: BoxShape.circle,
+                          ),
+                          child: IconButton(
+                            onPressed: () {
+                              // Add save functionality LATER!!!
+                            },
+                            icon: const Icon(Icons.bookmark),
+                            color: Iskolors.colorYellow,
+                            iconSize: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // Navigate button
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              Navigator.pop(context);
+                              if (startingPoint == null) {
+                                await checkLocationPermission();
+                                if (startingPoint != null) {
+                                  calculateRoute(startingPoint!, geometry);
+                                } else {
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content:
+                                            Text('Unable to get your location'),
+                                      ),
+                                    );
+                                  });
+                                }
+                              } else {
+                                calculateRoute(startingPoint!, geometry);
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              backgroundColor: Iskolors.colorMaroon,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            child: const Text(
+                              "Navigate",
+                              style: TextStyle(
+                                color: Iskolors.colorPureWhite,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+            // Location icon at the top
+            Positioned(
+              top: -30,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: const BoxDecoration(
+                    color: Iskolors.colorPurple,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.pin_drop,
+                    color: Iskolors.colorPureWhite,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
