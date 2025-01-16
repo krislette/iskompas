@@ -83,7 +83,7 @@ class _SavedPageState extends State<SavedPage> {
                               child: Image.asset(
                                 facility.imagePath,
                                 width: MediaQuery.of(context).size.width,
-                                height: 450, 
+                                height: 400, 
                                 fit: BoxFit.cover,
                               ),
                             ),
