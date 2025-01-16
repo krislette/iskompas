@@ -17,5 +17,6 @@ class Iskolors {
   static const Color colorPureWhite = Color(0xFFFFFFFF);
   static const Color colorPurple = Color(0xFFCE93D8);
   static const Color colorDirtyWhite = Color(0xB3FFFFFF);
+  static const Color colorDirtierWhite = Color.fromARGB(179, 191, 189, 189);
   static const Color colorDarkerMaroon = Color(0x77581818);
 }

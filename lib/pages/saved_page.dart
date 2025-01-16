@@ -13,8 +13,6 @@ class SavedPage extends StatefulWidget {
 
 class _SavedPageState extends State<SavedPage> {
   List<Facility> facilities = [];
-
-  // State variable to control the button color
   Color unsaveButtonColor = Iskolors.colorMaroon;
   Color showLocationButtonColor = Iskolors.colorMaroon;
 
@@ -26,19 +24,27 @@ class _SavedPageState extends State<SavedPage> {
 
   Future<void> loadFacilities() async {
     try {
-      final String jsonString = await rootBundle.loadString('assets/data/facilities.json');
+      final String jsonString =
+          await rootBundle.loadString('assets/data/facilities.json');
       final List<dynamic> jsonData = json.decode(jsonString);
       setState(() {
         facilities = jsonData.map((json) => Facility.fromJson(json)).toList();
       });
     } catch (e) {
-      throw('Error loading facilities: $e');
+      throw ('Error loading facilities: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final double searchBarHeight = 80.0;
+    final double bottomPadding = MediaQuery.of(context).padding.bottom;
+    final double availableHeight =
+        screenHeight - searchBarHeight - bottomPadding;
+
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Iskolors.colorBlack,
       body: SafeArea(
         child: Column(
@@ -55,14 +61,13 @@ class _SavedPageState extends State<SavedPage> {
                 },
               ),
             ),
-            const SizedBox(height: 20),
             Expanded(
               child: CarouselSlider(
                 options: CarouselOptions(
-                  height: double.infinity, 
+                  height: availableHeight -
+                      50, // Reduced height to account for padding
                   enlargeCenterPage: true,
                   autoPlay: false,
-                  aspectRatio: 16 / 9,
                   enableInfiniteScroll: true,
                   viewportFraction: 0.8,
                 ),
@@ -72,117 +77,149 @@ class _SavedPageState extends State<SavedPage> {
                       return Container(
                         width: MediaQuery.of(context).size.width,
                         margin: const EdgeInsets.symmetric(horizontal: 5.0),
-                        decoration: BoxDecoration(
+                        child: Card(
                           color: Iskolors.colorBlack,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.asset(
-                                facility.imagePath,
-                                width: MediaQuery.of(context).size.width,
-                                height: 400, 
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              return Column(
                                 children: [
-                                  Text(
-                                    facility.name,
-                                    style: const TextStyle(
-                                      color: Iskolors.colorWhite,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
+                                  ClipRRect(
+                                    borderRadius: const BorderRadius.vertical(
+                                      top: Radius.circular(10),
                                     ),
-                                    textAlign: TextAlign.center,
+                                    child: Image.asset(
+                                      facility.imagePath,
+                                      width: double.infinity,
+                                      height: 380,
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                      facility.location,
-                                      style: const TextStyle(
-                                        color: Iskolors.colorDirtyWhite,
-                                        fontSize: 18,
-                                        fontStyle: FontStyle.italic,
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            facility.name,
+                                            style: const TextStyle(
+                                              color: Iskolors.colorWhite,
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            facility.location,
+                                            style: const TextStyle(
+                                              color: Iskolors.colorDirtierWhite,
+                                              fontSize: 15,
+                                              fontStyle: FontStyle.italic,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Expanded(
+                                            child: SingleChildScrollView(
+                                              child: Text(
+                                                facility.description,
+                                                style: const TextStyle(
+                                                  color:
+                                                      Iskolors.colorDirtyWhite,
+                                                  fontSize: 15,
+                                                ),
+                                                textAlign: TextAlign.justify,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      textAlign: TextAlign.center,
                                     ),
-                                  Text(
-                                    facility.description,
-                                    style: const TextStyle(
-                                      color: Iskolors.colorDirtyWhite,
-                                      fontSize: 15,
-                                    ),
-                                    textAlign: TextAlign.justify,
-                                    maxLines: 3,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Expanded(
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 16.0,
+                                        right: 16.0,
+                                        top: 3.0,
+                                        bottom: 57.0),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
                                           child: ElevatedButton(
                                             onPressed: () {
                                               setState(() {
-                                                unsaveButtonColor = unsaveButtonColor == Iskolors.colorMaroon
-                                                    ? Iskolors.colorDarkerMaroon
-                                                    : Iskolors.colorMaroon;
+                                                unsaveButtonColor =
+                                                    unsaveButtonColor ==
+                                                            Iskolors.colorMaroon
+                                                        ? Iskolors
+                                                            .colorDarkerMaroon
+                                                        : Iskolors.colorMaroon;
                                               });
-                                              // Add unsave functionality here
                                             },
                                             style: ElevatedButton.styleFrom(
-                                              backgroundColor: unsaveButtonColor,
+                                              backgroundColor:
+                                                  unsaveButtonColor,
                                               shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(20),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
                                               ),
-                                              padding: const EdgeInsets.symmetric(vertical: 8),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 12),
                                             ),
                                             child: const Text(
                                               'Unsave Location',
-                                              style: TextStyle(color: Iskolors.colorWhite),
+                                              style: TextStyle(
+                                                color: Iskolors.colorWhite,
+                                                fontSize: 16,
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                      Expanded(
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                                        const SizedBox(width: 8),
+                                        Expanded(
                                           child: ElevatedButton(
                                             onPressed: () {
                                               setState(() {
-                                                showLocationButtonColor = showLocationButtonColor == Iskolors.colorMaroon
-                                                    ? Iskolors.colorDarkerMaroon 
-                                                    : Iskolors.colorMaroon;
+                                                showLocationButtonColor =
+                                                    showLocationButtonColor ==
+                                                            Iskolors.colorMaroon
+                                                        ? Iskolors
+                                                            .colorDarkerMaroon
+                                                        : Iskolors.colorMaroon;
                                               });
-                                              // Add show location functionality here
                                             },
                                             style: ElevatedButton.styleFrom(
-                                              backgroundColor: showLocationButtonColor,
+                                              backgroundColor:
+                                                  showLocationButtonColor,
                                               shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(20),
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
                                               ),
-                                              padding: const EdgeInsets.symmetric(vertical: 8),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 12),
                                             ),
                                             child: const Text(
                                               'Show Location',
-                                              style: TextStyle(color: Iskolors.colorWhite),
+                                              style: TextStyle(
+                                                color: Iskolors.colorWhite,
+                                                fontSize: 16,
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ],
-                              ),
-                            ),
-                          ],
+                              );
+                            },
+                          ),
                         ),
                       );
                     },
@@ -192,7 +229,7 @@ class _SavedPageState extends State<SavedPage> {
             ),
           ],
         ),
-      ),
+      ),  
     );
   }
 }
