@@ -1,13 +1,12 @@
-import 'dart:convert';
 import 'package:flutter/material.dart' hide CarouselController;
-import 'package:flutter/services.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:iskompas/utils/colors.dart';
 import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/models/facility_model.dart';
 
 class SavedPage extends StatefulWidget {
-  const SavedPage({super.key});
+  final List<dynamic> facilities;
+  const SavedPage({super.key, required this.facilities});
   @override
   State<SavedPage> createState() => _SavedPageState();
 }
@@ -23,17 +22,12 @@ class _SavedPageState extends State<SavedPage> {
     loadFacilities();
   }
 
-  Future<void> loadFacilities() async {
-    try {
-      final String jsonString =
-          await rootBundle.loadString('assets/data/facilities.json');
-      final List<dynamic> jsonData = json.decode(jsonString);
-      setState(() {
-        facilities = jsonData.map((json) => Facility.fromJson(json)).toList();
-      });
-    } catch (e) {
-      throw ('Error loading facilities: $e');
-    }
+  void loadFacilities() {
+    setState(() {
+      facilities = widget.facilities
+          .map((facility) => Facility.fromJson(facility))
+          .toList();
+    });
   }
 
   @override
