@@ -2,7 +2,7 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
 class CustomPointAnnotationClickListener
     extends OnPointAnnotationClickListener {
-  final Function(Point, String) showMarkerPopup;
+  final Function(Point, String, String) showMarkerPopup;
 
   CustomPointAnnotationClickListener({
     required this.showMarkerPopup,
@@ -10,8 +10,9 @@ class CustomPointAnnotationClickListener
 
   @override
   void onPointAnnotationClick(PointAnnotation annotation) {
-    // Customize the popup description as needed
+    // Access real parts from mapbox api later
+    String title = 'Location';
     String description = "This is a sample description for ${annotation.id}";
-    showMarkerPopup(annotation.geometry, description);
+    showMarkerPopup(annotation.geometry, title, description);
   }
 }
