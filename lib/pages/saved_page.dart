@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:iskompas/utils/colors.dart';
 import 'package:iskompas/widgets/search_bar.dart';
+import 'package:iskompas/utils/facility_model.dart';
 
 class SavedPage extends StatefulWidget {
   const SavedPage({super.key});
@@ -37,8 +38,8 @@ class _SavedPageState extends State<SavedPage> {
 
   @override
   Widget build(BuildContext context) {
+    const double searchBarHeight = 80.0;
     final double screenHeight = MediaQuery.of(context).size.height;
-    final double searchBarHeight = 80.0;
     final double bottomPadding = MediaQuery.of(context).padding.bottom;
     final double availableHeight =
         screenHeight - searchBarHeight - bottomPadding;
@@ -229,30 +230,7 @@ class _SavedPageState extends State<SavedPage> {
             ),
           ],
         ),
-      ),  
-    );
-  }
-}
-
-class Facility {
-  final String name;
-  final String description;
-  final String location;
-  final String imagePath;
-
-  Facility({
-    required this.name,
-    required this.description,
-    required this.location,
-    required this.imagePath,
-  });
-
-  factory Facility.fromJson(Map<String, dynamic> json) {
-    return Facility(
-      name: json['name'],
-      description: json['description'],
-      location: json['location'],
-      imagePath: json['image'],
+      ),
     );
   }
 }
