@@ -27,7 +27,7 @@ class _NavbarState extends State<Navbar> {
     super.initState();
     // Initialize the pages with mapData passed as a parameter
     _pages.add(MapPage(mapData: widget.mapData));
-    _pages.add(const SavedPage());
+    _pages.add(SavedPage());
     _pages.add(const FacilitiesPage());
   }
 
