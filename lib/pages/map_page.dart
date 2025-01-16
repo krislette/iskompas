@@ -6,7 +6,7 @@ import 'package:iskompas/utils/colors.dart';
 import 'package:iskompas/utils/pathfinder.dart';
 import 'package:iskompas/utils/annotation_listener.dart';
 import 'package:iskompas/widgets/search_bar.dart';
-import 'package:iskompas/utils/feature_model.dart';
+import 'package:iskompas/models/feature_model.dart';
 import 'package:iskompas/widgets/category_filter.dart';
 import 'package:iskompas/utils/location_provider.dart';
 

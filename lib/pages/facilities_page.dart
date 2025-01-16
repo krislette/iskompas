@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:iskompas/utils/cache_manager.dart';
 import 'package:iskompas/utils/colors.dart';
@@ -9,7 +7,8 @@ import 'package:iskompas/pages/facility_details_page.dart';
 import 'package:iskompas/widgets/facility_row_skeleton.dart';
 
 class FacilitiesPage extends StatefulWidget {
-  const FacilitiesPage({super.key});
+  final List<dynamic> facilities;
+  const FacilitiesPage({super.key, required this.facilities});
 
   @override
   FacilitiesPageState createState() => FacilitiesPageState();
@@ -29,7 +28,7 @@ class FacilitiesPageState extends State<FacilitiesPage> {
   @override
   void initState() {
     super.initState();
-    facilities = [];
+    facilities = widget.facilities;
     filteredFacilities = [];
     searchController = TextEditingController();
     _scrollController.addListener(_scrollListener);
@@ -61,15 +60,10 @@ class FacilitiesPageState extends State<FacilitiesPage> {
     });
 
     try {
-      final String response =
-          await rootBundle.loadString('assets/data/facilities.json');
-      final allData = json.decode(response);
-
       setState(() {
-        facilities = allData;
-        filteredFacilities = allData.take(itemsPerPage).toList();
+        filteredFacilities = facilities.take(itemsPerPage).toList();
         currentPage = 1;
-        hasMore = allData.length > itemsPerPage;
+        hasMore = facilities.length > itemsPerPage;
         isLoading = false;
       });
     } catch (e) {
@@ -87,29 +81,16 @@ class FacilitiesPageState extends State<FacilitiesPage> {
     });
 
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
+      final nextPageStart = currentPage * itemsPerPage;
+      final nextPageFacilities =
+          facilities.skip(nextPageStart).take(itemsPerPage).toList();
 
-      final startIndex = currentPage * itemsPerPage;
-      final endIndex = startIndex + itemsPerPage;
-
-      if (startIndex < facilities.length) {
-        final newItems = facilities.sublist(
-          startIndex,
-          endIndex > facilities.length ? facilities.length : endIndex,
-        );
-
-        setState(() {
-          filteredFacilities.addAll(newItems);
-          currentPage++;
-          hasMore = endIndex < facilities.length;
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          hasMore = false;
-          isLoading = false;
-        });
-      }
+      setState(() {
+        filteredFacilities.addAll(nextPageFacilities);
+        currentPage++;
+        hasMore = facilities.length > currentPage * itemsPerPage;
+        isLoading = false;
+      });
     } catch (e) {
       setState(() {
         isLoading = false;
@@ -173,8 +154,9 @@ class FacilitiesPageState extends State<FacilitiesPage> {
                       controller: _scrollController,
                       itemCount: filteredFacilities.length + (hasMore ? 1 : 0),
                       itemBuilder: (context, index) {
+                        // Only show the skeleton if lazy loading is enabled (`hasMore`) and not filtering
                         if (index >= filteredFacilities.length) {
-                          return hasMore
+                          return hasMore && searchController.text.isEmpty
                               ? const Padding(
                                   padding: EdgeInsets.symmetric(vertical: 16.0),
                                   child: Center(

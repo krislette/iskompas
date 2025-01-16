@@ -9,26 +9,26 @@ import '../utils/colors.dart';
 
 class Navbar extends StatefulWidget {
   final Map<String, dynamic> mapData;
-  const Navbar({super.key, required this.mapData});
+  final List<dynamic> facilities;
+  const Navbar({super.key, required this.mapData, required this.facilities});
 
   @override
   State<Navbar> createState() => _NavbarState();
 }
 
 class _NavbarState extends State<Navbar> {
-  // User-selected index
   int _selectedIndex = 0;
 
-  // List of pages to display based on selected index
-  final List<Widget> _pages = [];
+  late final List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
-    // Initialize the pages with mapData passed as a parameter
-    _pages.add(MapPage(mapData: widget.mapData));
-    _pages.add(const SavedPage());
-    _pages.add(const FacilitiesPage());
+    _pages = [
+      MapPage(mapData: widget.mapData),
+      SavedPage(facilities: widget.facilities),
+      FacilitiesPage(facilities: widget.facilities),
+    ];
   }
 
   @override
@@ -41,7 +41,6 @@ class _NavbarState extends State<Navbar> {
         color: Iskolors.colorMaroon,
         animationDuration: const Duration(milliseconds: 200),
         onTap: (index) {
-          // Update the selected index on tap
           setState(() {
             _selectedIndex = index;
           });
@@ -82,7 +81,10 @@ class _NavbarState extends State<Navbar> {
           ),
         ],
       ),
-      body: _pages[_selectedIndex],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
+      ),
     );
   }
 }
