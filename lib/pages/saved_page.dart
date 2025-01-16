@@ -103,6 +103,15 @@ class _SavedPageState extends State<SavedPage> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
+                                      facility.location,
+                                      style: const TextStyle(
+                                        color: Iskolors.colorDirtyWhite,
+                                        fontSize: 18,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  Text(
                                     facility.description,
                                     style: const TextStyle(
                                       color: Iskolors.colorDirtyWhite,
