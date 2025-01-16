@@ -15,8 +15,8 @@ class _SavedPageState extends State<SavedPage> {
   List<Facility> facilities = [];
 
   // State variable to control the button color
-  Color unsaveButtonColor = const Color(0xFF5F1C1C);
-  Color showLocationButtonColor = const Color(0xFF5F1C1C);
+  Color unsaveButtonColor = Iskolors.colorMaroon;
+  Color showLocationButtonColor = Iskolors.colorMaroon;
 
   @override
   void initState() {
@@ -32,7 +32,7 @@ class _SavedPageState extends State<SavedPage> {
         facilities = jsonData.map((json) => Facility.fromJson(json)).toList();
       });
     } catch (e) {
-      print('Error loading facilities: $e');
+      throw('Error loading facilities: $e');
     }
   }
 
@@ -59,7 +59,7 @@ class _SavedPageState extends State<SavedPage> {
             Expanded(
               child: CarouselSlider(
                 options: CarouselOptions(
-                  height: double.infinity, // Ensure it adapts
+                  height: double.infinity, 
                   enlargeCenterPage: true,
                   autoPlay: false,
                   aspectRatio: 16 / 9,
@@ -82,7 +82,7 @@ class _SavedPageState extends State<SavedPage> {
                               borderRadius: BorderRadius.circular(10),
                               child: Image.asset(
                                 facility.imagePath,
-                                width: MediaQuery.of(context).size.width, // Full width
+                                width: MediaQuery.of(context).size.width,
                                 height: 450, 
                                 fit: BoxFit.cover,
                               ),
@@ -95,7 +95,7 @@ class _SavedPageState extends State<SavedPage> {
                                   Text(
                                     facility.name,
                                     style: const TextStyle(
-                                      color: Colors.white,
+                                      color: Iskolors.colorWhite,
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -105,7 +105,7 @@ class _SavedPageState extends State<SavedPage> {
                                   Text(
                                     facility.description,
                                     style: const TextStyle(
-                                      color: Colors.white70,
+                                      color: Iskolors.colorDirtyWhite,
                                       fontSize: 15,
                                     ),
                                     textAlign: TextAlign.justify,
@@ -122,10 +122,9 @@ class _SavedPageState extends State<SavedPage> {
                                           child: ElevatedButton(
                                             onPressed: () {
                                               setState(() {
-                                                // Change the button color when clicked
-                                                unsaveButtonColor = unsaveButtonColor == const Color(0xFF5F1C1C)
-                                                    ? const Color(0x77581818) 
-                                                    : const Color(0xFF5F1C1C);
+                                                unsaveButtonColor = unsaveButtonColor == Iskolors.colorMaroon
+                                                    ? Iskolors.colorDarkerMaroon
+                                                    : Iskolors.colorMaroon;
                                               });
                                               // Add unsave functionality here
                                             },
@@ -138,7 +137,7 @@ class _SavedPageState extends State<SavedPage> {
                                             ),
                                             child: const Text(
                                               'Unsave Location',
-                                              style: TextStyle(color: Colors.white),
+                                              style: TextStyle(color: Iskolors.colorWhite),
                                             ),
                                           ),
                                         ),
@@ -149,10 +148,9 @@ class _SavedPageState extends State<SavedPage> {
                                           child: ElevatedButton(
                                             onPressed: () {
                                               setState(() {
-                                                // Change the button color when clicked
-                                                showLocationButtonColor = showLocationButtonColor == const Color(0xFF5F1C1C)
-                                                    ? const Color(0x77581818) 
-                                                    : const Color(0xFF5F1C1C);
+                                                showLocationButtonColor = showLocationButtonColor == Iskolors.colorMaroon
+                                                    ? Iskolors.colorDarkerMaroon 
+                                                    : Iskolors.colorMaroon;
                                               });
                                               // Add show location functionality here
                                             },
@@ -165,7 +163,7 @@ class _SavedPageState extends State<SavedPage> {
                                             ),
                                             child: const Text(
                                               'Show Location',
-                                              style: TextStyle(color: Colors.white),
+                                              style: TextStyle(color: Iskolors.colorWhite),
                                             ),
                                           ),
                                         ),

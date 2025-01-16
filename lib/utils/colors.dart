@@ -16,4 +16,6 @@ class Iskolors {
   static const Color colorLightBlack = Color(0x1F000000);
   static const Color colorPureWhite = Color(0xFFFFFFFF);
   static const Color colorPurple = Color(0xFFCE93D8);
+  static const Color colorDirtyWhite = Color(0xB3FFFFFF);
+  static const Color colorDarkerMaroon = Color(0x77581818);
 }
