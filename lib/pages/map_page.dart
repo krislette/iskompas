@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter/services.dart';
-import 'package:location/location.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:iskompas/utils/colors.dart';
 import 'package:iskompas/utils/pathfinder.dart';
 import 'package:iskompas/utils/annotation_listener.dart';
 import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/utils/feature_model.dart';
 import 'package:iskompas/widgets/category_filter.dart';
+import 'package:iskompas/utils/location_provider.dart';
 
 class MapPage extends StatefulWidget {
   final Map<String, dynamic> mapData;
@@ -23,10 +23,6 @@ class _MapPageState extends State<MapPage> {
   late PointAnnotationManager _pointAnnotationManager;
   late PolylineAnnotationManager _polylineAnnotationManager;
 
-  // final datasetLink = dotenv.env['DATASET_LINK']!;
-  final Location location = Location();
-  Point? startingPoint;
-  bool isLocationPermissionGranted = false;
   List<Point> currentRoute = []; // Route for navigation
   List<Point> pathfindingNodes = []; // Nodes for pathfinding
 
@@ -69,38 +65,6 @@ class _MapPageState extends State<MapPage> {
       };
     } catch (e) {
       throw ('Error in processing mapData: $e');
-    }
-
-    checkLocationPermission();
-  }
-
-  Future<void> checkLocationPermission() async {
-    final permissionStatus = await Permission.locationWhenInUse.request();
-    setState(() {
-      isLocationPermissionGranted = permissionStatus.isGranted;
-    });
-
-    if (isLocationPermissionGranted) {
-      await getUserLocation();
-    }
-  }
-
-  Future<void> getUserLocation() async {
-    try {
-      final userLocation = await location.getLocation();
-      setState(() {
-        startingPoint = Point(
-          coordinates: Position(
-            userLocation.longitude!,
-            userLocation.latitude!,
-          ),
-        );
-      });
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Unable to get your location')),
-      );
     }
   }
 
@@ -209,23 +173,27 @@ class _MapPageState extends State<MapPage> {
                           child: ElevatedButton(
                             onPressed: () async {
                               Navigator.pop(context);
-                              if (startingPoint == null) {
-                                await checkLocationPermission();
-                                if (startingPoint != null) {
-                                  calculateRoute(startingPoint!, geometry);
+                              final locationProvider =
+                                  Provider.of<LocationProvider>(context,
+                                      listen: false);
+                              if (locationProvider.currentLocation == null) {
+                                await locationProvider
+                                    .checkLocationPermission();
+                                if (locationProvider.currentLocation != null) {
+                                  calculateRoute(
+                                      locationProvider.currentLocation!,
+                                      geometry);
                                 } else {
-                                  WidgetsBinding.instance
-                                      .addPostFrameCallback((_) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content:
-                                            Text('Unable to get your location'),
-                                      ),
-                                    );
-                                  });
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Unable to get your location')),
+                                  );
                                 }
                               } else {
-                                calculateRoute(startingPoint!, geometry);
+                                calculateRoute(
+                                    locationProvider.currentLocation!,
+                                    geometry);
                               }
                             },
                             style: ElevatedButton.styleFrom(
@@ -313,6 +281,7 @@ class _MapPageState extends State<MapPage> {
 
   @override
   Widget build(BuildContext context) {
+    final locationProvider = Provider.of<LocationProvider>(context);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Stack(
@@ -320,7 +289,7 @@ class _MapPageState extends State<MapPage> {
           // Map as the bottom layer
           MapWidget(
             cameraOptions: CameraOptions(
-              center: startingPoint ??
+              center: locationProvider.currentLocation ??
                   Point(
                     coordinates:
                         Position(121.01067214130658, 14.597708356992062),
@@ -346,7 +315,6 @@ class _MapPageState extends State<MapPage> {
               await initializeManagers(mapboxMap);
             },
           ),
-
           // Search bar as the top layer
           SafeArea(
             child: Column(

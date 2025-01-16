@@ -4,6 +4,8 @@ import 'pages/splash_screen.dart';
 import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:iskompas/utils/geojson_parser.dart';
+import 'package:provider/provider.dart';
+import 'package:iskompas/utils/location_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,7 +18,6 @@ void main() async {
   }
   MapboxOptions.setAccessToken(accessToken);
 
-  // Load GeoJSON data globally
   try {
     final geoJsonString =
         await rootBundle.loadString('assets/data/nodes.geojson');
@@ -33,7 +34,14 @@ void main() async {
       throw Exception('Missing required data in parsed GeoJSON');
     }
 
-    runApp(Iskompas(mapData: mapData));
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => LocationProvider()),
+        ],
+        child: Iskompas(mapData: mapData),
+      ),
+    );
   } catch (e) {
     throw Exception('Error loading map data: $e');
   }
