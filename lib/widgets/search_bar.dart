@@ -12,27 +12,19 @@ class CustomSearchBar extends StatelessWidget {
     this.hintText = 'Search...',
     this.onChanged,
     this.controller,
-    this.isDarkMode = true, 
+    this.isDarkMode = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = isDarkMode
-        ? const Color.fromARGB(255, 30, 30, 30)
-        : Colors.white;
-    final textColor = isDarkMode
-        ? Iskolors.colorWhite
-        : Colors.black;
-    final hintColor = isDarkMode
-        ? Iskolors.colorLightGrey
-        : Colors.grey;
-    final borderColor = isDarkMode
-        ? Iskolors.colorGreyShade
-        : Colors.black12;
-
-    final shadowColor = isDarkMode
-        ? Iskolors.colorShadow
-        : Colors.black.withOpacity(0.1); 
+    final textColor = isDarkMode ? Iskolors.colorWhite : Iskolors.colorBlack;
+    final hintColor = isDarkMode ? Iskolors.colorLightGrey : Iskolors.colorGrey;
+    final backgroundColor =
+        isDarkMode ? Iskolors.colorDarkShade : Iskolors.colorPureWhite;
+    final borderColor =
+        isDarkMode ? Iskolors.colorGreyShade : Iskolors.colorLightBlack;
+    final shadowColor =
+        isDarkMode ? Iskolors.colorShadow : Iskolors.colorLightShadow;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
