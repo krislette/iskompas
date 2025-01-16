@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:iskompas/utils/colors.dart';
 import 'package:iskompas/widgets/search_bar.dart';
-import 'package:iskompas/utils/facility_model.dart';
+import 'package:iskompas/models/facility_model.dart';
 
 class SavedPage extends StatefulWidget {
   const SavedPage({super.key});
