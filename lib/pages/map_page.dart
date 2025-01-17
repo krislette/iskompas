@@ -9,6 +9,8 @@ import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/models/feature_model.dart';
 import 'package:iskompas/widgets/category_filter.dart';
 import 'package:iskompas/utils/location_provider.dart';
+import 'package:iskompas/widgets/navigation_button.dart';
+import 'package:iskompas/pages/turn_by_turn_page.dart';
 
 class MapPage extends StatefulWidget {
   final Map<String, dynamic> mapData;
@@ -99,6 +101,7 @@ class _MapPageState extends State<MapPage> {
     _pointAnnotationManager.deleteAll();
     setState(() {
       selectedCategory = category;
+      currentRoute = [];
     });
 
     if (category != null && categorizedFeatures.containsKey(category)) {
@@ -273,6 +276,9 @@ class _MapPageState extends State<MapPage> {
     } else {
       print("No route found from $from to $to");
       clearPolylines();
+      setState(() {
+        currentRoute = [];
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No route found')),
       );
@@ -295,7 +301,7 @@ class _MapPageState extends State<MapPage> {
                         Position(121.01067214130658, 14.597708356992062),
                   ),
               zoom: 18.0,
-              pitch: 45,
+              pitch: 45.0,
             ),
             onMapCreated: (mapboxMap) async {
               mapboxMap.scaleBar
@@ -367,6 +373,19 @@ class _MapPageState extends State<MapPage> {
               ],
             ),
           ),
+          if (currentRoute.isNotEmpty)
+            NavigationButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TurnByTurnPage(
+                      route: currentRoute,
+                    ),
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );
