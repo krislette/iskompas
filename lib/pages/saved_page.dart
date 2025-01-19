@@ -4,10 +4,17 @@ import 'package:iskompas/utils/colors.dart';
 import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/models/facility_model.dart';
 import 'package:iskompas/utils/saved_facilities_service.dart';
+import 'package:iskompas/widgets/navbar.dart';
 
 class SavedPage extends StatefulWidget {
   final List<dynamic> facilities;
-  const SavedPage({super.key, required this.facilities});
+  final Map<String, dynamic> mapData;
+
+  const SavedPage({
+    super.key,
+    required this.facilities,
+    required this.mapData,
+  });
 
   @override
   SavedPageState createState() => SavedPageState();
@@ -31,10 +38,6 @@ class SavedPageState extends State<SavedPage> {
       isLoading = true;
     });
     final savedFacilities = await SavedFacilitiesService.getSavedFacilities();
-
-    if (savedFacilities.isEmpty) {
-      print("No saved facilities found");
-    }
 
     setState(() {
       facilities = savedFacilities
@@ -222,16 +225,19 @@ class SavedPageState extends State<SavedPage> {
                                               Expanded(
                                                 child: ElevatedButton(
                                                   onPressed: () {
-                                                    setState(() {
-                                                      showLocationButtonColor =
-                                                          showLocationButtonColor ==
-                                                                  Iskolors
-                                                                      .colorMaroon
-                                                              ? Iskolors
-                                                                  .colorDarkerMaroon
-                                                              : Iskolors
-                                                                  .colorMaroon;
-                                                    });
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) => Navbar(
+                                                            mapData:
+                                                                widget.mapData,
+                                                            facilities: widget
+                                                                .facilities,
+                                                            initialPageIndex: 0,
+                                                            focusFacilityName:
+                                                                facility.name),
+                                                      ),
+                                                    );
                                                   },
                                                   style:
                                                       ElevatedButton.styleFrom(

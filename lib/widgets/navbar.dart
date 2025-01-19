@@ -10,7 +10,16 @@ import 'package:iskompas/utils/colors.dart';
 class Navbar extends StatefulWidget {
   final Map<String, dynamic> mapData;
   final List<dynamic> facilities;
-  const Navbar({super.key, required this.mapData, required this.facilities});
+  final int initialPageIndex;
+  final String? focusFacilityName;
+
+  const Navbar({
+    super.key,
+    required this.mapData,
+    required this.facilities,
+    this.initialPageIndex = 0,
+    this.focusFacilityName,
+  });
 
   @override
   State<Navbar> createState() => _NavbarState();
@@ -25,7 +34,12 @@ class _NavbarState extends State<Navbar> {
   @override
   void initState() {
     super.initState();
-    _mapPage = MapPage(mapData: widget.mapData, facilities: widget.facilities);
+    _selectedIndex = widget.initialPageIndex;
+    _mapPage = MapPage(
+      mapData: widget.mapData,
+      facilities: widget.facilities,
+      focusFacilityName: widget.focusFacilityName,
+    );
     _facilitiesPage = FacilitiesPage(facilities: widget.facilities);
   }
 
@@ -89,6 +103,7 @@ class _NavbarState extends State<Navbar> {
           SavedPage(
             key: _savedPageKey,
             facilities: widget.facilities,
+            mapData: widget.mapData,
           ),
           _facilitiesPage,
         ],

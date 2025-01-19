@@ -16,11 +16,13 @@ import 'package:iskompas/utils/saved_facilities_service.dart';
 class MapPage extends StatefulWidget {
   final Map<String, dynamic> mapData;
   final List<dynamic> facilities;
-  const MapPage({
-    super.key,
-    required this.mapData,
-    required this.facilities,
-  });
+  final String? focusFacilityName;
+
+  const MapPage(
+      {super.key,
+      required this.mapData,
+      required this.facilities,
+      this.focusFacilityName});
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -44,6 +46,9 @@ class _MapPageState extends State<MapPage> {
       {}; // Maps dynamic annotation.id to custom id
   final Map<String, Map<String, String>> annotationMetadata =
       {}; // Maps custom id to metadata
+
+  bool isMapInitialized = false;
+  GeoFeature? deferredFocusFeature;
 
   @override
   void initState() {
@@ -75,8 +80,48 @@ class _MapPageState extends State<MapPage> {
         'facility': facilities,
         'node': nodes,
       };
+
+      // If there's a facility to focus on
+      if (widget.focusFacilityName != null) {
+        final facilityFeature = facilities.firstWhere(
+          (feature) =>
+              feature.properties['type'] == 'facility' &&
+              feature.properties['name'] == widget.focusFacilityName,
+          orElse: () => GeoFeature(
+            id: '',
+            properties: {'name': ''},
+            geometry: Point(coordinates: Position(0, 0)),
+          ),
+        );
+
+        if (facilityFeature.id.isNotEmpty) {
+          print("Deferred focusing on: ${facilityFeature.properties['name']}");
+          deferredFocusFeature = facilityFeature; // Save for later
+        }
+      }
     } catch (e) {
       throw ('Error in processing mapData: $e');
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant MapPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.focusFacilityName != oldWidget.focusFacilityName) {
+      final facilityFeature = categorizedFeatures['facility']!.firstWhere(
+        (feature) => feature.properties['name'] == widget.focusFacilityName,
+        orElse: () => GeoFeature(
+          id: '',
+          properties: {'name': ''},
+          geometry: Point(coordinates: Position(0, 0)),
+        ),
+      );
+
+      if (facilityFeature.id.isNotEmpty) {
+        focusOnLocation(facilityFeature.geometry);
+        addMarkersFromFeatures([facilityFeature]);
+      }
     }
   }
 
@@ -93,6 +138,34 @@ class _MapPageState extends State<MapPage> {
           showMarkerPopup: showMarkerPopup,
           annotationMetadata: annotationMetadata,
           annotationIdMap: annotationIdMap),
+    );
+
+    isMapInitialized = true;
+
+    // Perform deferred focus and marker addition
+    if (deferredFocusFeature != null) {
+      print(
+          "Focusing on deferred facility: ${deferredFocusFeature!.properties['name']}");
+      focusOnLocation(deferredFocusFeature!.geometry);
+      addMarkersFromFeatures([deferredFocusFeature!]);
+      deferredFocusFeature = null; // Clear deferred action
+    }
+  }
+
+  void focusOnLocation(Point location) {
+    if (!isMapInitialized) {
+      print("Map not initialized yet. Deferred focusing.");
+      return;
+    }
+
+    print(
+        "Focusing on location: ${location.coordinates[0]} ${location.coordinates[1]}");
+    _mapboxMap.flyTo(
+      CameraOptions(
+        center: location,
+        zoom: 18.0,
+      ),
+      MapAnimationOptions(duration: 2000),
     );
   }
 
