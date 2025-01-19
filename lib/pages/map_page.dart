@@ -210,24 +210,25 @@ class _MapPageState extends State<MapPage> {
                                 );
 
                                 if (matchingFacility.isEmpty) {
-                                  print(
-                                      "No matching facility found in facilities.json for title: $title");
                                   return;
                                 }
 
                                 if (isSaved) {
-                                  // Pass just the facility name to remove
-                                  await SavedFacilitiesService.removeFacility(
-                                      title);
+                                  final shouldDelete =
+                                      await SavedFacilitiesService
+                                          .removeFacility(context, title);
+                                  if (shouldDelete) {
+                                    setModalState(() {
+                                      isSaved = false;
+                                    });
+                                  }
                                 } else {
-                                  // Save the whole facility object
                                   await SavedFacilitiesService.saveFacility(
                                       matchingFacility);
+                                  setModalState(() {
+                                    isSaved = true;
+                                  });
                                 }
-
-                                setModalState(() {
-                                  isSaved = !isSaved;
-                                });
                               },
                               icon: const Icon(Icons.bookmark),
                               color: isSaved

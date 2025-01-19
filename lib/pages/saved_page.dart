@@ -188,16 +188,10 @@ class SavedPageState extends State<SavedPage> {
                                                     final removed =
                                                         await SavedFacilitiesService
                                                             .removeFacility(
+                                                                context,
                                                                 facility.name);
                                                     if (removed) {
                                                       loadFacilities(); // Reload the list
-                                                      ScaffoldMessenger.of(
-                                                              context)
-                                                          .showSnackBar(
-                                                        const SnackBar(
-                                                            content: Text(
-                                                                'Facility removed from saved')),
-                                                      );
                                                     }
                                                   },
                                                   style:
