@@ -95,33 +95,11 @@ class _MapPageState extends State<MapPage> {
         );
 
         if (facilityFeature.id.isNotEmpty) {
-          print("Deferred focusing on: ${facilityFeature.properties['name']}");
           deferredFocusFeature = facilityFeature; // Save for later
         }
       }
     } catch (e) {
       throw ('Error in processing mapData: $e');
-    }
-  }
-
-  @override
-  void didUpdateWidget(covariant MapPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (widget.focusFacilityName != oldWidget.focusFacilityName) {
-      final facilityFeature = categorizedFeatures['facility']!.firstWhere(
-        (feature) => feature.properties['name'] == widget.focusFacilityName,
-        orElse: () => GeoFeature(
-          id: '',
-          properties: {'name': ''},
-          geometry: Point(coordinates: Position(0, 0)),
-        ),
-      );
-
-      if (facilityFeature.id.isNotEmpty) {
-        focusOnLocation(facilityFeature.geometry);
-        addMarkersFromFeatures([facilityFeature]);
-      }
     }
   }
 
@@ -144,8 +122,6 @@ class _MapPageState extends State<MapPage> {
 
     // Perform deferred focus and marker addition
     if (deferredFocusFeature != null) {
-      print(
-          "Focusing on deferred facility: ${deferredFocusFeature!.properties['name']}");
       focusOnLocation(deferredFocusFeature!.geometry);
       addMarkersFromFeatures([deferredFocusFeature!]);
       deferredFocusFeature = null; // Clear deferred action
@@ -154,12 +130,9 @@ class _MapPageState extends State<MapPage> {
 
   void focusOnLocation(Point location) {
     if (!isMapInitialized) {
-      print("Map not initialized yet. Deferred focusing.");
       return;
     }
 
-    print(
-        "Focusing on location: ${location.coordinates[0]} ${location.coordinates[1]}");
     _mapboxMap.flyTo(
       CameraOptions(
         center: location,
@@ -173,27 +146,32 @@ class _MapPageState extends State<MapPage> {
     final ByteData bytes = await rootBundle.load('assets/icons/pin.png');
     final Uint8List imageData = bytes.buffer.asUint8List();
 
-    for (final feature in features) {
-      final customId = feature.id; // Custom ID from GeoFeature
-
-      final annotationOptions = PointAnnotationOptions(
+    // Create a list to hold all annotation options
+    final List<PointAnnotationOptions> annotationOptionsList =
+        features.map((feature) {
+      return PointAnnotationOptions(
         geometry: feature.geometry,
         image: imageData,
         iconSize: 0.2,
         textField: feature.properties['name'],
       );
+    }).toList();
 
-      // Create the annotation
-      final annotation =
-          await _pointAnnotationManager.create(annotationOptions);
+    // Create all annotations at once
+    final List<PointAnnotation> annotations =
+        (await _pointAnnotationManager.createMulti(annotationOptionsList))
+            .where((annotation) => annotation != null)
+            .cast<PointAnnotation>()
+            .toList();
 
-      // Map dynamic annotation.id to custom id
-      annotationIdMap[annotation.id] = customId;
+    // Map the created annotations to their custom IDs and store metadata
+    for (int i = 0; i < annotations.length; i++) {
+      final customId = features[i].id;
+      annotationIdMap[annotations[i].id] = customId;
 
-      // Store metadata by custom id
       annotationMetadata[customId] = {
-        'title': feature.properties['name'].toString(),
-        'description': feature.properties['description'].toString(),
+        'title': features[i].properties['name'].toString(),
+        'description': features[i].properties['description'].toString(),
       };
     }
   }
