@@ -138,161 +138,181 @@ class _MapPageState extends State<MapPage> {
   }
 
   void showMarkerPopup(Point geometry, String title, String description) {
+    bool isSaved = false;
+
+    SavedFacilitiesService.isFacilitySaved(title).then((saved) {
+      setState(() {
+        isSaved = saved;
+      });
+    });
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (BuildContext context) {
-        return Stack(
-          clipBehavior: Clip.none,
-          children: [
-            // Main content
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
-              child: SizedBox(
-                height: 150,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Title
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    // Description
-                    Text(
-                      description,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Iskolors.colorDarkShade,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    const Spacer(),
-                    // Buttons row
-                    Row(
-                      children: [
-                        // Save button
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: const BoxDecoration(
-                            color: Iskolors.colorDarkShade,
-                            shape: BoxShape.circle,
-                          ),
-                          child: IconButton(
-                            onPressed: () async {
-                              final Map<String, dynamic> matchingFacility =
-                                  widget.facilities.firstWhere(
-                                (facility) =>
-                                    (facility['name']?.toLowerCase() ?? '') ==
-                                    title.toLowerCase().trim(),
-                                orElse: () => <String, dynamic>{},
-                              );
-
-                              if (matchingFacility.isEmpty) {
-                                print(
-                                    "No matching facility found in facilities.json for title: $title");
-                                return;
-                              }
-                              print(
-                                  "Matching facility found: $matchingFacility");
-
-                              // Proceed to save
-                              final bool saved =
-                                  await SavedFacilitiesService.saveFacility(
-                                matchingFacility,
-                              );
-                              print("Save result: $saved");
-                            },
-                            icon: const Icon(Icons.bookmark),
-                            color: Iskolors.colorYellow,
-                            iconSize: 24,
-                          ),
+        return StatefulBuilder(
+            builder: (BuildContext context, StateSetter setModalState) {
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // Main content
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
+                child: SizedBox(
+                  height: 150,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Title
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const SizedBox(width: 12),
-                        // Navigate button
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              Navigator.pop(context);
-                              final locationProvider =
-                                  Provider.of<LocationProvider>(context,
-                                      listen: false);
-                              if (locationProvider.currentLocation == null) {
-                                await locationProvider
-                                    .checkLocationPermission();
-                                if (locationProvider.currentLocation != null) {
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      // Description
+                      Text(
+                        description,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Iskolors.colorDarkShade,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      const Spacer(),
+                      // Buttons row
+                      Row(
+                        children: [
+                          // Save button
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: const BoxDecoration(
+                              color: Iskolors.colorDarkShade,
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              onPressed: () async {
+                                final Map<String, dynamic> matchingFacility =
+                                    widget.facilities.firstWhere(
+                                  (facility) =>
+                                      (facility['name']?.toLowerCase() ?? '') ==
+                                      title.toLowerCase().trim(),
+                                  orElse: () => <String, dynamic>{},
+                                );
+
+                                if (matchingFacility.isEmpty) {
+                                  print(
+                                      "No matching facility found in facilities.json for title: $title");
+                                  return;
+                                }
+
+                                if (isSaved) {
+                                  // Pass just the facility name to remove
+                                  await SavedFacilitiesService.removeFacility(
+                                      title);
+                                } else {
+                                  // Save the whole facility object
+                                  await SavedFacilitiesService.saveFacility(
+                                      matchingFacility);
+                                }
+
+                                setModalState(() {
+                                  isSaved = !isSaved;
+                                });
+                              },
+                              icon: const Icon(Icons.bookmark),
+                              color: isSaved
+                                  ? Iskolors.colorYellow
+                                  : Iskolors.colorPureWhite,
+                              iconSize: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          // Navigate button
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                Navigator.pop(context);
+                                final locationProvider =
+                                    Provider.of<LocationProvider>(context,
+                                        listen: false);
+                                if (locationProvider.currentLocation == null) {
+                                  await locationProvider
+                                      .checkLocationPermission();
+                                  if (locationProvider.currentLocation !=
+                                      null) {
+                                    calculateRoute(
+                                        locationProvider.currentLocation!,
+                                        geometry);
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              'Unable to get your location')),
+                                    );
+                                  }
+                                } else {
                                   calculateRoute(
                                       locationProvider.currentLocation!,
                                       geometry);
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text(
-                                            'Unable to get your location')),
-                                  );
                                 }
-                              } else {
-                                calculateRoute(
-                                    locationProvider.currentLocation!,
-                                    geometry);
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
+                              },
+                              style: ElevatedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                                backgroundColor: Iskolors.colorMaroon,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
                               ),
-                              backgroundColor: Iskolors.colorMaroon,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                            ),
-                            child: const Text(
-                              "Navigate",
-                              style: TextStyle(
-                                color: Iskolors.colorPureWhite,
-                                fontSize: 16,
+                              child: const Text(
+                                "Navigate",
+                                style: TextStyle(
+                                  color: Iskolors.colorPureWhite,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Location icon at the top
+              Positioned(
+                top: -30,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    width: 60,
+                    height: 60,
+                    decoration: const BoxDecoration(
+                      color: Iskolors.colorPurple,
+                      shape: BoxShape.circle,
                     ),
-                  ],
-                ),
-              ),
-            ),
-            // Location icon at the top
-            Positioned(
-              top: -30,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: const BoxDecoration(
-                    color: Iskolors.colorPurple,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.pin_drop,
-                    color: Iskolors.colorPureWhite,
-                    size: 24,
+                    child: const Icon(
+                      Icons.pin_drop,
+                      color: Iskolors.colorPureWhite,
+                      size: 24,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
-        );
+            ],
+          );
+        });
       },
     );
   }
