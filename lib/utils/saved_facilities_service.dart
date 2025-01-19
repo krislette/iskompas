@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:iskompas/widgets/confirmation_popup.dart';
 
 class SavedFacilitiesService {
   static const String _storageKey = 'saved_facilities';
@@ -48,16 +50,21 @@ class SavedFacilitiesService {
   }
 
   // Remove a facility
-  static Future<bool> removeFacility(String facilityName) async {
+  static Future<bool> removeFacility(
+      BuildContext context, String facilityName) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final shouldDelete = await ConfirmationPopup.show(context, facilityName);
+      if (shouldDelete == true) {
+        final prefs = await SharedPreferences.getInstance();
 
-      List<Map<String, dynamic>> savedFacilities = await getSavedFacilities();
-      savedFacilities
-          .removeWhere((facility) => facility['name'] == facilityName);
+        List<Map<String, dynamic>> savedFacilities = await getSavedFacilities();
+        savedFacilities
+            .removeWhere((facility) => facility['name'] == facilityName);
 
-      await prefs.setString(_storageKey, jsonEncode(savedFacilities));
-      return true;
+        await prefs.setString(_storageKey, jsonEncode(savedFacilities));
+        return true;
+      }
+      return false;
     } catch (e) {
       throw ('Error removing facility: $e');
     }
