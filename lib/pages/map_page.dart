@@ -11,10 +11,16 @@ import 'package:iskompas/widgets/category_filter.dart';
 import 'package:iskompas/utils/location_provider.dart';
 import 'package:iskompas/widgets/navigation_button.dart';
 import 'package:iskompas/pages/turn_by_turn_page.dart';
+import 'package:iskompas/utils/saved_facilities_service.dart';
 
 class MapPage extends StatefulWidget {
   final Map<String, dynamic> mapData;
-  const MapPage({super.key, required this.mapData});
+  final List<dynamic> facilities;
+  const MapPage({
+    super.key,
+    required this.mapData,
+    required this.facilities,
+  });
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -33,26 +39,30 @@ class _MapPageState extends State<MapPage> {
   Map<String, List<GeoFeature>> categorizedFeatures = {};
   List<GeoFeature> allFeatures = [];
 
+  // Map to store annotation mapping
+  final Map<String, String> annotationIdMap =
+      {}; // Maps dynamic annotation.id to custom id
+  final Map<String, Map<String, String>> annotationMetadata =
+      {}; // Maps custom id to metadata
+
   @override
   void initState() {
     super.initState();
 
     try {
-      // Retrieve facilities and nodes
-      final facilities =
-          (widget.mapData['facilities'] as List<Point>).map((point) {
+      final facilities = (widget.mapData['facilities'] as List).map((facility) {
         return GeoFeature(
-          id: '', // Update this later! (If an ID is required in the future)
-          properties: {}, // Give default or empty properties
-          geometry: point,
+          id: facility['id'] ?? '',
+          properties: facility['properties'] ?? {},
+          geometry: facility['geometry'] as Point,
         );
       }).toList();
 
-      final nodes = (widget.mapData['nodes'] as List<Point>).map((point) {
+      final nodes = (widget.mapData['nodes'] as List).map((node) {
         return GeoFeature(
-          id: '',
-          properties: {},
-          geometry: point,
+          id: node['id'] ?? '',
+          properties: node['properties'] ?? {},
+          geometry: node['geometry'] as Point,
         );
       }).toList();
 
@@ -80,8 +90,9 @@ class _MapPageState extends State<MapPage> {
 
     _pointAnnotationManager.addOnPointAnnotationClickListener(
       CustomPointAnnotationClickListener(
-        showMarkerPopup: showMarkerPopup,
-      ),
+          showMarkerPopup: showMarkerPopup,
+          annotationMetadata: annotationMetadata,
+          annotationIdMap: annotationIdMap),
     );
   }
 
@@ -89,12 +100,29 @@ class _MapPageState extends State<MapPage> {
     final ByteData bytes = await rootBundle.load('assets/icons/pin.png');
     final Uint8List imageData = bytes.buffer.asUint8List();
 
-    final markerOptionsList = features.map((feature) {
-      return PointAnnotationOptions(
-          geometry: feature.geometry, image: imageData, iconSize: 0.2);
-    }).toList();
+    for (final feature in features) {
+      final customId = feature.id; // Custom ID from GeoFeature
 
-    await _pointAnnotationManager.createMulti(markerOptionsList);
+      final annotationOptions = PointAnnotationOptions(
+        geometry: feature.geometry,
+        image: imageData,
+        iconSize: 0.2,
+        textField: feature.properties['name'],
+      );
+
+      // Create the annotation
+      final annotation =
+          await _pointAnnotationManager.create(annotationOptions);
+
+      // Map dynamic annotation.id to custom id
+      annotationIdMap[annotation.id] = customId;
+
+      // Store metadata by custom id
+      annotationMetadata[customId] = {
+        'title': feature.properties['name'].toString(),
+        'description': feature.properties['description'].toString(),
+      };
+    }
   }
 
   void updateMarkers(String? category) {
@@ -162,8 +190,29 @@ class _MapPageState extends State<MapPage> {
                             shape: BoxShape.circle,
                           ),
                           child: IconButton(
-                            onPressed: () {
-                              // Add save functionality LATER!!!
+                            onPressed: () async {
+                              final Map<String, dynamic> matchingFacility =
+                                  widget.facilities.firstWhere(
+                                (facility) =>
+                                    (facility['name']?.toLowerCase() ?? '') ==
+                                    title.toLowerCase().trim(),
+                                orElse: () => <String, dynamic>{},
+                              );
+
+                              if (matchingFacility.isEmpty) {
+                                print(
+                                    "No matching facility found in facilities.json for title: $title");
+                                return;
+                              }
+                              print(
+                                  "Matching facility found: $matchingFacility");
+
+                              // Proceed to save
+                              final bool saved =
+                                  await SavedFacilitiesService.saveFacility(
+                                matchingFacility,
+                              );
+                              print("Save result: $saved");
                             },
                             icon: const Icon(Icons.bookmark),
                             color: Iskolors.colorYellow,

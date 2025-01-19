@@ -3,16 +3,20 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:iskompas/utils/colors.dart';
 import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/models/facility_model.dart';
+import 'package:iskompas/utils/saved_facilities_service.dart';
 
 class SavedPage extends StatefulWidget {
   final List<dynamic> facilities;
   const SavedPage({super.key, required this.facilities});
+
   @override
-  State<SavedPage> createState() => _SavedPageState();
+  SavedPageState createState() => SavedPageState();
 }
 
-class _SavedPageState extends State<SavedPage> {
+class SavedPageState extends State<SavedPage> {
   List<Facility> facilities = [];
+  bool isLoading = true;
+
   Color unsaveButtonColor = Iskolors.colorMaroon;
   Color showLocationButtonColor = Iskolors.colorMaroon;
 
@@ -22,11 +26,21 @@ class _SavedPageState extends State<SavedPage> {
     loadFacilities();
   }
 
-  void loadFacilities() {
+  Future<void> loadFacilities() async {
     setState(() {
-      facilities = widget.facilities
+      isLoading = true;
+    });
+    final savedFacilities = await SavedFacilitiesService.getSavedFacilities();
+
+    if (savedFacilities.isEmpty) {
+      print("No saved facilities found");
+    }
+
+    setState(() {
+      facilities = savedFacilities
           .map((facility) => Facility.fromJson(facility))
           .toList();
+      isLoading = false;
     });
   }
 
@@ -63,7 +77,7 @@ class _SavedPageState extends State<SavedPage> {
                       50, // Reduced height to account for padding
                   enlargeCenterPage: true,
                   autoPlay: false,
-                  enableInfiniteScroll: true,
+                  enableInfiniteScroll: false,
                   viewportFraction: 0.8,
                 ),
                 items: facilities.map((facility) {
@@ -145,15 +159,20 @@ class _SavedPageState extends State<SavedPage> {
                                       children: [
                                         Expanded(
                                           child: ElevatedButton(
-                                            onPressed: () {
-                                              setState(() {
-                                                unsaveButtonColor =
-                                                    unsaveButtonColor ==
-                                                            Iskolors.colorMaroon
-                                                        ? Iskolors
-                                                            .colorDarkerMaroon
-                                                        : Iskolors.colorMaroon;
-                                              });
+                                            onPressed: () async {
+                                              final removed =
+                                                  await SavedFacilitiesService
+                                                      .removeFacility(
+                                                          facility.name);
+                                              if (removed) {
+                                                loadFacilities(); // Reload the list
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                      content: Text(
+                                                          'Facility removed from saved')),
+                                                );
+                                              }
                                             },
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor:
