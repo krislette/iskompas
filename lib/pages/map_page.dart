@@ -11,7 +11,7 @@ import 'package:iskompas/widgets/category_filter.dart';
 import 'package:iskompas/utils/location_provider.dart';
 import 'package:iskompas/widgets/navigation_button.dart';
 import 'package:iskompas/pages/turn_by_turn_page.dart';
-import 'package:iskompas/utils/saved_facilities_service.dart';
+import 'package:iskompas/widgets/marker_popup.dart';
 
 class MapPage extends StatefulWidget {
   final Map<String, dynamic> mapData;
@@ -113,7 +113,9 @@ class _MapPageState extends State<MapPage> {
 
     _pointAnnotationManager.addOnPointAnnotationClickListener(
       CustomPointAnnotationClickListener(
-          showMarkerPopup: showMarkerPopup,
+          showMarkerPopup: (geometry, title, description) {
+            _showMarkerPopupBottomSheet(geometry, title, description);
+          },
           annotationMetadata: annotationMetadata,
           annotationIdMap: annotationIdMap),
     );
@@ -188,183 +190,23 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  void showMarkerPopup(Point geometry, String title, String description) {
-    bool isSaved = false;
-
-    SavedFacilitiesService.isFacilitySaved(title).then((saved) {
-      setState(() {
-        isSaved = saved;
-      });
-    });
-
+  void _showMarkerPopupBottomSheet(
+      Point geometry, String title, String description) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled:
+          true, // Allow the bottom sheet to take more height if needed
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (BuildContext context) {
-        return StatefulBuilder(
-            builder: (BuildContext context, StateSetter setModalState) {
-          return Stack(
-            clipBehavior: Clip.none,
-            children: [
-              // Main content
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
-                child: SizedBox(
-                  height: 150,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Title
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      // Description
-                      Text(
-                        description,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Iskolors.colorDarkShade,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-                      const Spacer(),
-                      // Buttons row
-                      Row(
-                        children: [
-                          // Save button
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: const BoxDecoration(
-                              color: Iskolors.colorDarkShade,
-                              shape: BoxShape.circle,
-                            ),
-                            child: IconButton(
-                              onPressed: () async {
-                                final Map<String, dynamic> matchingFacility =
-                                    widget.facilities.firstWhere(
-                                  (facility) =>
-                                      (facility['name']?.toLowerCase() ?? '') ==
-                                      title.toLowerCase().trim(),
-                                  orElse: () => <String, dynamic>{},
-                                );
-
-                                if (matchingFacility.isEmpty) {
-                                  return;
-                                }
-
-                                if (isSaved) {
-                                  final shouldDelete =
-                                      await SavedFacilitiesService
-                                          .removeFacility(context, title);
-                                  if (shouldDelete) {
-                                    setModalState(() {
-                                      isSaved = false;
-                                    });
-                                  }
-                                } else {
-                                  await SavedFacilitiesService.saveFacility(
-                                      matchingFacility);
-                                  setModalState(() {
-                                    isSaved = true;
-                                  });
-                                }
-                              },
-                              icon: const Icon(Icons.bookmark),
-                              color: isSaved
-                                  ? Iskolors.colorYellow
-                                  : Iskolors.colorPureWhite,
-                              iconSize: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          // Navigate button
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                Navigator.pop(context);
-                                final locationProvider =
-                                    Provider.of<LocationProvider>(context,
-                                        listen: false);
-                                if (locationProvider.currentLocation == null) {
-                                  await locationProvider
-                                      .checkLocationPermission();
-                                  if (locationProvider.currentLocation !=
-                                      null) {
-                                    calculateRoute(
-                                        locationProvider.currentLocation!,
-                                        geometry);
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text(
-                                              'Unable to get your location')),
-                                    );
-                                  }
-                                } else {
-                                  calculateRoute(
-                                      locationProvider.currentLocation!,
-                                      geometry);
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(25),
-                                ),
-                                backgroundColor: Iskolors.colorMaroon,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 14),
-                              ),
-                              child: const Text(
-                                "Navigate",
-                                style: TextStyle(
-                                  color: Iskolors.colorPureWhite,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // Location icon at the top
-              Positioned(
-                top: -30,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Container(
-                    width: 60,
-                    height: 60,
-                    decoration: const BoxDecoration(
-                      color: Iskolors.colorPurple,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.pin_drop,
-                      color: Iskolors.colorPureWhite,
-                      size: 24,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          );
-        });
+        return MarkerPopup(
+          geometry: geometry,
+          title: title,
+          description: description,
+          facilities: widget.facilities,
+          onNavigate: calculateRoute,
+        );
       },
     );
   }
