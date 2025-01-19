@@ -194,8 +194,7 @@ class _MapPageState extends State<MapPage> {
       Point geometry, String title, String description) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled:
-          true, // Allow the bottom sheet to take more height if needed
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
