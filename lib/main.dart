@@ -7,6 +7,7 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:iskompas/utils/geojson_parser.dart';
 import 'package:provider/provider.dart';
 import 'package:iskompas/utils/location_provider.dart';
+import 'package:iskompas/utils/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,6 +51,7 @@ void main() async {
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => LocationProvider()),
+          ChangeNotifierProvider(create: (_) => ThemeProvider())
         ],
         child: Iskompas(mapData: mapData, facilities: facilities),
       ),
