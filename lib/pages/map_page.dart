@@ -10,6 +10,7 @@ import 'package:iskompas/models/feature_model.dart';
 import 'package:iskompas/widgets/category_filter.dart';
 import 'package:iskompas/utils/location_provider.dart';
 import 'package:iskompas/widgets/navigation_button.dart';
+import 'package:iskompas/widgets/theme_toggle_button.dart';
 import 'package:iskompas/pages/turn_by_turn_page.dart';
 import 'package:iskompas/widgets/marker_popup.dart';
 
@@ -51,6 +52,8 @@ class _MapPageState extends State<MapPage> {
 
   bool isMapInitialized = false;
   GeoFeature? deferredFocusFeature;
+
+  bool isNightMode = false;
 
   @override
   void initState() {
@@ -139,6 +142,22 @@ class _MapPageState extends State<MapPage> {
       addMarkersFromFeatures([deferredFocusFeature!]);
       deferredFocusFeature = null; // Clear deferred action
     }
+  }
+
+  void toggleMapTheme() async {
+    if (isNightMode) {
+      // Switch to "day" mode
+      _mapboxMap.style
+          .setStyleImportConfigProperty("basemap", "lightPreset", "day");
+    } else {
+      // Switch to "night" mode
+      _mapboxMap.style
+          .setStyleImportConfigProperty("basemap", "lightPreset", "dusk");
+    }
+
+    setState(() {
+      isNightMode = !isNightMode;
+    });
   }
 
   void focusOnLocation(Point location) {
@@ -398,6 +417,11 @@ class _MapPageState extends State<MapPage> {
                 );
               },
             ),
+          // Theme Toggle Button
+          ThemeToggleButton(
+            onPressed: toggleMapTheme,
+            isNightMode: isNightMode,
+          ),
         ],
       ),
     );
