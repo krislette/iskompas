@@ -9,6 +9,7 @@ import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/models/feature_model.dart';
 import 'package:iskompas/widgets/category_filter.dart';
 import 'package:iskompas/utils/location_provider.dart';
+import 'package:iskompas/utils/theme_provider.dart';
 import 'package:iskompas/widgets/navigation_button.dart';
 import 'package:iskompas/widgets/theme_toggle_button.dart';
 import 'package:iskompas/pages/turn_by_turn_page.dart';
@@ -53,12 +54,13 @@ class _MapPageState extends State<MapPage> {
   bool isMapInitialized = false;
   GeoFeature? deferredFocusFeature;
 
-  bool isNightMode = false;
-
   @override
   void initState() {
     super.initState();
+    initializeMapData();
+  }
 
+  void initializeMapData() {
     try {
       final facilities = (widget.mapData['facilities'] as List).map((facility) {
         return GeoFeature(
@@ -134,6 +136,11 @@ class _MapPageState extends State<MapPage> {
           annotationIdMap: annotationIdMap),
     );
 
+    if (mounted) {
+      final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+      updateMapTheme(themeProvider.isDarkMode);
+    }
+
     isMapInitialized = true;
 
     // Perform deferred focus and marker addition
@@ -144,20 +151,16 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  void toggleMapTheme() async {
-    if (isNightMode) {
-      // Switch to "day" mode
-      _mapboxMap.style
-          .setStyleImportConfigProperty("basemap", "lightPreset", "day");
-    } else {
-      // Switch to "night" mode
-      _mapboxMap.style
-          .setStyleImportConfigProperty("basemap", "lightPreset", "dusk");
-    }
+  // Separate method to update map theme
+  void updateMapTheme(bool isDarkMode) {
+    _mapboxMap.style.setStyleImportConfigProperty(
+        "basemap", "lightPreset", isDarkMode ? "dusk" : "day");
+  }
 
-    setState(() {
-      isNightMode = !isNightMode;
-    });
+  void toggleMapTheme() async {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    await themeProvider.toggleTheme();
+    updateMapTheme(themeProvider.isDarkMode);
   }
 
   void focusOnLocation(Point location) {
@@ -319,6 +322,9 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<LocationProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isNightMode = themeProvider.isDarkMode;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Stack(
