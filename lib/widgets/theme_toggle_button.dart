@@ -8,7 +8,7 @@ class ThemeToggleButton extends StatelessWidget {
   const ThemeToggleButton({
     super.key,
     required this.onPressed,
-    this.isNightMode = false,
+    required this.isNightMode,
   });
 
   @override
