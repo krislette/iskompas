@@ -20,7 +20,7 @@ class ThemeToggleButton extends StatelessWidget {
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor:
-              isNightMode ? Iskolors.colorDarkShade : Iskolors.colorWhite,
+              isNightMode ? Iskolors.colorMaroon : Iskolors.colorWhite,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
@@ -28,7 +28,7 @@ class ThemeToggleButton extends StatelessWidget {
         ),
         child: Icon(
           Icons.brightness_4,
-          color: isNightMode ? Colors.white : Iskolors.colorDarkShade,
+          color: isNightMode ? Colors.white : Iskolors.colorMaroon,
           size: 24,
         ),
       ),

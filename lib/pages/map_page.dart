@@ -362,7 +362,7 @@ class _MapPageState extends State<MapPage> {
                       vertical: 11.0, horizontal: 16.0),
                   child: CustomSearchBar(
                     hintText: 'Search location...',
-                    isDarkMode: false,
+                    isDarkMode: isNightMode,
                     onChanged: (value) {
                       print('Searching for: $value');
                     },
@@ -385,18 +385,19 @@ class _MapPageState extends State<MapPage> {
                             updateMarkers(selectedCategory == 'facility'
                                 ? null
                                 : 'facility');
-                          }),
+                          },
+                          isDarkMode: isNightMode),
                       CategoryFilter(
-                        icon: Icons.bathroom,
-                        label: 'Bathrooms',
-                        isSelected: selectedCategory == 'bathroom',
-                        onTap: () {
-                          clearPolylines();
-                          updateMarkers(selectedCategory == 'bathroom'
-                              ? null
-                              : 'bathroom');
-                        },
-                      ),
+                          icon: Icons.bathroom,
+                          label: 'Bathrooms',
+                          isSelected: selectedCategory == 'bathroom',
+                          onTap: () {
+                            clearPolylines();
+                            updateMarkers(selectedCategory == 'bathroom'
+                                ? null
+                                : 'bathroom');
+                          },
+                          isDarkMode: isNightMode),
                       // To be added: Stalls, Labs, etc.
                     ],
                   ),
