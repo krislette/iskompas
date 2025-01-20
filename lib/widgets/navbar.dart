@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar.dart';
 import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
-import '../pages/map_page.dart';
-import '../pages/saved_page.dart';
-import '../pages/facilities_page.dart';
-import '../utils/set_color.dart';
-import '../utils/colors.dart';
+import 'package:iskompas/pages/map_page.dart';
+import 'package:iskompas/pages/saved_page.dart';
+import 'package:iskompas/pages/facilities_page.dart';
+import 'package:iskompas/utils/set_color.dart';
+import 'package:iskompas/utils/colors.dart';
 
 class Navbar extends StatefulWidget {
   final Map<String, dynamic> mapData;
   final List<dynamic> facilities;
-  const Navbar({super.key, required this.mapData, required this.facilities});
+  final int initialPageIndex;
+  final String? focusFacilityName;
+
+  const Navbar({
+    super.key,
+    required this.mapData,
+    required this.facilities,
+    this.initialPageIndex = 0,
+    this.focusFacilityName,
+  });
 
   @override
   State<Navbar> createState() => _NavbarState();
@@ -18,17 +27,20 @@ class Navbar extends StatefulWidget {
 
 class _NavbarState extends State<Navbar> {
   int _selectedIndex = 0;
-
-  late final List<Widget> _pages;
+  late final MapPage _mapPage;
+  late final FacilitiesPage _facilitiesPage;
+  final GlobalKey<SavedPageState> _savedPageKey = GlobalKey<SavedPageState>();
 
   @override
   void initState() {
     super.initState();
-    _pages = [
-      MapPage(mapData: widget.mapData),
-      SavedPage(facilities: widget.facilities),
-      FacilitiesPage(facilities: widget.facilities),
-    ];
+    _selectedIndex = widget.initialPageIndex;
+    _mapPage = MapPage(
+      mapData: widget.mapData,
+      facilities: widget.facilities,
+      focusFacilityName: widget.focusFacilityName,
+    );
+    _facilitiesPage = FacilitiesPage(facilities: widget.facilities);
   }
 
   @override
@@ -43,6 +55,9 @@ class _NavbarState extends State<Navbar> {
         onTap: (index) {
           setState(() {
             _selectedIndex = index;
+            if (_selectedIndex == 1) {
+              _savedPageKey.currentState?.loadFacilities();
+            }
           });
         },
         items: [
@@ -83,7 +98,15 @@ class _NavbarState extends State<Navbar> {
       ),
       body: IndexedStack(
         index: _selectedIndex,
-        children: _pages,
+        children: [
+          _mapPage,
+          SavedPage(
+            key: _savedPageKey,
+            facilities: widget.facilities,
+            mapData: widget.mapData,
+          ),
+          _facilitiesPage,
+        ],
       ),
     );
   }
