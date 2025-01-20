@@ -108,6 +108,15 @@ class _MapPageState extends State<MapPage> {
   Future<void> initializeManagers(MapboxMap mapboxMap) async {
     _mapboxMap = mapboxMap;
 
+    await _mapboxMap.style.setStyleImportConfigProperty(
+        "basemap", "showPointOfInterestLabels", false);
+
+    await _mapboxMap.style
+        .setStyleImportConfigProperty("basemap", "showPlaceLabels", false);
+
+    await _mapboxMap.style
+        .setStyleImportConfigProperty("basemap", "showTransitLabels", false);
+
     _pointAnnotationManager =
         await _mapboxMap.annotations.createPointAnnotationManager();
     _polylineAnnotationManager =
@@ -147,7 +156,8 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> addMarkersFromFeatures(List<GeoFeature> features) async {
-    final ByteData bytes = await rootBundle.load('assets/icons/pin.png');
+    final ByteData bytes =
+        await rootBundle.load('assets/icons/facilities-pin.png');
     final Uint8List imageData = bytes.buffer.asUint8List();
 
     // Create a list to hold all annotation options
@@ -156,7 +166,7 @@ class _MapPageState extends State<MapPage> {
       return PointAnnotationOptions(
           geometry: feature.geometry,
           image: imageData,
-          iconSize: 0.2,
+          iconSize: 1,
           textField: feature.properties['name'],
           textOffset: [0, -2],
           textSize: 12);
