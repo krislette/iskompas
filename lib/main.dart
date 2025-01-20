@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'pages/splash_screen.dart';
@@ -19,6 +20,7 @@ void main() async {
   MapboxOptions.setAccessToken(accessToken);
 
   try {
+    // Load and parse nodes.geojson
     final geoJsonString =
         await rootBundle.loadString('assets/data/nodes.geojson');
 
@@ -34,28 +36,39 @@ void main() async {
       throw Exception('Missing required data in parsed GeoJSON');
     }
 
+    // Load and parse facilities.json
+    final facilitiesJsonString =
+        await rootBundle.loadString('assets/data/facilities.json');
+
+    if (facilitiesJsonString.isEmpty) {
+      throw Exception('Facilities JSON file is empty');
+    }
+
+    final facilities = json.decode(facilitiesJsonString) as List<dynamic>;
+
     runApp(
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => LocationProvider()),
         ],
-        child: Iskompas(mapData: mapData),
+        child: Iskompas(mapData: mapData, facilities: facilities),
       ),
     );
   } catch (e) {
-    throw Exception('Error loading map data: $e');
+    throw Exception('Error loading map or facilities data: $e');
   }
 }
 
 class Iskompas extends StatelessWidget {
   final Map<String, dynamic> mapData;
-  const Iskompas({super.key, required this.mapData});
+  final List<dynamic> facilities;
+  const Iskompas({super.key, required this.mapData, required this.facilities});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(mapData: mapData),
+      home: SplashScreen(mapData: mapData, facilities: facilities),
     );
   }
 }

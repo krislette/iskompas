@@ -21,8 +21,14 @@ void main() {
       'lines': []
     };
 
+    // Dummy facilities data
+    List<dynamic> dummyFacilities = [
+      {'name': '', 'description': '', 'location': '', 'image': ''},
+    ];
+
     // Build our app and trigger a frame.
-    await tester.pumpWidget(Iskompas(mapData: dummyMapData));
+    await tester.pumpWidget(
+        Iskompas(mapData: dummyMapData, facilities: dummyFacilities));
 
     // Verify that the SplashScreen is displayed initially.
     expect(find.byType(SplashScreen), findsOneWidget);
@@ -37,5 +43,8 @@ void main() {
     expect(dummyMapData['facilities'], isEmpty);
     expect(dummyMapData['nodes'], isEmpty);
     expect(dummyMapData['lines'], isEmpty);
+
+    // Check if facilities data is non-empty.
+    expect(dummyFacilities.isNotEmpty, true);
   });
 }

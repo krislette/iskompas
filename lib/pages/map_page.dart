@@ -6,13 +6,23 @@ import 'package:iskompas/utils/colors.dart';
 import 'package:iskompas/utils/pathfinder.dart';
 import 'package:iskompas/utils/annotation_listener.dart';
 import 'package:iskompas/widgets/search_bar.dart';
-import 'package:iskompas/utils/feature_model.dart';
+import 'package:iskompas/models/feature_model.dart';
 import 'package:iskompas/widgets/category_filter.dart';
 import 'package:iskompas/utils/location_provider.dart';
+import 'package:iskompas/widgets/navigation_button.dart';
+import 'package:iskompas/pages/turn_by_turn_page.dart';
+import 'package:iskompas/widgets/marker_popup.dart';
 
 class MapPage extends StatefulWidget {
   final Map<String, dynamic> mapData;
-  const MapPage({super.key, required this.mapData});
+  final List<dynamic> facilities;
+  final String? focusFacilityName;
+
+  const MapPage(
+      {super.key,
+      required this.mapData,
+      required this.facilities,
+      this.focusFacilityName});
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -31,26 +41,33 @@ class _MapPageState extends State<MapPage> {
   Map<String, List<GeoFeature>> categorizedFeatures = {};
   List<GeoFeature> allFeatures = [];
 
+  // Map to store annotation mapping
+  final Map<String, String> annotationIdMap =
+      {}; // Maps dynamic annotation.id to custom id
+  final Map<String, Map<String, String>> annotationMetadata =
+      {}; // Maps custom id to metadata
+
+  bool isMapInitialized = false;
+  GeoFeature? deferredFocusFeature;
+
   @override
   void initState() {
     super.initState();
 
     try {
-      // Retrieve facilities and nodes
-      final facilities =
-          (widget.mapData['facilities'] as List<Point>).map((point) {
+      final facilities = (widget.mapData['facilities'] as List).map((facility) {
         return GeoFeature(
-          id: '', // Update this later! (If an ID is required in the future)
-          properties: {}, // Give default or empty properties
-          geometry: point,
+          id: facility['id'] ?? '',
+          properties: facility['properties'] ?? {},
+          geometry: facility['geometry'] as Point,
         );
       }).toList();
 
-      final nodes = (widget.mapData['nodes'] as List<Point>).map((point) {
+      final nodes = (widget.mapData['nodes'] as List).map((node) {
         return GeoFeature(
-          id: '',
-          properties: {},
-          geometry: point,
+          id: node['id'] ?? '',
+          properties: node['properties'] ?? {},
+          geometry: node['geometry'] as Point,
         );
       }).toList();
 
@@ -63,6 +80,24 @@ class _MapPageState extends State<MapPage> {
         'facility': facilities,
         'node': nodes,
       };
+
+      // If there's a facility to focus on
+      if (widget.focusFacilityName != null) {
+        final facilityFeature = facilities.firstWhere(
+          (feature) =>
+              feature.properties['type'] == 'facility' &&
+              feature.properties['name'] == widget.focusFacilityName,
+          orElse: () => GeoFeature(
+            id: '',
+            properties: {'name': ''},
+            geometry: Point(coordinates: Position(0, 0)),
+          ),
+        );
+
+        if (facilityFeature.id.isNotEmpty) {
+          deferredFocusFeature = facilityFeature; // Save for later
+        }
+      }
     } catch (e) {
       throw ('Error in processing mapData: $e');
     }
@@ -78,8 +113,34 @@ class _MapPageState extends State<MapPage> {
 
     _pointAnnotationManager.addOnPointAnnotationClickListener(
       CustomPointAnnotationClickListener(
-        showMarkerPopup: showMarkerPopup,
+          showMarkerPopup: (geometry, title, description) {
+            _showMarkerPopupBottomSheet(geometry, title, description);
+          },
+          annotationMetadata: annotationMetadata,
+          annotationIdMap: annotationIdMap),
+    );
+
+    isMapInitialized = true;
+
+    // Perform deferred focus and marker addition
+    if (deferredFocusFeature != null) {
+      focusOnLocation(deferredFocusFeature!.geometry);
+      addMarkersFromFeatures([deferredFocusFeature!]);
+      deferredFocusFeature = null; // Clear deferred action
+    }
+  }
+
+  void focusOnLocation(Point location) {
+    if (!isMapInitialized) {
+      return;
+    }
+
+    _mapboxMap.flyTo(
+      CameraOptions(
+        center: location,
+        zoom: 18.0,
       ),
+      MapAnimationOptions(duration: 2000),
     );
   }
 
@@ -87,18 +148,41 @@ class _MapPageState extends State<MapPage> {
     final ByteData bytes = await rootBundle.load('assets/icons/pin.png');
     final Uint8List imageData = bytes.buffer.asUint8List();
 
-    final markerOptionsList = features.map((feature) {
+    // Create a list to hold all annotation options
+    final List<PointAnnotationOptions> annotationOptionsList =
+        features.map((feature) {
       return PointAnnotationOptions(
-          geometry: feature.geometry, image: imageData, iconSize: 0.2);
+        geometry: feature.geometry,
+        image: imageData,
+        iconSize: 0.2,
+        textField: feature.properties['name'],
+      );
     }).toList();
 
-    await _pointAnnotationManager.createMulti(markerOptionsList);
+    // Create all annotations at once
+    final List<PointAnnotation> annotations =
+        (await _pointAnnotationManager.createMulti(annotationOptionsList))
+            .where((annotation) => annotation != null)
+            .cast<PointAnnotation>()
+            .toList();
+
+    // Map the created annotations to their custom IDs and store metadata
+    for (int i = 0; i < annotations.length; i++) {
+      final customId = features[i].id;
+      annotationIdMap[annotations[i].id] = customId;
+
+      annotationMetadata[customId] = {
+        'title': features[i].properties['name'].toString(),
+        'description': features[i].properties['description'].toString(),
+      };
+    }
   }
 
   void updateMarkers(String? category) {
     _pointAnnotationManager.deleteAll();
     setState(() {
       selectedCategory = category;
+      currentRoute = [];
     });
 
     if (category != null && categorizedFeatures.containsKey(category)) {
@@ -106,140 +190,21 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  void showMarkerPopup(Point geometry, String title, String description) {
+  void _showMarkerPopupBottomSheet(
+      Point geometry, String title, String description) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       builder: (BuildContext context) {
-        return Stack(
-          clipBehavior: Clip.none,
-          children: [
-            // Main content
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
-              child: SizedBox(
-                height: 150,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Title
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    // Description
-                    Text(
-                      description,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Iskolors.colorDarkShade,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    const Spacer(),
-                    // Buttons row
-                    Row(
-                      children: [
-                        // Save button
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: const BoxDecoration(
-                            color: Iskolors.colorDarkShade,
-                            shape: BoxShape.circle,
-                          ),
-                          child: IconButton(
-                            onPressed: () {
-                              // Add save functionality LATER!!!
-                            },
-                            icon: const Icon(Icons.bookmark),
-                            color: Iskolors.colorYellow,
-                            iconSize: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Navigate button
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              Navigator.pop(context);
-                              final locationProvider =
-                                  Provider.of<LocationProvider>(context,
-                                      listen: false);
-                              if (locationProvider.currentLocation == null) {
-                                await locationProvider
-                                    .checkLocationPermission();
-                                if (locationProvider.currentLocation != null) {
-                                  calculateRoute(
-                                      locationProvider.currentLocation!,
-                                      geometry);
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text(
-                                            'Unable to get your location')),
-                                  );
-                                }
-                              } else {
-                                calculateRoute(
-                                    locationProvider.currentLocation!,
-                                    geometry);
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              backgroundColor: Iskolors.colorMaroon,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                            ),
-                            child: const Text(
-                              "Navigate",
-                              style: TextStyle(
-                                color: Iskolors.colorPureWhite,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            // Location icon at the top
-            Positioned(
-              top: -30,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  width: 60,
-                  height: 60,
-                  decoration: const BoxDecoration(
-                    color: Iskolors.colorPurple,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.pin_drop,
-                    color: Iskolors.colorPureWhite,
-                    size: 24,
-                  ),
-                ),
-              ),
-            ),
-          ],
+        return MarkerPopup(
+          geometry: geometry,
+          title: title,
+          description: description,
+          facilities: widget.facilities,
+          onNavigate: calculateRoute,
         );
       },
     );
@@ -273,6 +238,9 @@ class _MapPageState extends State<MapPage> {
     } else {
       print("No route found from $from to $to");
       clearPolylines();
+      setState(() {
+        currentRoute = [];
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No route found')),
       );
@@ -295,7 +263,7 @@ class _MapPageState extends State<MapPage> {
                         Position(121.01067214130658, 14.597708356992062),
                   ),
               zoom: 18.0,
-              pitch: 45,
+              pitch: 45.0,
             ),
             onMapCreated: (mapboxMap) async {
               mapboxMap.scaleBar
@@ -367,6 +335,19 @@ class _MapPageState extends State<MapPage> {
               ],
             ),
           ),
+          if (currentRoute.isNotEmpty)
+            NavigationButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => TurnByTurnPage(
+                      route: currentRoute,
+                    ),
+                  ),
+                );
+              },
+            ),
         ],
       ),
     );

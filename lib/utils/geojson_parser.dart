@@ -4,27 +4,32 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 Map<String, dynamic> parseGeoJson(String geoJsonString) {
   try {
     final data = jsonDecode(geoJsonString);
-    List<Point> facilities = [];
-    List<Point> nodes = [];
+    List<Map<String, dynamic>> facilities = [];
+    List<Map<String, dynamic>> nodes = [];
     List<List<Point>> lines = [];
 
     for (var feature in data['features']) {
       if (feature['geometry']['type'] == 'Point') {
         final type = feature['properties']['type'];
+        final point = Point(
+          coordinates: Position(
+            feature['geometry']['coordinates'][0],
+            feature['geometry']['coordinates'][1],
+          ),
+        );
+
         if (type == 'facility') {
-          facilities.add(Point(
-            coordinates: Position(
-              feature['geometry']['coordinates'][0],
-              feature['geometry']['coordinates'][1],
-            ),
-          ));
+          facilities.add({
+            'geometry': point,
+            'properties': feature['properties'],
+            'id': feature['id']
+          });
         } else if (type == 'node') {
-          nodes.add(Point(
-            coordinates: Position(
-              feature['geometry']['coordinates'][0],
-              feature['geometry']['coordinates'][1],
-            ),
-          ));
+          nodes.add({
+            'geometry': point,
+            'properties': feature['properties'],
+            'id': feature['id']
+          });
         }
       } else if (feature['geometry']['type'] == 'LineString') {
         lines.add((feature['geometry']['coordinates'] as List)
