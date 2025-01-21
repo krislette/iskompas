@@ -13,33 +13,18 @@ class NavigationButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Positioned(
       right: 16,
-      bottom: 80,
+      bottom: 170,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: Iskolors.colorYellow,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-          ),
+          shape: const CircleBorder(),
+          padding: const EdgeInsets.all(18),
         ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.navigation_outlined,
-              color: Iskolors.colorDarkShade,
-            ),
-            SizedBox(width: 8),
-            Text(
-              'Start Navigation',
-              style: TextStyle(
-                color: Iskolors.colorDarkShade,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+        child: const Icon(
+          Icons.navigation_outlined,
+          color: Iskolors.colorDarkShade,
+          size: 24,
         ),
       ),
     );

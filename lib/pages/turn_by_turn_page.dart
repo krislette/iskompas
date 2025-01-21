@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:iskompas/utils/colors.dart';
 import 'package:iskompas/utils/route_manager.dart';
 import 'package:iskompas/utils/location_provider.dart';
+import 'package:iskompas/utils/theme_provider.dart';
 
 class TurnByTurnPage extends StatefulWidget {
   final List<Point> route;
@@ -45,13 +46,26 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
   }
 
   Future<void> _initializeMap(MapboxMap mapboxMap) async {
+    _mapboxMap = mapboxMap;
+
     mapboxMap.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
     mapboxMap.compass.updateSettings(CompassSettings(enabled: false));
 
-    _mapboxMap = mapboxMap;
     _polylineAnnotationManager =
         await _mapboxMap.annotations.createPolylineAnnotationManager();
+
+    // Set initial theme after map is initialized
+    if (mounted) {
+      final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+      updateMapTheme(themeProvider.isDarkMode);
+    }
+
     _drawRoute(_remainingRoute);
+  }
+
+  void updateMapTheme(bool isDarkMode) {
+    _mapboxMap.style.setStyleImportConfigProperty(
+        "basemap", "lightPreset", isDarkMode ? "dusk" : "day");
   }
 
   Future<void> _drawRoute(List<Point> route) async {

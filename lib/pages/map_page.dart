@@ -9,7 +9,9 @@ import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/models/feature_model.dart';
 import 'package:iskompas/widgets/category_filter.dart';
 import 'package:iskompas/utils/location_provider.dart';
+import 'package:iskompas/utils/theme_provider.dart';
 import 'package:iskompas/widgets/navigation_button.dart';
+import 'package:iskompas/widgets/theme_toggle_button.dart';
 import 'package:iskompas/pages/turn_by_turn_page.dart';
 import 'package:iskompas/widgets/marker_popup.dart';
 
@@ -47,13 +49,18 @@ class _MapPageState extends State<MapPage> {
   final Map<String, Map<String, String>> annotationMetadata =
       {}; // Maps custom id to metadata
 
+  final Map<String, List<Point>> _routeCache = {};
+
   bool isMapInitialized = false;
   GeoFeature? deferredFocusFeature;
 
   @override
   void initState() {
     super.initState();
+    initializeMapData();
+  }
 
+  void initializeMapData() {
     try {
       final facilities = (widget.mapData['facilities'] as List).map((facility) {
         return GeoFeature(
@@ -106,6 +113,15 @@ class _MapPageState extends State<MapPage> {
   Future<void> initializeManagers(MapboxMap mapboxMap) async {
     _mapboxMap = mapboxMap;
 
+    await _mapboxMap.style.setStyleImportConfigProperty(
+        "basemap", "showPointOfInterestLabels", false);
+
+    await _mapboxMap.style
+        .setStyleImportConfigProperty("basemap", "showPlaceLabels", false);
+
+    await _mapboxMap.style
+        .setStyleImportConfigProperty("basemap", "showTransitLabels", false);
+
     _pointAnnotationManager =
         await _mapboxMap.annotations.createPointAnnotationManager();
     _polylineAnnotationManager =
@@ -120,6 +136,11 @@ class _MapPageState extends State<MapPage> {
           annotationIdMap: annotationIdMap),
     );
 
+    if (mounted) {
+      final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+      updateMapTheme(themeProvider.isDarkMode);
+    }
+
     isMapInitialized = true;
 
     // Perform deferred focus and marker addition
@@ -128,6 +149,18 @@ class _MapPageState extends State<MapPage> {
       addMarkersFromFeatures([deferredFocusFeature!]);
       deferredFocusFeature = null; // Clear deferred action
     }
+  }
+
+  // Separate method to update map theme
+  void updateMapTheme(bool isDarkMode) {
+    _mapboxMap.style.setStyleImportConfigProperty(
+        "basemap", "lightPreset", isDarkMode ? "dusk" : "day");
+  }
+
+  void toggleMapTheme() async {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    await themeProvider.toggleTheme();
+    updateMapTheme(themeProvider.isDarkMode);
   }
 
   void focusOnLocation(Point location) {
@@ -145,18 +178,20 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> addMarkersFromFeatures(List<GeoFeature> features) async {
-    final ByteData bytes = await rootBundle.load('assets/icons/pin.png');
+    final ByteData bytes =
+        await rootBundle.load('assets/icons/facilities-pin.png');
     final Uint8List imageData = bytes.buffer.asUint8List();
 
     // Create a list to hold all annotation options
     final List<PointAnnotationOptions> annotationOptionsList =
         features.map((feature) {
       return PointAnnotationOptions(
-        geometry: feature.geometry,
-        image: imageData,
-        iconSize: 0.2,
-        textField: feature.properties['name'],
-      );
+          geometry: feature.geometry,
+          image: imageData,
+          iconSize: 1,
+          textField: feature.properties['name'],
+          textOffset: [0, -2],
+          textSize: 12);
     }).toList();
 
     // Create all annotations at once
@@ -211,13 +246,43 @@ class _MapPageState extends State<MapPage> {
   }
 
   void addPolyline(List<Point> route) {
+    final simplifiedRoute = _simplifyRoute(route);
+
     final polylineOptions = PolylineAnnotationOptions(
         geometry: LineString(
-          coordinates: route.map((point) => point.coordinates).toList(),
+          coordinates:
+              simplifiedRoute.map((point) => point.coordinates).toList(),
         ),
         lineWidth: 8.0,
         lineColor: Iskolors.colorYellow.value);
+
     _polylineAnnotationManager.create(polylineOptions);
+  }
+
+  List<Point> _simplifyRoute(List<Point> route) {
+    if (route.length < 3) return route;
+
+    const double minDistance = 0.00001;
+    final simplified = <Point>[route.first];
+
+    for (int i = 1; i < route.length - 1; i++) {
+      final prev = route[i - 1];
+      final curr = route[i];
+      final next = route[i + 1];
+
+      final dx1 = curr.coordinates[0]! - prev.coordinates[0]!;
+      final dy1 = curr.coordinates[1]! - prev.coordinates[1]!;
+      final dx2 = next.coordinates[0]! - curr.coordinates[0]!;
+      final dy2 = next.coordinates[1]! - curr.coordinates[1]!;
+
+      if (dx1 * dx1 + dy1 * dy1 > minDistance * minDistance ||
+          dx2 * dx2 + dy2 * dy2 > minDistance * minDistance) {
+        simplified.add(curr);
+      }
+    }
+
+    simplified.add(route.last);
+    return simplified;
   }
 
   void clearPolylines() {
@@ -225,19 +290,26 @@ class _MapPageState extends State<MapPage> {
   }
 
   void calculateRoute(Point from, Point to) {
-    // Clear existing polyline before adding a new one
     clearPolylines();
 
-    final route = PathFinder.findShortestPath(from, to, pathfindingNodes);
+    final String routeKey = '${from.hashCode}-${to.hashCode}';
+    if (_routeCache.containsKey(routeKey)) {
+      setState(() {
+        currentRoute = _routeCache[routeKey]!;
+      });
+      addPolyline(_routeCache[routeKey]!);
+      return;
+    }
+
+    final route = Pathfinder.findShortestPath(from, to, pathfindingNodes);
+
     if (route.isNotEmpty) {
       setState(() {
         currentRoute = route;
       });
-      print("Route found: $route");
       addPolyline(route);
+      _routeCache[routeKey] = route;
     } else {
-      print("No route found from $from to $to");
-      clearPolylines();
       setState(() {
         currentRoute = [];
       });
@@ -250,6 +322,9 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<LocationProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isNightMode = themeProvider.isDarkMode;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Stack(
@@ -293,7 +368,7 @@ class _MapPageState extends State<MapPage> {
                       vertical: 11.0, horizontal: 16.0),
                   child: CustomSearchBar(
                     hintText: 'Search location...',
-                    isDarkMode: false,
+                    isDarkMode: isNightMode,
                     onChanged: (value) {
                       print('Searching for: $value');
                     },
@@ -316,18 +391,19 @@ class _MapPageState extends State<MapPage> {
                             updateMarkers(selectedCategory == 'facility'
                                 ? null
                                 : 'facility');
-                          }),
+                          },
+                          isDarkMode: isNightMode),
                       CategoryFilter(
-                        icon: Icons.bathroom,
-                        label: 'Bathrooms',
-                        isSelected: selectedCategory == 'bathroom',
-                        onTap: () {
-                          clearPolylines();
-                          updateMarkers(selectedCategory == 'bathroom'
-                              ? null
-                              : 'bathroom');
-                        },
-                      ),
+                          icon: Icons.bathroom,
+                          label: 'Bathrooms',
+                          isSelected: selectedCategory == 'bathroom',
+                          onTap: () {
+                            clearPolylines();
+                            updateMarkers(selectedCategory == 'bathroom'
+                                ? null
+                                : 'bathroom');
+                          },
+                          isDarkMode: isNightMode),
                       // To be added: Stalls, Labs, etc.
                     ],
                   ),
@@ -348,6 +424,11 @@ class _MapPageState extends State<MapPage> {
                 );
               },
             ),
+          // Theme Toggle Button
+          ThemeToggleButton(
+            onPressed: toggleMapTheme,
+            isNightMode: isNightMode,
+          ),
         ],
       ),
     );

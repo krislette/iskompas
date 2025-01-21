@@ -53,7 +53,7 @@ class _MarkerPopupState extends State<MarkerPopup> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
               child: SizedBox(
-                height: 150,
+                height: 160,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -78,7 +78,7 @@ class _MarkerPopupState extends State<MarkerPopup> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 15),
                     const Spacer(),
                     // Buttons row
                     Row(

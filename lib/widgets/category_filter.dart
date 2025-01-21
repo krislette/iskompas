@@ -6,6 +6,7 @@ class CategoryFilter extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
+  final bool isDarkMode;
 
   const CategoryFilter({
     super.key,
@@ -13,25 +14,29 @@ class CategoryFilter extends StatelessWidget {
     required this.label,
     required this.isSelected,
     required this.onTap,
+    required this.isDarkMode,
   });
 
   @override
   Widget build(BuildContext context) {
+    final backgroundColor = isSelected
+        ? Iskolors.colorMaroon
+        : (isDarkMode ? Iskolors.colorDarkShade : Iskolors.colorWhite);
+    final iconColor = isSelected
+        ? Iskolors.colorWhite
+        : (isDarkMode ? Iskolors.colorGrey : Iskolors.colorMaroon);
+    final textColor = isSelected
+        ? Iskolors.colorWhite
+        : (isDarkMode ? Iskolors.colorGrey : Iskolors.colorMaroon);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         margin: const EdgeInsets.only(right: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Iskolors.colorMaroon : Iskolors.colorWhite,
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(20),
-          boxShadow: const [
-            BoxShadow(
-              color: Iskolors.colorLightShadow,
-              spreadRadius: 1,
-              blurRadius: 3,
-            ),
-          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -39,13 +44,13 @@ class CategoryFilter extends StatelessWidget {
             Icon(
               icon,
               size: 24,
-              color: isSelected ? Iskolors.colorWhite : Iskolors.colorMaroon,
+              color: iconColor,
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Iskolors.colorWhite : Iskolors.colorMaroon,
+                color: textColor,
                 fontWeight: FontWeight.w500,
               ),
             ),
