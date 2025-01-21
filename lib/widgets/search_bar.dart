@@ -24,7 +24,7 @@ class CustomSearchBar extends StatelessWidget {
     final borderColor =
         isDarkMode ? Iskolors.colorGreyShade : Iskolors.colorLightBlack;
     final shadowColor =
-        isDarkMode ? Iskolors.colorShadow : Iskolors.colorLightShadow;
+        isDarkMode ? Iskolors.colorTransparent : Iskolors.colorLightShadow;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16),
