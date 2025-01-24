@@ -24,6 +24,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
   bool showThirdText = false;
   bool showFourthText = false;
   bool showPin = false;
+  bool showCompass = false;
 
   late AnimationController _rotationController;
   late Animation<double> _rotationAnimation;
@@ -41,25 +42,31 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
       CurvedAnimation(parent: _rotationController, curve: Curves.easeInOut)
     );
 
-    Future.delayed(const Duration(milliseconds: 4000), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      setState(() {
+        showCompass = true;
+      });
+    });
+
+    Future.delayed(const Duration(milliseconds: 3000), () {
       setState(() {
         showSecondText = true;
       });
     });
 
-    Future.delayed(const Duration(milliseconds: 4600), () {
+    Future.delayed(const Duration(milliseconds: 3600), () {
       setState(() {
         showThirdText = true;
       });
     });
 
-    Future.delayed(const Duration(milliseconds: 5200), () {
+    Future.delayed(const Duration(milliseconds: 4200), () {
       setState(() {
         showFourthText = true;
       });
     });
 
-    Future.delayed(const Duration(milliseconds: 5600), () {
+    Future.delayed(const Duration(milliseconds: 5000), () {
       setState(() {
         showPin = true;
       });
@@ -67,7 +74,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
 
     _rotationController.forward();
 
-    Timer(const Duration(milliseconds: 7000), () {
+    Timer(const Duration(milliseconds: 6600), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -102,11 +109,11 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
     final MovieTween linetween = MovieTween()
       ..scene(
               begin: const Duration(milliseconds: 0),
-              duration: const Duration(milliseconds: 1700))
+              duration: const Duration(milliseconds: 3000))
           .tween('animation', Tween<double>(begin: 1, end: 280))
       ..scene(
-              begin: const Duration(milliseconds: 3200),
-              duration: const Duration(milliseconds: 2500))
+              begin: const Duration(milliseconds: 2900),
+              duration: const Duration(milliseconds: 1500))
           .tween(
               'color',
               ColorTween(
@@ -141,7 +148,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
                   ),
                 );
               },
-              duration: Duration(milliseconds: 2000),
+              duration: Duration(milliseconds: 1600),
               tween: IntTween(begin: 0, end: string1.length),
             ),
           ),
@@ -249,7 +256,11 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
           Positioned(
             bottom: 116,
             right: -109,
-            child: AnimatedBuilder(
+            child: AnimatedScale(
+              scale: showCompass ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 1500),
+              curve: Curves.easeOut,
+              child: AnimatedBuilder(
               animation: _rotationAnimation,
               child: Image.asset(
                 'assets/splash/iskompas_logo.png',
@@ -263,6 +274,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
                 );
               },
               ),
+            ),
             ),
         ],
       ),
