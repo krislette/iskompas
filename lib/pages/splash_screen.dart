@@ -14,7 +14,7 @@ class SplashScreen extends StatefulWidget {
   SplashScreenState createState() => SplashScreenState();
 }
 
-class SplashScreenState extends State<SplashScreen> {
+class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
   final string1 = 'Find your way,';
   final string2 = 'the';
   final string3 = 'isko';
@@ -25,9 +25,21 @@ class SplashScreenState extends State<SplashScreen> {
   bool showFourthText = false;
   bool showPin = false;
 
+  late AnimationController _rotationController;
+  late Animation<double> _rotationAnimation;
+
   @override
   void initState() {
     super.initState();
+
+    _rotationController = AnimationController(
+      duration: const Duration(milliseconds: 4200),
+      vsync: this,
+    );
+
+    _rotationAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _rotationController, curve: Curves.easeInOut)
+    );
 
     Future.delayed(const Duration(milliseconds: 2400), () {
       setState(() {
@@ -52,6 +64,8 @@ class SplashScreenState extends State<SplashScreen> {
         showPin = true;
       });
     });
+
+    _rotationController.forward();
 
     Timer(const Duration(milliseconds: 5000), () {
       Navigator.pushReplacement(
