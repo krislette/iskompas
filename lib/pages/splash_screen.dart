@@ -41,25 +41,25 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
       CurvedAnimation(parent: _rotationController, curve: Curves.easeInOut)
     );
 
-    Future.delayed(const Duration(milliseconds: 2400), () {
+    Future.delayed(const Duration(milliseconds: 4000), () {
       setState(() {
         showSecondText = true;
       });
     });
 
-    Future.delayed(const Duration(milliseconds: 2800), () {
+    Future.delayed(const Duration(milliseconds: 4600), () {
       setState(() {
         showThirdText = true;
       });
     });
 
-    Future.delayed(const Duration(milliseconds: 3200), () {
+    Future.delayed(const Duration(milliseconds: 5200), () {
       setState(() {
         showFourthText = true;
       });
     });
 
-    Future.delayed(const Duration(milliseconds: 4200), () {
+    Future.delayed(const Duration(milliseconds: 5600), () {
       setState(() {
         showPin = true;
       });
@@ -67,7 +67,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
 
     _rotationController.forward();
 
-    Timer(const Duration(milliseconds: 5000), () {
+    Timer(const Duration(milliseconds: 7000), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -76,6 +76,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
       );
     });
   }
+
 
   @override
   void dispose() {
@@ -88,10 +89,10 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
     final MovieTween iskotween = MovieTween()
       ..scene(
               begin: const Duration(milliseconds: 0),
-              duration: const Duration(milliseconds: 400))
+              duration: const Duration(milliseconds: 600))
           .tween('typewriter', IntTween(begin: 0, end: string3.length))
       ..scene(
-              begin: const Duration(milliseconds: 700),
+              begin: const Duration(milliseconds: 600),
               duration: const Duration(milliseconds: 2500))
           .tween(
               'color',
@@ -104,7 +105,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
               duration: const Duration(milliseconds: 1700))
           .tween('animation', Tween<double>(begin: 1, end: 280))
       ..scene(
-              begin: const Duration(milliseconds: 1700),
+              begin: const Duration(milliseconds: 3200),
               duration: const Duration(milliseconds: 2500))
           .tween(
               'color',
@@ -140,7 +141,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
                   ),
                 );
               },
-              duration: Duration(milliseconds: 1200),
+              duration: Duration(milliseconds: 2000),
               tween: IntTween(begin: 0, end: string1.length),
             ),
           ),
@@ -161,7 +162,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
                         ),
                       );
                     },
-                    duration: Duration(milliseconds: 400),
+                    duration: Duration(milliseconds: 600),
                     tween: IntTween(begin: 0, end: string2.length),
                   )
                 : SizedBox.shrink(),
@@ -205,7 +206,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
                         ),
                       );
                     },
-                    duration: Duration(milliseconds: 400),
+                    duration: Duration(milliseconds: 600),
                     tween: IntTween(begin: 0, end: string4.length),
                   )
                 : SizedBox.shrink(),
