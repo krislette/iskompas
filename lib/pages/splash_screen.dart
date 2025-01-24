@@ -78,6 +78,12 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
   }
 
   @override
+  void dispose() {
+    _rotationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final MovieTween iskotween = MovieTween()
       ..scene(
@@ -237,6 +243,26 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
               ),
             ),
           ),
+
+          // compass logo
+          Positioned(
+            bottom: 116,
+            right: -109,
+            child: AnimatedBuilder(
+              animation: _rotationAnimation,
+              child: Image.asset(
+                'assets/splash/iskompas_logo.png',
+                width: 339,
+                height: 339,
+              ),
+              builder: (context, child) {
+                return Transform.rotate(
+                  angle: _rotationAnimation.value * 2 * 3.141592653589793,
+                  child: child,
+                );
+              },
+              ),
+            ),
         ],
       ),
     );
