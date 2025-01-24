@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:iskompas/utils/colors.dart';
 import 'dart:async';
-import 'package:iskompas/widgets/navbar.dart';
+import 'package:flutter/material.dart';
 import 'package:simple_animations/simple_animations.dart';
+import 'package:iskompas/utils/colors.dart';
+import 'package:iskompas/widgets/navbar.dart';
 
 class SplashScreen extends StatefulWidget {
   final Map<String, dynamic> mapData;
   final List<dynamic> facilities;
+
   const SplashScreen(
       {super.key, required this.mapData, required this.facilities});
 
@@ -14,7 +15,8 @@ class SplashScreen extends StatefulWidget {
   SplashScreenState createState() => SplashScreenState();
 }
 
-class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
   final string1 = 'Find your way,';
   final string2 = 'the';
   final string3 = 'isko';
@@ -39,8 +41,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
     );
 
     _rotationAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _rotationController, curve: Curves.easeInOut)
-    );
+        CurvedAnimation(parent: _rotationController, curve: Curves.easeInOut));
 
     Future.delayed(const Duration(milliseconds: 100), () {
       setState(() {
@@ -83,7 +84,6 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
       );
     });
   }
-
 
   @override
   void dispose() {
@@ -141,14 +141,14 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
               builder: (BuildContext context, int value, Widget? child) {
                 return Text(
                   string1.substring(0, value),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 40.0,
                     fontFamily: 'Coolvetica',
                     color: Iskolors.colorWhite,
                   ),
                 );
               },
-              duration: Duration(milliseconds: 1600),
+              duration: const Duration(milliseconds: 1600),
               tween: IntTween(begin: 0, end: string1.length),
             ),
           ),
@@ -162,17 +162,17 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
                     builder: (BuildContext context, int value, Widget? child) {
                       return Text(
                         string2.substring(0, value),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 40.0,
                           fontFamily: 'Coolvetica',
                           color: Iskolors.colorWhite,
                         ),
                       );
                     },
-                    duration: Duration(milliseconds: 600),
+                    duration: const Duration(milliseconds: 600),
                     tween: IntTween(begin: 0, end: string2.length),
                   )
-                : SizedBox.shrink(),
+                : const SizedBox.shrink(),
           ),
 
           // Third text
@@ -194,7 +194,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
                       );
                     },
                   )
-                : SizedBox.shrink(),
+                : const SizedBox.shrink(),
           ),
 
           // Fourth text
@@ -206,17 +206,17 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
                     builder: (BuildContext context, int value, Widget? child) {
                       return Text(
                         string4.substring(0, value),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 40.0,
                           fontFamily: 'Coolvetica',
                           color: Iskolors.colorWhite,
                         ),
                       );
                     },
-                    duration: Duration(milliseconds: 600),
+                    duration: const Duration(milliseconds: 600),
                     tween: IntTween(begin: 0, end: string4.length),
                   )
-                : SizedBox.shrink(),
+                : const SizedBox.shrink(),
           ),
 
           // Line
@@ -236,7 +236,7 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
             ),
           ),
 
-          // Location Pin
+          // Location pin
           Positioned(
             top: 176,
             left: 258,
@@ -252,30 +252,30 @@ class SplashScreenState extends State<SplashScreen> with TickerProviderStateMixi
             ),
           ),
 
-          // compass logo
+          // Compass logo
           Positioned(
-            bottom: 116,
+            bottom: 150, // Temporary fix
             right: -109,
             child: AnimatedScale(
               scale: showCompass ? 1.0 : 0.0,
               duration: const Duration(milliseconds: 1500),
               curve: Curves.easeOut,
               child: AnimatedBuilder(
-              animation: _rotationAnimation,
-              child: Image.asset(
-                'assets/splash/iskompas_logo.png',
-                width: 339,
-                height: 339,
-              ),
-              builder: (context, child) {
-                return Transform.rotate(
-                  angle: _rotationAnimation.value * 2 * 3.141592653589793,
-                  child: child,
-                );
-              },
+                animation: _rotationAnimation,
+                child: Image.asset(
+                  'assets/splash/iskompas_logo.png',
+                  width: 339,
+                  height: 339,
+                ),
+                builder: (context, child) {
+                  return Transform.rotate(
+                    angle: _rotationAnimation.value * 2 * 3.141592653589793,
+                    child: child,
+                  );
+                },
               ),
             ),
-            ),
+          ),
         ],
       ),
     );
