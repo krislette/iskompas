@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:iskompas/utils/colors.dart';
 import 'dart:async';
-import 'package:iskompas/widgets/navbar.dart';
+import 'package:flutter/material.dart';
 import 'package:simple_animations/simple_animations.dart';
+import 'package:iskompas/utils/colors.dart';
+import 'package:iskompas/widgets/navbar.dart';
 
 class SplashScreen extends StatefulWidget {
   final Map<String, dynamic> mapData;
   final List<dynamic> facilities;
+
   const SplashScreen(
       {super.key, required this.mapData, required this.facilities});
 
@@ -14,7 +15,8 @@ class SplashScreen extends StatefulWidget {
   SplashScreenState createState() => SplashScreenState();
 }
 
-class SplashScreenState extends State<SplashScreen> {
+class SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
   final string1 = 'Find your way,';
   final string2 = 'the';
   final string3 = 'isko';
@@ -24,36 +26,56 @@ class SplashScreenState extends State<SplashScreen> {
   bool showThirdText = false;
   bool showFourthText = false;
   bool showPin = false;
+  bool showCompass = false;
+
+  late AnimationController _rotationController;
+  late Animation<double> _rotationAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(milliseconds: 2400), () {
+    _rotationController = AnimationController(
+      duration: const Duration(milliseconds: 4200),
+      vsync: this,
+    );
+
+    _rotationAnimation = Tween<double>(begin: 0, end: 1).animate(
+        CurvedAnimation(parent: _rotationController, curve: Curves.easeInOut));
+
+    Future.delayed(const Duration(milliseconds: 100), () {
+      setState(() {
+        showCompass = true;
+      });
+    });
+
+    Future.delayed(const Duration(milliseconds: 3000), () {
       setState(() {
         showSecondText = true;
       });
     });
 
-    Future.delayed(const Duration(milliseconds: 2800), () {
+    Future.delayed(const Duration(milliseconds: 3600), () {
       setState(() {
         showThirdText = true;
       });
     });
 
-    Future.delayed(const Duration(milliseconds: 3200), () {
+    Future.delayed(const Duration(milliseconds: 4200), () {
       setState(() {
         showFourthText = true;
       });
     });
 
-    Future.delayed(const Duration(milliseconds: 4200), () {
+    Future.delayed(const Duration(milliseconds: 5000), () {
       setState(() {
         showPin = true;
       });
     });
 
-    Timer(const Duration(milliseconds: 5000), () {
+    _rotationController.forward();
+
+    Timer(const Duration(milliseconds: 6600), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -64,14 +86,20 @@ class SplashScreenState extends State<SplashScreen> {
   }
 
   @override
+  void dispose() {
+    _rotationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final MovieTween iskotween = MovieTween()
       ..scene(
               begin: const Duration(milliseconds: 0),
-              duration: const Duration(milliseconds: 400))
+              duration: const Duration(milliseconds: 600))
           .tween('typewriter', IntTween(begin: 0, end: string3.length))
       ..scene(
-              begin: const Duration(milliseconds: 700),
+              begin: const Duration(milliseconds: 600),
               duration: const Duration(milliseconds: 2500))
           .tween(
               'color',
@@ -81,11 +109,11 @@ class SplashScreenState extends State<SplashScreen> {
     final MovieTween linetween = MovieTween()
       ..scene(
               begin: const Duration(milliseconds: 0),
-              duration: const Duration(milliseconds: 1700))
+              duration: const Duration(milliseconds: 3000))
           .tween('animation', Tween<double>(begin: 1, end: 280))
       ..scene(
-              begin: const Duration(milliseconds: 1700),
-              duration: const Duration(milliseconds: 2500))
+              begin: const Duration(milliseconds: 2900),
+              duration: const Duration(milliseconds: 1500))
           .tween(
               'color',
               ColorTween(
@@ -113,14 +141,14 @@ class SplashScreenState extends State<SplashScreen> {
               builder: (BuildContext context, int value, Widget? child) {
                 return Text(
                   string1.substring(0, value),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 40.0,
                     fontFamily: 'Coolvetica',
                     color: Iskolors.colorWhite,
                   ),
                 );
               },
-              duration: Duration(milliseconds: 1200),
+              duration: const Duration(milliseconds: 1600),
               tween: IntTween(begin: 0, end: string1.length),
             ),
           ),
@@ -134,17 +162,17 @@ class SplashScreenState extends State<SplashScreen> {
                     builder: (BuildContext context, int value, Widget? child) {
                       return Text(
                         string2.substring(0, value),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 40.0,
                           fontFamily: 'Coolvetica',
                           color: Iskolors.colorWhite,
                         ),
                       );
                     },
-                    duration: Duration(milliseconds: 400),
+                    duration: const Duration(milliseconds: 600),
                     tween: IntTween(begin: 0, end: string2.length),
                   )
-                : SizedBox.shrink(),
+                : const SizedBox.shrink(),
           ),
 
           // Third text
@@ -166,7 +194,7 @@ class SplashScreenState extends State<SplashScreen> {
                       );
                     },
                   )
-                : SizedBox.shrink(),
+                : const SizedBox.shrink(),
           ),
 
           // Fourth text
@@ -178,17 +206,17 @@ class SplashScreenState extends State<SplashScreen> {
                     builder: (BuildContext context, int value, Widget? child) {
                       return Text(
                         string4.substring(0, value),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 40.0,
                           fontFamily: 'Coolvetica',
                           color: Iskolors.colorWhite,
                         ),
                       );
                     },
-                    duration: Duration(milliseconds: 400),
+                    duration: const Duration(milliseconds: 600),
                     tween: IntTween(begin: 0, end: string4.length),
                   )
-                : SizedBox.shrink(),
+                : const SizedBox.shrink(),
           ),
 
           // Line
@@ -208,7 +236,7 @@ class SplashScreenState extends State<SplashScreen> {
             ),
           ),
 
-          // Location Pin
+          // Location pin
           Positioned(
             top: 176,
             left: 258,
@@ -220,6 +248,31 @@ class SplashScreenState extends State<SplashScreen> {
                 'assets/splash/location_pin.png',
                 width: 40,
                 height: 40,
+              ),
+            ),
+          ),
+
+          // Compass logo
+          Positioned(
+            bottom: 150, // Temporary fix
+            right: -109,
+            child: AnimatedScale(
+              scale: showCompass ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 1500),
+              curve: Curves.easeOut,
+              child: AnimatedBuilder(
+                animation: _rotationAnimation,
+                child: Image.asset(
+                  'assets/splash/iskompas_logo.png',
+                  width: 339,
+                  height: 339,
+                ),
+                builder: (context, child) {
+                  return Transform.rotate(
+                    angle: _rotationAnimation.value * 2 * 3.141592653589793,
+                    child: child,
+                  );
+                },
               ),
             ),
           ),
