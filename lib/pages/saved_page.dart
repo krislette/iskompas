@@ -22,7 +22,9 @@ class SavedPage extends StatefulWidget {
 
 class SavedPageState extends State<SavedPage> {
   List<Facility> facilities = [];
+  List<Facility> filteredFacilities = [];
   bool isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
 
   Color unsaveButtonColor = Iskolors.colorMaroon;
   Color showLocationButtonColor = Iskolors.colorMaroon;
@@ -31,6 +33,27 @@ class SavedPageState extends State<SavedPage> {
   void initState() {
     super.initState();
     loadFacilities();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    filterFacilities(_searchController.text);
+  }
+
+  void filterFacilities(String query) {
+    setState(() {
+      filteredFacilities = facilities
+          .where((facility) =>
+              facility.name.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
   }
 
   Future<void> loadFacilities() async {
@@ -43,6 +66,7 @@ class SavedPageState extends State<SavedPage> {
       facilities = savedFacilities
           .map((facility) => Facility.fromJson(facility))
           .toList();
+      filteredFacilities = List.from(facilities);
       isLoading = false;
     });
   }
@@ -56,11 +80,10 @@ class SavedPageState extends State<SavedPage> {
         screenHeight - searchBarHeight - bottomPadding;
 
     return Scaffold(
-      resizeToAvoidBottomInset: false, // Prevent resizing when keyboard appears
+      resizeToAvoidBottomInset: false,
       backgroundColor: Iskolors.colorBlack,
       body: SafeArea(
         child: SingleChildScrollView(
-          // Allow the content to scroll if needed
           child: Column(
             children: [
               Padding(
@@ -70,14 +93,15 @@ class SavedPageState extends State<SavedPage> {
                 ),
                 child: CustomSearchBar(
                   hintText: 'Search saved...',
+                  controller: _searchController,
                   onChanged: (value) {
-                    print('Searching for: $value');
+                    filterFacilities(value);
                   },
                 ),
               ),
               SizedBox(
-                height: availableHeight - 50, // Constrain the height
-                child: facilities.isEmpty
+                height: availableHeight - 50,
+                child: filteredFacilities.isEmpty
                     ? const Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -107,7 +131,7 @@ class SavedPageState extends State<SavedPage> {
                           enableInfiniteScroll: false,
                           viewportFraction: 0.8,
                         ),
-                        items: facilities.map((facility) {
+                        items: filteredFacilities.map((facility) {
                           return Builder(
                             builder: (BuildContext context) {
                               return Container(
@@ -129,7 +153,7 @@ class SavedPageState extends State<SavedPage> {
                                         child: Image.asset(
                                           facility.imagePath,
                                           width: double.infinity,
-                                          height: 380, // Fixed height for image
+                                          height: 380,
                                           fit: BoxFit.cover,
                                         ),
                                       ),
@@ -160,7 +184,6 @@ class SavedPageState extends State<SavedPage> {
                                                 textAlign: TextAlign.center,
                                               ),
                                               const SizedBox(height: 8),
-                                              // Constrain description height
                                               Flexible(
                                                 child: SingleChildScrollView(
                                                   child: Text(
@@ -185,8 +208,7 @@ class SavedPageState extends State<SavedPage> {
                                             left: 16.0,
                                             right: 16.0,
                                             top: 3.0,
-                                            bottom:
-                                                40.0), // Reduced bottom padding
+                                            bottom: 40.0),
                                         child: Row(
                                           children: [
                                             Expanded(
@@ -198,7 +220,7 @@ class SavedPageState extends State<SavedPage> {
                                                               context,
                                                               facility.name);
                                                   if (removed) {
-                                                    loadFacilities(); // Reload the list
+                                                    loadFacilities();
                                                   }
                                                 },
                                                 style: ElevatedButton.styleFrom(
