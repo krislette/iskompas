@@ -12,7 +12,7 @@
     "image": "assets/facilities/amphitheater.png"
   },
   {
-    "name": "Campus Development and Maintenance Building",
+    "name": "Campus Development Building",
     "description": "A building where campus development initiatives and maintenance services are planned and organized",
     "location": "Behind East Wing, near Nutrition and Food Science Building",
     "image": "assets/facilities/famo.jpg"
@@ -102,7 +102,7 @@
     "image": "assets/facilities/freedom-park.png"
   },
   {
-    "name": "Ninoy Aquino Library and Learning Resources Center",
+    "name": "Ninoy Aquino Library",
     "description": "A studying area and arena of books available for students",
     "location": "Near Charlie Del Rosario Building and Laboratory High School",
     "image": "assets/facilities/nallrc.jpg"
