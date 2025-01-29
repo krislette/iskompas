@@ -5,7 +5,7 @@ class CustomSearchBar extends StatelessWidget {
   final String hintText;
   final ValueChanged<String>? onChanged;
   final TextEditingController? controller;
-  final bool isDarkMode; // Add a theme toggle
+  final bool isDarkMode;
 
   const CustomSearchBar({
     super.key,

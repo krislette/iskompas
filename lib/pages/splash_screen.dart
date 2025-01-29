@@ -142,7 +142,7 @@ class SplashScreenState extends State<SplashScreen>
                 return Text(
                   string1.substring(0, value),
                   style: const TextStyle(
-                    fontSize: 40.0,
+                    fontSize: 45.0,
                     fontFamily: 'Coolvetica',
                     color: Iskolors.colorWhite,
                   ),
@@ -163,7 +163,7 @@ class SplashScreenState extends State<SplashScreen>
                       return Text(
                         string2.substring(0, value),
                         style: const TextStyle(
-                          fontSize: 40.0,
+                          fontSize: 50.0,
                           fontFamily: 'Coolvetica',
                           color: Iskolors.colorWhite,
                         ),
@@ -187,7 +187,7 @@ class SplashScreenState extends State<SplashScreen>
                       return Text(
                         string3.substring(0, value.get<int>('typewriter')),
                         style: TextStyle(
-                          fontSize: 40.0,
+                          fontSize: 50.0,
                           fontFamily: 'Coolvetica',
                           color: value.get<Color>('color'),
                         ),
@@ -207,7 +207,7 @@ class SplashScreenState extends State<SplashScreen>
                       return Text(
                         string4.substring(0, value),
                         style: const TextStyle(
-                          fontSize: 40.0,
+                          fontSize: 50.0,
                           fontFamily: 'Coolvetica',
                           color: Iskolors.colorWhite,
                         ),
