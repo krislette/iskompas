@@ -18,14 +18,17 @@ Map<String, dynamic> parseGeoJson(String geoJsonString) {
           ),
         );
 
-        if (type == 'facility') {
-          facilities.add({
+        // Check if it's a node
+        if (type == 'node') {
+          nodes.add({
             'geometry': point,
             'properties': feature['properties'],
             'id': feature['id']
           });
-        } else if (type == 'node') {
-          nodes.add({
+        }
+        // All other types (facility, faculty, bathroom, sports) go into facilities
+        else {
+          facilities.add({
             'geometry': point,
             'properties': feature['properties'],
             'id': feature['id']
