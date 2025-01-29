@@ -84,16 +84,28 @@ class _MapPageState extends State<MapPage> {
 
       // Categorize features
       categorizedFeatures = {
-        'facility': facilities,
+        'facility': facilities
+            .where((f) => f.properties['type'] == 'facility')
+            .toList(),
+        'faculty':
+            facilities.where((f) => f.properties['type'] == 'faculty').toList(),
+        'sports':
+            facilities.where((f) => f.properties['type'] == 'sports').toList(),
+        'bathroom': facilities
+            .where((f) => f.properties['type'] == 'bathroom')
+            .toList(),
+        'hangout':
+            facilities.where((f) => f.properties['type'] == 'hangout').toList(),
+        'landmark': facilities
+            .where((f) => f.properties['type'] == 'landmark')
+            .toList(),
         'node': nodes,
       };
 
       // If there's a facility to focus on
       if (widget.focusFacilityName != null) {
         final facilityFeature = facilities.firstWhere(
-          (feature) =>
-              feature.properties['type'] == 'facility' &&
-              feature.properties['name'] == widget.focusFacilityName,
+          (feature) => feature.properties['name'] == widget.focusFacilityName,
           orElse: () => GeoFeature(
             id: '',
             properties: {'name': ''},
@@ -178,21 +190,34 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> addMarkersFromFeatures(List<GeoFeature> features) async {
-    final ByteData bytes =
-        await rootBundle.load('assets/icons/facilities-pin.png');
-    final Uint8List imageData = bytes.buffer.asUint8List();
+    // Cache to store loaded images
+    final Map<String, Uint8List> imageCache = {};
+
+    // Load image for each feature
+    Future<Uint8List> getImageForType(String type) async {
+      if (!imageCache.containsKey(type)) {
+        final ByteData bytes =
+            await rootBundle.load('assets/icons/$type-pin.png');
+        imageCache[type] = bytes.buffer.asUint8List();
+      }
+      return imageCache[type]!;
+    }
 
     // Create a list to hold all annotation options
     final List<PointAnnotationOptions> annotationOptionsList =
-        features.map((feature) {
+        await Future.wait(features.map((feature) async {
+      final String type = feature.properties['type'].toString().toLowerCase();
+      final Uint8List imageData = await getImageForType(type);
+
       return PointAnnotationOptions(
-          geometry: feature.geometry,
-          image: imageData,
-          iconSize: 1,
-          textField: feature.properties['name'],
-          textOffset: [0, -2],
-          textSize: 12);
-    }).toList();
+        geometry: feature.geometry,
+        image: imageData,
+        iconSize: 1,
+        // textField: feature.properties['name'],
+        // textOffset: [0, -2],
+        // textSize: 12
+      );
+    }));
 
     // Create all annotations at once
     final List<PointAnnotation> annotations =
@@ -221,6 +246,8 @@ class _MapPageState extends State<MapPage> {
     });
 
     if (category != null && categorizedFeatures.containsKey(category)) {
+      print('Updating markers for category: $category');
+      print('Number of features: ${categorizedFeatures[category]!.length}');
       addMarkersFromFeatures(categorizedFeatures[category]!);
     }
   }
@@ -402,6 +429,49 @@ class _MapPageState extends State<MapPage> {
                             updateMarkers(selectedCategory == 'bathroom'
                                 ? null
                                 : 'bathroom');
+                          },
+                          isDarkMode: isNightMode),
+                      CategoryFilter(
+                          icon: Icons.work,
+                          label: 'Offices',
+                          isSelected: selectedCategory == 'faculty',
+                          onTap: () {
+                            clearPolylines();
+                            updateMarkers(selectedCategory == 'faculty'
+                                ? null
+                                : 'faculty');
+                          },
+                          isDarkMode: isNightMode),
+                      CategoryFilter(
+                          icon: Icons.sports,
+                          label: 'Sports',
+                          isSelected: selectedCategory == 'sports',
+                          onTap: () {
+                            clearPolylines();
+                            updateMarkers(
+                                selectedCategory == 'sports' ? null : 'sports');
+                          },
+                          isDarkMode: isNightMode),
+                      CategoryFilter(
+                          icon: Icons.nature_people,
+                          label: 'Parks',
+                          isSelected: selectedCategory == 'hangout',
+                          onTap: () {
+                            clearPolylines();
+                            updateMarkers(selectedCategory == 'hangout'
+                                ? null
+                                : 'hangout');
+                          },
+                          isDarkMode: isNightMode),
+                      CategoryFilter(
+                          icon: Icons.flag,
+                          label: 'Landmarks',
+                          isSelected: selectedCategory == 'landmark',
+                          onTap: () {
+                            clearPolylines();
+                            updateMarkers(selectedCategory == 'landmark'
+                                ? null
+                                : 'landmark');
                           },
                           isDarkMode: isNightMode),
                       // To be added: Stalls, Labs, etc.
