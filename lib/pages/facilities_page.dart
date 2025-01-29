@@ -126,59 +126,67 @@ class FacilitiesPageState extends State<FacilitiesPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CustomSearchBar(
-              controller: searchController,
-              hintText: 'Search facilities...',
-              onChanged: (value) {
-                filterFacilities(value);
-              },
-            ),
-            const SizedBox(height: 15),
-            Expanded(
-              child: filteredFacilities.isEmpty && !isLoading
-                  ? const Align(
-                      alignment: Alignment(0, -0.2),
-                      child: Text(
-                        'No matching facility found',
-                        style: TextStyle(
-                          color: Iskolors.colorGrey,
-                          fontSize: 16,
-                          fontStyle: FontStyle.italic,
+        child: GestureDetector(
+          onTap: () {
+            // Dismiss the keyboard when tapping outside the search bar
+            FocusScope.of(context).unfocus();
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomSearchBar(
+                controller: searchController,
+                hintText: 'Search facilities...',
+                onChanged: (value) {
+                  filterFacilities(value);
+                },
+              ),
+              const SizedBox(height: 15),
+              Expanded(
+                child: filteredFacilities.isEmpty && !isLoading
+                    ? const Align(
+                        alignment: Alignment(0, -0.2),
+                        child: Text(
+                          'No matching facility found',
+                          style: TextStyle(
+                            color: Iskolors.colorGrey,
+                            fontSize: 16,
+                            fontStyle: FontStyle.italic,
+                          ),
                         ),
-                      ),
-                    )
-                  : ListView.builder(
-                      controller: _scrollController,
-                      itemCount: filteredFacilities.length + (hasMore ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        // Only show the skeleton if lazy loading is enabled (`hasMore`) and not filtering
-                        if (index >= filteredFacilities.length) {
-                          return hasMore && searchController.text.isEmpty
-                              ? const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                                  child: Center(
-                                    child: FacilityRowSkeleton(),
-                                  ),
-                                )
-                              : const SizedBox();
-                        }
+                      )
+                    : ListView.builder(
+                        controller: _scrollController,
+                        itemCount:
+                            filteredFacilities.length + (hasMore ? 1 : 0),
+                        itemBuilder: (context, index) {
+                          // Only show the skeleton if lazy loading is enabled (`hasMore`) and not filtering
+                          if (index >= filteredFacilities.length) {
+                            return hasMore && searchController.text.isEmpty
+                                ? const Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 16.0),
+                                    child: Center(
+                                      child: FacilityRowSkeleton(),
+                                    ),
+                                  )
+                                : const SizedBox();
+                          }
 
-                        final facility = filteredFacilities[index];
-                        return FacilityRow(
-                          name: facility['name']!,
-                          description: facility['description']!,
-                          location: facility['location']!,
-                          imagePath: facility['image']!,
-                          isLast: index == filteredFacilities.length - 1 &&
-                              !hasMore,
-                        );
-                      },
-                    ),
-            )
-          ],
+                          final facility = filteredFacilities[index];
+                          return FacilityRow(
+                            name: facility['name']!,
+                            description: facility['description']!,
+                            location: facility['location']!,
+                            imagePath: facility['image']!,
+                            isLast: index == filteredFacilities.length - 1 &&
+                                !hasMore,
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );

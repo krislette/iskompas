@@ -22,7 +22,9 @@ class SavedPage extends StatefulWidget {
 
 class SavedPageState extends State<SavedPage> {
   List<Facility> facilities = [];
+  List<Facility> filteredFacilities = [];
   bool isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
 
   Color unsaveButtonColor = Iskolors.colorMaroon;
   Color showLocationButtonColor = Iskolors.colorMaroon;
@@ -31,6 +33,27 @@ class SavedPageState extends State<SavedPage> {
   void initState() {
     super.initState();
     loadFacilities();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() {
+    filterFacilities(_searchController.text);
+  }
+
+  void filterFacilities(String query) {
+    setState(() {
+      filteredFacilities = facilities
+          .where((facility) =>
+              facility.name.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
   }
 
   Future<void> loadFacilities() async {
@@ -43,6 +66,7 @@ class SavedPageState extends State<SavedPage> {
       facilities = savedFacilities
           .map((facility) => Facility.fromJson(facility))
           .toList();
+      filteredFacilities = List.from(facilities);
       isLoading = false;
     });
   }
@@ -59,66 +83,71 @@ class SavedPageState extends State<SavedPage> {
       resizeToAvoidBottomInset: false,
       backgroundColor: Iskolors.colorBlack,
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 20.0,
-                horizontal: 16.0,
-              ),
-              child: CustomSearchBar(
-                hintText: 'Search saved...',
-                onChanged: (value) {
-                  print('Searching for: $value');
-                },
-              ),
-            ),
-            Expanded(
-              child: facilities.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.inbox,
-                            size: 80,
-                            color: Iskolors.colorGrey,
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            'No saved locations yet',
-                            style: TextStyle(
-                              color: Iskolors.colorGrey,
-                              fontSize: 18,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    )
-                  : CarouselSlider(
-                      options: CarouselOptions(
-                        height: availableHeight - 50,
-                        enlargeCenterPage: true,
-                        autoPlay: false,
-                        enableInfiniteScroll: false,
-                        viewportFraction: 0.8,
-                      ),
-                      items: facilities.map((facility) {
-                        return Builder(
-                          builder: (BuildContext context) {
-                            return Container(
-                              width: MediaQuery.of(context).size.width,
-                              margin:
-                                  const EdgeInsets.symmetric(horizontal: 5.0),
-                              child: Card(
-                                color: Iskolors.colorBlack,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+        child: GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+          },
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 20.0,
+                    horizontal: 16.0,
+                  ),
+                  child: CustomSearchBar(
+                    hintText: 'Search saved...',
+                    controller: _searchController,
+                    onChanged: (value) {
+                      filterFacilities(value);
+                    },
+                  ),
+                ),
+                SizedBox(
+                  height: availableHeight - 50,
+                  child: filteredFacilities.isEmpty
+                      ? const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.inbox,
+                                size: 80,
+                                color: Iskolors.colorGrey,
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                'No saved locations yet',
+                                style: TextStyle(
+                                  color: Iskolors.colorGrey,
+                                  fontSize: 18,
                                 ),
-                                child: LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    return Column(
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        )
+                      : CarouselSlider(
+                          options: CarouselOptions(
+                            height: availableHeight - 50,
+                            enlargeCenterPage: true,
+                            autoPlay: false,
+                            enableInfiniteScroll: false,
+                            viewportFraction: 0.8,
+                          ),
+                          items: filteredFacilities.map((facility) {
+                            return Builder(
+                              builder: (BuildContext context) {
+                                return Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 5.0),
+                                  child: Card(
+                                    color: Iskolors.colorBlack,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Column(
                                       children: [
                                         ClipRRect(
                                           borderRadius:
@@ -159,7 +188,7 @@ class SavedPageState extends State<SavedPage> {
                                                   textAlign: TextAlign.center,
                                                 ),
                                                 const SizedBox(height: 8),
-                                                Expanded(
+                                                Flexible(
                                                   child: SingleChildScrollView(
                                                     child: Text(
                                                       facility.description,
@@ -182,7 +211,7 @@ class SavedPageState extends State<SavedPage> {
                                               left: 16.0,
                                               right: 16.0,
                                               top: 3.0,
-                                              bottom: 57.0),
+                                              bottom: 40.0),
                                           child: Row(
                                             children: [
                                               Expanded(
@@ -194,7 +223,7 @@ class SavedPageState extends State<SavedPage> {
                                                                 context,
                                                                 facility.name);
                                                     if (removed) {
-                                                      loadFacilities(); // Reload the list
+                                                      loadFacilities();
                                                     }
                                                   },
                                                   style:
@@ -267,17 +296,17 @@ class SavedPageState extends State<SavedPage> {
                                           ),
                                         ),
                                       ],
-                                    );
-                                  },
-                                ),
-                              ),
+                                    ),
+                                  ),
+                                );
+                              },
                             );
-                          },
-                        );
-                      }).toList(),
-                    ),
+                          }).toList(),
+                        ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
