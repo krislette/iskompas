@@ -3,13 +3,19 @@
     "name": "Main Building",
     "description": "Shaped like a three-point star with a rectangle in its south; the main academic building of the campus, containing most of the lecture and laboratory rooms and offices",
     "location": "Near the flagpole and freedom park; beside the lagoon",
-    "image": "assets/facilities/main-gate.png"
+    "image": "assets/facilities/main-building.png"
   },
   {
     "name": "Amphitheater",
     "description": "An area where students can gather, eat, and hold small gatherings such as meetings, jammings, etc.",
     "location": "Inside Lagoon, near Non-Food Stalls Building",
     "image": "assets/facilities/amphitheater.png"
+  },
+  {
+    "name": "Basketball Court",
+    "description": "A court where students can play basketball",
+    "location": "Beside the Open Court, near the Obelisk",
+    "image": "assets/facilities/basketball-court.jpg"
   },
   {
     "name": "Campus Development Building",
@@ -27,7 +33,7 @@
     "name": "Dome",
     "description": "The circular offices at the center of the main building where faculty of some colleges are staying",
     "location": "Center of the main building, each floor",
-    "image": "assets/facilities/charlie-building.png"
+    "image": "assets/facilities/dome.jpg"
   },
   {
     "name": "East Wing",
@@ -96,6 +102,18 @@
     "image": "assets/facilities/obelisk.png"
   },
   {
+    "name": "Mabini Museum",
+    "description": "An interactive museum chronicling the life and legacy of Apolinario Mabini, featuring thematic galleries and exhibits",
+    "location": "Beside the Mabini Shrine, near the flagpole and Freedom Park",
+    "image": "assets/facilities/mabini-museum.png"
+  },
+  {
+    "name": "Mabini Shrine",
+    "description": "A historic site that was once the residence of Apolinario Mabini, a key figure in the Philippine Revolution. Moved to PUP in the mid-2000s",
+    "location": "Near the flagpole and obelisk",
+    "image": "assets/facilities/mabini-shrine.png"
+  },
+  {
     "name": "Nemesio E. Prudente Freedom Park",
     "description": "Under construction",
     "location": "Near flagpole and North Wing of the Main Building",
@@ -135,7 +153,7 @@
     "name": "Open Court",
     "description": "Under construction",
     "location": "Beside University Avenue and near Gymnasium",
-    "image": "assets/facilities/open-court.jpg"
+    "image": "assets/facilities/open-court.png"
   },
   {
     "name": "Physical Education Building",
@@ -214,6 +232,12 @@
     "description": "A court where students can play tennis",
     "location": "Beside University Avenue and Open Court, near Gymnasium",
     "image": "assets/facilities/tennis-court.png"
+  },
+  {
+    "name": "The Mural",
+    "description": "A brass sculpture by National Artist Eduardo Castrillo (1974) symbolizing youth empowerment through education and nation-building",
+    "location": "Exit, near the campus main gates and guard house",
+    "image": "assets/facilities/mural.png"
   },
   {
     "name": "Track and Field Oval",

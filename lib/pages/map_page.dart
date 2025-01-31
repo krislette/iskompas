@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:iskompas/utils/color_extension.dart';
 import 'package:provider/provider.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:iskompas/utils/colors.dart';
@@ -7,12 +8,13 @@ import 'package:iskompas/utils/pathfinder.dart';
 import 'package:iskompas/utils/annotation_listener.dart';
 import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/models/feature_model.dart';
-import 'package:iskompas/widgets/category_filter.dart';
+import 'package:iskompas/widgets/category_filter_list.dart';
 import 'package:iskompas/utils/location_provider.dart';
 import 'package:iskompas/utils/theme_provider.dart';
 import 'package:iskompas/widgets/navigation_button.dart';
 import 'package:iskompas/widgets/theme_toggle_button.dart';
 import 'package:iskompas/pages/turn_by_turn_page.dart';
+import 'package:iskompas/pages/map_search_page.dart';
 import 'package:iskompas/widgets/marker_popup.dart';
 
 class MapPage extends StatefulWidget {
@@ -84,16 +86,28 @@ class _MapPageState extends State<MapPage> {
 
       // Categorize features
       categorizedFeatures = {
-        'facility': facilities,
+        'facility': facilities
+            .where((f) => f.properties['type'] == 'facility')
+            .toList(),
+        'faculty':
+            facilities.where((f) => f.properties['type'] == 'faculty').toList(),
+        'sports':
+            facilities.where((f) => f.properties['type'] == 'sports').toList(),
+        'bathroom': facilities
+            .where((f) => f.properties['type'] == 'bathroom')
+            .toList(),
+        'hangout':
+            facilities.where((f) => f.properties['type'] == 'hangout').toList(),
+        'landmark': facilities
+            .where((f) => f.properties['type'] == 'landmark')
+            .toList(),
         'node': nodes,
       };
 
       // If there's a facility to focus on
       if (widget.focusFacilityName != null) {
         final facilityFeature = facilities.firstWhere(
-          (feature) =>
-              feature.properties['type'] == 'facility' &&
-              feature.properties['name'] == widget.focusFacilityName,
+          (feature) => feature.properties['name'] == widget.focusFacilityName,
           orElse: () => GeoFeature(
             id: '',
             properties: {'name': ''},
@@ -178,21 +192,34 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> addMarkersFromFeatures(List<GeoFeature> features) async {
-    final ByteData bytes =
-        await rootBundle.load('assets/icons/facilities-pin.png');
-    final Uint8List imageData = bytes.buffer.asUint8List();
+    // Cache to store loaded images
+    final Map<String, Uint8List> imageCache = {};
+
+    // Load image for each feature
+    Future<Uint8List> getImageForType(String type) async {
+      if (!imageCache.containsKey(type)) {
+        final ByteData bytes =
+            await rootBundle.load('assets/icons/$type-pin.png');
+        imageCache[type] = bytes.buffer.asUint8List();
+      }
+      return imageCache[type]!;
+    }
 
     // Create a list to hold all annotation options
     final List<PointAnnotationOptions> annotationOptionsList =
-        features.map((feature) {
+        await Future.wait(features.map((feature) async {
+      final String type = feature.properties['type'].toString().toLowerCase();
+      final Uint8List imageData = await getImageForType(type);
+
       return PointAnnotationOptions(
-          geometry: feature.geometry,
-          image: imageData,
-          iconSize: 1,
-          textField: feature.properties['name'],
-          textOffset: [0, -2],
-          textSize: 12);
-    }).toList();
+        geometry: feature.geometry,
+        image: imageData,
+        iconSize: 1,
+        // textField: feature.properties['name'],
+        // textOffset: [0, -2],
+        // textSize: 12
+      );
+    }));
 
     // Create all annotations at once
     final List<PointAnnotation> annotations =
@@ -254,7 +281,7 @@ class _MapPageState extends State<MapPage> {
               simplifiedRoute.map((point) => point.coordinates).toList(),
         ),
         lineWidth: 8.0,
-        lineColor: Iskolors.colorYellow.value);
+        lineColor: Iskolors.colorYellow.toInt());
 
     _polylineAnnotationManager.create(polylineOptions);
   }
@@ -326,7 +353,7 @@ class _MapPageState extends State<MapPage> {
     final isNightMode = themeProvider.isDarkMode;
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           // Map as the bottom layer
@@ -369,44 +396,68 @@ class _MapPageState extends State<MapPage> {
                   child: CustomSearchBar(
                     hintText: 'Search location...',
                     isDarkMode: isNightMode,
-                    onChanged: (value) {
-                      print('Searching for: $value');
+                    onTap: () async {
+                      final selectedFacility = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  SearchPage(facilities: widget.facilities)));
+
+                      if (selectedFacility != null) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted) {
+                            FocusScope.of(context).unfocus();
+                            setState(() {
+                              selectedCategory = null;
+                            });
+                          }
+                        });
+
+                        // Find the matching facility from widget.mapData to get its geometry
+                        final fullFacilityData =
+                            (widget.mapData['facilities'] as List).firstWhere(
+                          (facility) =>
+                              facility['properties']['name'] ==
+                              selectedFacility['name'],
+                          orElse: () => Map<String, dynamic>.from(
+                              {}), // Fixed orElse return type
+                        );
+
+                        if (fullFacilityData.isNotEmpty) {
+                          // Check if we found a matching facility
+                          // Create a GeoFeature for the selected facility
+                          final facilityFeature = GeoFeature(
+                            id: fullFacilityData['id'] ?? '',
+                            properties: {
+                              'name': selectedFacility['name'],
+                              'description':
+                                  selectedFacility['description'] ?? '',
+                              'type': 'facility',
+                            },
+                            geometry: fullFacilityData['geometry'],
+                          );
+
+                          // Clear existing markers and route
+                          _pointAnnotationManager.deleteAll();
+                          clearPolylines();
+
+                          // Add marker for the selected facility
+                          addMarkersFromFeatures([facilityFeature]);
+
+                          // Focus the map on the facility location
+                          focusOnLocation(fullFacilityData['geometry']);
+                        }
+                      }
                     },
                   ),
                 ),
 
                 // Category filters
-                SizedBox(
-                  height: 40,
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      CategoryFilter(
-                          icon: Icons.image,
-                          label: 'Facilities',
-                          isSelected: selectedCategory == 'facility',
-                          onTap: () {
-                            clearPolylines();
-                            updateMarkers(selectedCategory == 'facility'
-                                ? null
-                                : 'facility');
-                          },
-                          isDarkMode: isNightMode),
-                      CategoryFilter(
-                          icon: Icons.bathroom,
-                          label: 'Bathrooms',
-                          isSelected: selectedCategory == 'bathroom',
-                          onTap: () {
-                            clearPolylines();
-                            updateMarkers(selectedCategory == 'bathroom'
-                                ? null
-                                : 'bathroom');
-                          },
-                          isDarkMode: isNightMode),
-                      // To be added: Stalls, Labs, etc.
-                    ],
-                  ),
+                CategoryFiltersList(
+                  selectedCategory: selectedCategory,
+                  isDarkMode: isNightMode,
+                  onCategorySelected: updateMarkers,
+                  clearPolylines: clearPolylines,
                 ),
               ],
             ),
