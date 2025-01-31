@@ -39,7 +39,7 @@ Iskompas is a navigation app built specifically for the PUP Main Campus. Offerin
     <ul>
       <li><a href="#table-of-contents">Table Of Contents</a></li>
       <li><a href="#features">Features</a></li>
-      <li><a href="#technologies-used">Technologies Used</a></li>
+      <li><a href="#technologies">Technologies Used</a></li>
     </ul>
   </li>
   <li>
@@ -120,6 +120,42 @@ These technologies enable Iskompas to provide an intuitive and efficient campus 
 <!-- INSTALLATION -->
 ## Installation
 ### Prerequisites
+
+Before running the application, ensure you have the following installed on your system:
+
+- **[Flutter](https://flutter.dev/docs/get-started/install)** (Latest stable version)
+- **[Dart](https://dart.dev/get-dart)** (Included with Flutter)
+- **[Android Studio](https://developer.android.com/studio)** (For Android development)
+- **[Android SDK](https://developer.android.com/studio/releases/sdk-tools)** (Installed via Android Studio)
+- **Device Emulator** (or a physical device with USB debugging enabled)
+
+#### Setup
+1. Clone the repository:
+```
+git clone https://github.com/yourusername/your-repo.git
+```
+2. Navigate to the project directory:
+```
+cd your-project-folder
+```
+3. Install dependencies:
+```
+flutter pub get
+```
+
+<!-- HOW TO RUN THE PROGRAM -->
+##  Run
+To run the application, follow these steps:
+
+1. Start an emulator (or connect a physical device):
+```
+flutter devices
+```
+2. Run the app:
+```
+flutter run
+```
+3. If using Android Studio, open the project and click on Run > Run 'main.dart'.
 
 <!-- Contributor's Table -->
 ## Contributors
