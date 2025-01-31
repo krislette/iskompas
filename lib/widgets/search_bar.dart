@@ -3,18 +3,18 @@ import 'package:iskompas/utils/colors.dart';
 
 class CustomSearchBar extends StatelessWidget {
   final String hintText;
+  final bool isDarkMode;
   final ValueChanged<String>? onChanged;
   final TextEditingController? controller;
-  final bool isDarkMode;
   final VoidCallback? onTap;
 
   const CustomSearchBar({
     super.key,
     this.hintText = 'Search...',
+    this.onTap,
     this.onChanged,
     this.controller,
     this.isDarkMode = true,
-    this.onTap,
   });
 
   @override
