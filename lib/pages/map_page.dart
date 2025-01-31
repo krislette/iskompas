@@ -98,9 +98,6 @@ class MapPageState extends State<MapPage> {
             facilities.where((f) => f.properties['type'] == 'faculty').toList(),
         'sports':
             facilities.where((f) => f.properties['type'] == 'sports').toList(),
-        'bathroom': facilities
-            .where((f) => f.properties['type'] == 'bathroom')
-            .toList(),
         'hangout':
             facilities.where((f) => f.properties['type'] == 'hangout').toList(),
         'landmark': facilities

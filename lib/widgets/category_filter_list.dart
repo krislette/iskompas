@@ -29,11 +29,6 @@ class CategoryFiltersList extends StatelessWidget {
         'value': 'facility',
       },
       {
-        'icon': Icons.bathroom,
-        'label': 'Bathrooms',
-        'value': 'bathroom',
-      },
-      {
         'icon': Icons.work,
         'label': 'Offices',
         'value': 'faculty',
