@@ -8,6 +8,7 @@ import 'package:iskompas/utils/map/route_manager.dart';
 import 'package:iskompas/utils/map/location_provider.dart';
 import 'package:iskompas/utils/shared/theme_provider.dart';
 import 'package:iskompas/utils/shared/color_extension.dart';
+import 'package:iskompas/widgets/dest_reached_popup.dart';
 
 class TurnByTurnPage extends StatefulWidget {
   final List<Point> route;
@@ -24,12 +25,15 @@ class TurnByTurnPage extends StatefulWidget {
 class _TurnByTurnPageState extends State<TurnByTurnPage> {
   late MapboxMap _mapboxMap;
   late List<Map<String, dynamic>> _instructions;
-  int _currentInstructionIndex = 0;
+
   PolylineAnnotationManager? _polylineAnnotationManager;
-  List<Point> _remainingRoute = [];
   Timer? _locationCheckTimer;
   DateTime? _lastProximityCheckTime;
+
+  List<Point> _remainingRoute = [];
+  int _currentInstructionIndex = 0;
   double totalDistance = 0;
+  bool _isDestinationReached = false;
 
   @override
   void initState() {
@@ -99,6 +103,8 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
   }
 
   void _checkLocationAndUpdateRoute() {
+    if (_isDestinationReached) return;
+
     final locationProvider =
         Provider.of<LocationProvider>(context, listen: false);
     final currentLocation = locationProvider.currentLocation;
@@ -130,8 +136,8 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
     var closestPointIndex = 0;
     var minDistance = double.infinity;
 
-    // Performance improvement: Check every 5th point instead of every 3rd
-    for (var i = 0; i < _remainingRoute.length; i += 5) {
+    // Performance improvement: Check every 2nd point
+    for (var i = 0; i < _remainingRoute.length; i += 2) {
       final distance =
           RouteManager.calculateDistance(currentLocation, _remainingRoute[i]);
 
@@ -156,8 +162,22 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
       _drawRoute(_remainingRoute);
 
       // Check if we've reached the destination
-      if (_remainingRoute.length <= 2) {
-        _showDestinationReachedDialog();
+      if (_remainingRoute.length <= 2 && _calculateRemainingDistance() < 8) {
+        // Set the destination reached flag
+        _isDestinationReached = true;
+
+        // Cancel the timer to stop further updates
+        _locationCheckTimer?.cancel();
+
+        // Show the destination reached popup
+        DestinationReachedPopup.show(context).then((_) {
+          // Check if the widget is still mounted before using the context
+          if (mounted) {
+            // After the popup is dismissed, navigate back to the main map page
+            Navigator.of(context)
+                .pop(_remainingRoute); // Only one pop() call here
+          }
+        });
       }
 
       // Update last proximity check time
@@ -172,29 +192,9 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
     }
   }
 
-  void _showDestinationReachedDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Destination Reached!'),
-        content: const Text('You have arrived at your destination.'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // Close dialog
-              Navigator.pop(context); // Return to map
-            },
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Map<String, dynamic> get currentInstruction {
     if (_instructions.isEmpty) {
-      return {'direction': 'Calculating...', 'distance': '0m'};
+      return {'direction': 'Desination Reached', 'distance': '0m'};
     }
 
     // Get current instruction
@@ -240,6 +240,17 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
     );
 
     return totalDistance.round(); // Return total distance in meters
+  }
+
+  int _calculateWalkingTime(List<Point> route) {
+    int totalDistance = _calculateTotalDistance(route); // in meters
+    double walkingSpeed = 0.75; // m/s (approx. 5 km/h)
+
+    int estimatedTimeSeconds = (totalDistance / walkingSpeed).round();
+    int estimatedMinutes =
+        (estimatedTimeSeconds / 60).round(); // Convert to minutes
+
+    return estimatedMinutes;
   }
 
   @override
@@ -319,10 +330,9 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ! EST TIME CALCULATE LATER
-                  const Text(
-                    '10 minutes',
-                    style: TextStyle(
+                  Text(
+                    '${_calculateWalkingTime(widget.route)} minutes',
+                    style: const TextStyle(
                         color: Iskolors.colorYellow,
                         fontSize: 30,
                         fontWeight: FontWeight.bold),
@@ -338,7 +348,8 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
                   SizedBox(
                     width: MediaQuery.of(context).size.width * 0.9,
                     child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () =>
+                          Navigator.of(context).pop(_remainingRoute),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 18),
                         backgroundColor: Iskolors.colorMaroon,
