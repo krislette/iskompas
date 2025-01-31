@@ -16,6 +16,7 @@ import 'package:iskompas/widgets/theme_toggle_button.dart';
 import 'package:iskompas/pages/turn_by_turn_page.dart';
 import 'package:iskompas/pages/map_search_page.dart';
 import 'package:iskompas/widgets/marker_popup.dart';
+import 'package:iskompas/widgets/no_route_popup.dart';
 
 class MapPage extends StatefulWidget {
   final Map<String, dynamic> mapData;
@@ -340,9 +341,7 @@ class _MapPageState extends State<MapPage> {
       setState(() {
         currentRoute = [];
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No route found')),
-      );
+      NoRoutePopup.show(context);
     }
   }
 
