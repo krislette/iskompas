@@ -2,9 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:iskompas/utils/colors.dart';
-import 'package:iskompas/utils/location_provider.dart';
-import 'package:iskompas/utils/saved_facilities_service.dart';
+import 'package:iskompas/utils/shared/colors.dart';
+import 'package:iskompas/utils/map/location_provider.dart';
+import 'package:iskompas/utils/saved/saved_facilities_service.dart';
 
 class MarkerPopup extends StatefulWidget {
   final Point geometry;

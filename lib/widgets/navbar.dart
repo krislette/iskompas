@@ -4,8 +4,8 @@ import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:iskompas/pages/map_page.dart';
 import 'package:iskompas/pages/saved_page.dart';
 import 'package:iskompas/pages/facilities_page.dart';
-import 'package:iskompas/utils/set_color.dart';
-import 'package:iskompas/utils/colors.dart';
+import 'package:iskompas/utils/shared/set_color.dart';
+import 'package:iskompas/utils/shared/colors.dart';
 
 class Navbar extends StatefulWidget {
   final Map<String, dynamic> mapData;
@@ -29,7 +29,11 @@ class _NavbarState extends State<Navbar> {
   int _selectedIndex = 0;
   late final MapPage _mapPage;
   late final FacilitiesPage _facilitiesPage;
+
+  final GlobalKey<MapPageState> _mapPageKey = GlobalKey<MapPageState>();
   final GlobalKey<SavedPageState> _savedPageKey = GlobalKey<SavedPageState>();
+  final GlobalKey<FacilitiesPageState> _facilitiesPageKey =
+      GlobalKey<FacilitiesPageState>();
 
   @override
   void initState() {
@@ -40,7 +44,16 @@ class _NavbarState extends State<Navbar> {
       facilities: widget.facilities,
       focusFacilityName: widget.focusFacilityName,
     );
-    _facilitiesPage = FacilitiesPage(facilities: widget.facilities);
+    _facilitiesPage = FacilitiesPage(
+      key: _facilitiesPageKey,
+      facilities: widget.facilities,
+    );
+  }
+
+  void _clearSearchFields() {
+    _mapPageKey.currentState?.clearSearch();
+    _savedPageKey.currentState?.clearSearch();
+    _facilitiesPageKey.currentState?.clearSearch();
   }
 
   @override
@@ -53,6 +66,8 @@ class _NavbarState extends State<Navbar> {
         color: Iskolors.colorMaroon,
         animationDuration: const Duration(milliseconds: 200),
         onTap: (index) {
+          FocusManager.instance.primaryFocus?.unfocus();
+          _clearSearchFields();
           setState(() {
             _selectedIndex = index;
             if (_selectedIndex == 1) {

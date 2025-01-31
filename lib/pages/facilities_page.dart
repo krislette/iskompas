@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:iskompas/utils/cache_manager.dart';
-import 'package:iskompas/utils/colors.dart';
+import 'package:iskompas/utils/facilities/cache_manager.dart';
+import 'package:iskompas/utils/shared/colors.dart';
 import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/pages/facility_details_page.dart';
 import 'package:iskompas/widgets/facility_row_skeleton.dart';
@@ -19,10 +19,10 @@ class FacilitiesPageState extends State<FacilitiesPage> {
 
   late List<dynamic> facilities;
   late List<dynamic> filteredFacilities;
-  late TextEditingController searchController;
   bool isLoading = false;
   int currentPage = 0;
   bool hasMore = true;
+  final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
   @override
@@ -30,19 +30,11 @@ class FacilitiesPageState extends State<FacilitiesPage> {
     super.initState();
     facilities = widget.facilities;
     filteredFacilities = [];
-    searchController = TextEditingController();
     _scrollController.addListener(_scrollListener);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       loadInitialFacilities();
     });
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    searchController.dispose();
-    super.dispose();
   }
 
   void _scrollListener() {
@@ -114,6 +106,11 @@ class FacilitiesPageState extends State<FacilitiesPage> {
     });
   }
 
+  void clearSearch() {
+    _searchController.clear();
+    filterFacilities('');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,7 +132,7 @@ class FacilitiesPageState extends State<FacilitiesPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CustomSearchBar(
-                controller: searchController,
+                controller: _searchController,
                 hintText: 'Search facilities...',
                 onChanged: (value) {
                   filterFacilities(value);
@@ -162,7 +159,7 @@ class FacilitiesPageState extends State<FacilitiesPage> {
                         itemBuilder: (context, index) {
                           // Only show the skeleton if lazy loading is enabled (`hasMore`) and not filtering
                           if (index >= filteredFacilities.length) {
-                            return hasMore && searchController.text.isEmpty
+                            return hasMore && _searchController.text.isEmpty
                                 ? const Padding(
                                     padding:
                                         EdgeInsets.symmetric(vertical: 16.0),

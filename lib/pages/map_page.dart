@@ -1,36 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:iskompas/utils/shared/color_extension.dart';
 import 'package:provider/provider.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:iskompas/utils/colors.dart';
-import 'package:iskompas/utils/pathfinder.dart';
-import 'package:iskompas/utils/annotation_listener.dart';
+import 'package:iskompas/utils/shared/colors.dart';
+import 'package:iskompas/utils/map/pathfinder.dart';
+import 'package:iskompas/utils/map/annotation_listener.dart';
 import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/models/feature_model.dart';
-import 'package:iskompas/widgets/category_filter.dart';
-import 'package:iskompas/utils/location_provider.dart';
-import 'package:iskompas/utils/theme_provider.dart';
+import 'package:iskompas/widgets/category_filter_list.dart';
+import 'package:iskompas/utils/map/location_provider.dart';
+import 'package:iskompas/utils/shared/theme_provider.dart';
 import 'package:iskompas/widgets/navigation_button.dart';
 import 'package:iskompas/widgets/theme_toggle_button.dart';
 import 'package:iskompas/pages/turn_by_turn_page.dart';
+import 'package:iskompas/pages/map_search_page.dart';
 import 'package:iskompas/widgets/marker_popup.dart';
+import 'package:iskompas/widgets/no_route_popup.dart';
+import 'package:iskompas/utils/map/map_animations.dart';
 
 class MapPage extends StatefulWidget {
   final Map<String, dynamic> mapData;
   final List<dynamic> facilities;
   final String? focusFacilityName;
 
-  const MapPage(
-      {super.key,
-      required this.mapData,
-      required this.facilities,
-      this.focusFacilityName});
+  const MapPage({
+    super.key,
+    required this.mapData,
+    required this.facilities,
+    this.focusFacilityName,
+  });
 
   @override
-  State<MapPage> createState() => _MapPageState();
+  State<MapPage> createState() => MapPageState();
 }
 
-class _MapPageState extends State<MapPage> {
+class MapPageState extends State<MapPage> {
   late MapboxMap _mapboxMap;
   late PointAnnotationManager _pointAnnotationManager;
   late PolylineAnnotationManager _polylineAnnotationManager;
@@ -50,6 +55,8 @@ class _MapPageState extends State<MapPage> {
       {}; // Maps custom id to metadata
 
   final Map<String, List<Point>> _routeCache = {};
+
+  final TextEditingController _searchController = TextEditingController();
 
   bool isMapInitialized = false;
   GeoFeature? deferredFocusFeature;
@@ -84,16 +91,25 @@ class _MapPageState extends State<MapPage> {
 
       // Categorize features
       categorizedFeatures = {
-        'facility': facilities,
+        'facility': facilities
+            .where((f) => f.properties['type'] == 'facility')
+            .toList(),
+        'faculty':
+            facilities.where((f) => f.properties['type'] == 'faculty').toList(),
+        'sports':
+            facilities.where((f) => f.properties['type'] == 'sports').toList(),
+        'hangout':
+            facilities.where((f) => f.properties['type'] == 'hangout').toList(),
+        'landmark': facilities
+            .where((f) => f.properties['type'] == 'landmark')
+            .toList(),
         'node': nodes,
       };
 
       // If there's a facility to focus on
       if (widget.focusFacilityName != null) {
         final facilityFeature = facilities.firstWhere(
-          (feature) =>
-              feature.properties['type'] == 'facility' &&
-              feature.properties['name'] == widget.focusFacilityName,
+          (feature) => feature.properties['name'] == widget.focusFacilityName,
           orElse: () => GeoFeature(
             id: '',
             properties: {'name': ''},
@@ -121,6 +137,18 @@ class _MapPageState extends State<MapPage> {
 
     await _mapboxMap.style
         .setStyleImportConfigProperty("basemap", "showTransitLabels", false);
+
+    await _mapboxMap.setBounds(
+      CameraBoundsOptions(
+        bounds: CoordinateBounds(
+          // Lang: As is, Lat: higher is tighter; lower is wider
+          southwest: Point(coordinates: Position(121.006, 14.594)),
+          // Lang: As is, Last: higher is wider; lower is tighter
+          northeast: Point(coordinates: Position(121.015, 14.602)),
+          infiniteBounds: false,
+        ),
+      ),
+    );
 
     _pointAnnotationManager =
         await _mapboxMap.annotations.createPointAnnotationManager();
@@ -178,21 +206,34 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> addMarkersFromFeatures(List<GeoFeature> features) async {
-    final ByteData bytes =
-        await rootBundle.load('assets/icons/facilities-pin.png');
-    final Uint8List imageData = bytes.buffer.asUint8List();
+    // Cache to store loaded images
+    final Map<String, Uint8List> imageCache = {};
+
+    // Load image for each feature
+    Future<Uint8List> getImageForType(String type) async {
+      if (!imageCache.containsKey(type)) {
+        final ByteData bytes =
+            await rootBundle.load('assets/icons/$type-pin.png');
+        imageCache[type] = bytes.buffer.asUint8List();
+      }
+      return imageCache[type]!;
+    }
 
     // Create a list to hold all annotation options
     final List<PointAnnotationOptions> annotationOptionsList =
-        features.map((feature) {
+        await Future.wait(features.map((feature) async {
+      final String type = feature.properties['type'].toString().toLowerCase();
+      final Uint8List imageData = await getImageForType(type);
+
       return PointAnnotationOptions(
-          geometry: feature.geometry,
-          image: imageData,
-          iconSize: 1,
-          textField: feature.properties['name'],
-          textOffset: [0, -2],
-          textSize: 12);
-    }).toList();
+        geometry: feature.geometry,
+        image: imageData,
+        iconSize: 1,
+        // textField: feature.properties['name'],
+        // textOffset: [0, -2],
+        // textSize: 12
+      );
+    }));
 
     // Create all annotations at once
     final List<PointAnnotation> annotations =
@@ -221,7 +262,9 @@ class _MapPageState extends State<MapPage> {
     });
 
     if (category != null && categorizedFeatures.containsKey(category)) {
+      final features = categorizedFeatures[category]!;
       addMarkersFromFeatures(categorizedFeatures[category]!);
+      MapAnimations.fitMarkersInView(_mapboxMap, features);
     }
   }
 
@@ -254,7 +297,7 @@ class _MapPageState extends State<MapPage> {
               simplifiedRoute.map((point) => point.coordinates).toList(),
         ),
         lineWidth: 8.0,
-        lineColor: Iskolors.colorYellow.value);
+        lineColor: Iskolors.colorYellow.toInt());
 
     _polylineAnnotationManager.create(polylineOptions);
   }
@@ -309,14 +352,17 @@ class _MapPageState extends State<MapPage> {
       });
       addPolyline(route);
       _routeCache[routeKey] = route;
+      MapAnimations.fitRouteInView(_mapboxMap, route);
     } else {
       setState(() {
         currentRoute = [];
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No route found')),
-      );
+      NoRoutePopup.show(context);
     }
+  }
+
+  void clearSearch() {
+    _searchController.clear();
   }
 
   @override
@@ -326,7 +372,7 @@ class _MapPageState extends State<MapPage> {
     final isNightMode = themeProvider.isDarkMode;
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           // Map as the bottom layer
@@ -367,54 +413,80 @@ class _MapPageState extends State<MapPage> {
                   padding: const EdgeInsets.symmetric(
                       vertical: 11.0, horizontal: 16.0),
                   child: CustomSearchBar(
+                    controller: _searchController,
                     hintText: 'Search location...',
                     isDarkMode: isNightMode,
-                    onChanged: (value) {
-                      print('Searching for: $value');
+                    onTap: () async {
+                      final selectedFacility = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  SearchPage(facilities: widget.facilities)));
+
+                      if (selectedFacility != null) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted) {
+                            FocusScope.of(context).unfocus();
+                            setState(() {
+                              selectedCategory = null;
+                            });
+                          }
+                        });
+
+                        // Find the matching facility from widget.mapData to get its geometry
+                        final fullFacilityData =
+                            (widget.mapData['facilities'] as List).firstWhere(
+                          (facility) =>
+                              facility['properties']['name'] ==
+                              selectedFacility['name'],
+                          orElse: () => Map<String, dynamic>.from(
+                              {}), // Fixed orElse return type
+                        );
+
+                        if (fullFacilityData.isNotEmpty) {
+                          // Check if we found a matching facility
+                          // Create a GeoFeature for the selected facility
+                          final facilityFeature = GeoFeature(
+                            id: fullFacilityData['id'] ?? '',
+                            properties: {
+                              'name': selectedFacility['name'],
+                              'description':
+                                  selectedFacility['description'] ?? '',
+                              'type': 'facility',
+                            },
+                            geometry: fullFacilityData['geometry'],
+                          );
+
+                          // Clear existing markers and route
+                          _pointAnnotationManager.deleteAll();
+                          clearPolylines();
+
+                          // Add marker for the selected facility
+                          addMarkersFromFeatures([facilityFeature]);
+
+                          // Focus the map on the facility location
+                          focusOnLocation(fullFacilityData['geometry']);
+                        }
+                      }
                     },
                   ),
                 ),
 
                 // Category filters
-                SizedBox(
-                  height: 40,
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      CategoryFilter(
-                          icon: Icons.image,
-                          label: 'Facilities',
-                          isSelected: selectedCategory == 'facility',
-                          onTap: () {
-                            clearPolylines();
-                            updateMarkers(selectedCategory == 'facility'
-                                ? null
-                                : 'facility');
-                          },
-                          isDarkMode: isNightMode),
-                      CategoryFilter(
-                          icon: Icons.bathroom,
-                          label: 'Bathrooms',
-                          isSelected: selectedCategory == 'bathroom',
-                          onTap: () {
-                            clearPolylines();
-                            updateMarkers(selectedCategory == 'bathroom'
-                                ? null
-                                : 'bathroom');
-                          },
-                          isDarkMode: isNightMode),
-                      // To be added: Stalls, Labs, etc.
-                    ],
-                  ),
+                CategoryFiltersList(
+                  selectedCategory: selectedCategory,
+                  isDarkMode: isNightMode,
+                  onCategorySelected: updateMarkers,
+                  clearPolylines: clearPolylines,
                 ),
               ],
             ),
           ),
           if (currentRoute.isNotEmpty)
             NavigationButton(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                // Navigate to the TurnByTurnPage and wait for the result
+                final remainingRoute = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => TurnByTurnPage(
@@ -422,6 +494,15 @@ class _MapPageState extends State<MapPage> {
                     ),
                   ),
                 );
+
+                // If a remaining route is returned, update the polyline
+                if (remainingRoute != null && remainingRoute is List<Point>) {
+                  setState(() {
+                    currentRoute = remainingRoute; // Update the current route
+                  });
+                  clearPolylines(); // Clear existing polylines
+                  addPolyline(currentRoute); // Draw the updated polyline
+                }
               },
             ),
           // Theme Toggle Button

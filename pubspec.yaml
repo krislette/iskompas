@@ -49,6 +49,7 @@ dependencies:
   provider: ^6.1.2
   shared_preferences: ^2.3.5
   simple_animations: ^5.1.0
+  flutter_map_math: ^0.1.7
 
 dev_dependencies:
   flutter_test:

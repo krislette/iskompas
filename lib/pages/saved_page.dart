@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart' hide CarouselController;
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:iskompas/utils/colors.dart';
+import 'package:iskompas/utils/shared/colors.dart';
 import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/models/facility_model.dart';
-import 'package:iskompas/utils/saved_facilities_service.dart';
+import 'package:iskompas/utils/saved/saved_facilities_service.dart';
 import 'package:iskompas/widgets/navbar.dart';
 
 class SavedPage extends StatefulWidget {
@@ -36,13 +36,6 @@ class SavedPageState extends State<SavedPage> {
     _searchController.addListener(_onSearchChanged);
   }
 
-  @override
-  void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
-    super.dispose();
-  }
-
   void _onSearchChanged() {
     filterFacilities(_searchController.text);
   }
@@ -71,6 +64,10 @@ class SavedPageState extends State<SavedPage> {
     });
   }
 
+  void clearSearch() {
+    _searchController.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     const double searchBarHeight = 80.0;
@@ -92,7 +89,7 @@ class SavedPageState extends State<SavedPage> {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                    vertical: 20.0,
+                    vertical: 11.0,
                     horizontal: 16.0,
                   ),
                   child: CustomSearchBar(
