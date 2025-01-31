@@ -6,6 +6,7 @@ import 'package:iskompas/utils/shared/colors.dart';
 import 'package:iskompas/utils/map/route_manager.dart';
 import 'package:iskompas/utils/map/location_provider.dart';
 import 'package:iskompas/utils/shared/theme_provider.dart';
+import 'package:iskompas/utils/shared/color_extension.dart';
 
 class TurnByTurnPage extends StatefulWidget {
   final List<Point> route;
@@ -26,6 +27,7 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
   PolylineAnnotationManager? _polylineAnnotationManager;
   List<Point> _remainingRoute = [];
   Timer? _locationCheckTimer;
+  DateTime? _lastProximityCheckTime;
 
   @override
   void initState() {
@@ -51,6 +53,16 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
     mapboxMap.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
     mapboxMap.compass.updateSettings(CompassSettings(enabled: false));
 
+    // Enable location component
+    await mapboxMap.location.updateSettings(
+      LocationComponentSettings(
+        enabled: true,
+        pulsingEnabled: true,
+        puckBearingEnabled: true,
+        showAccuracyRing: true,
+      ),
+    );
+
     _polylineAnnotationManager =
         await _mapboxMap.annotations.createPolylineAnnotationManager();
 
@@ -69,18 +81,19 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
   }
 
   Future<void> _drawRoute(List<Point> route) async {
-    await _polylineAnnotationManager?.deleteAll();
-
-    if (route.isEmpty) return;
+    if (_polylineAnnotationManager == null) return;
 
     final polylineOptions = PolylineAnnotationOptions(
       geometry: LineString(
         coordinates: route.map((point) => point.coordinates).toList(),
       ),
       lineWidth: 8.0,
-      lineColor: Iskolors.colorYellow.value,
+      lineColor: Iskolors.colorYellow.toInt(),
     );
-    await _polylineAnnotationManager?.create(polylineOptions);
+
+    // Simply create a new polyline each time
+    await _polylineAnnotationManager!.deleteAll();
+    await _polylineAnnotationManager!.create(polylineOptions);
   }
 
   void _checkLocationAndUpdateRoute() {
@@ -90,12 +103,33 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
 
     if (currentLocation == null || _remainingRoute.isEmpty) return;
 
+    // Update camera position to follow user
+    if (_remainingRoute.length > 1) {
+      _mapboxMap.easeTo(
+        CameraOptions(
+          center: currentLocation,
+          bearing: RouteManager.calculateBearing(
+              _remainingRoute[0], _remainingRoute[1]),
+          zoom: 20.0,
+          pitch: 65.0,
+        ),
+        MapAnimationOptions(duration: 1000), // 1 second smooth transition
+      );
+    }
+
+    // Optimization: Only check proximity every few seconds
+    if (_lastProximityCheckTime != null &&
+        DateTime.now().difference(_lastProximityCheckTime!) <
+            const Duration(seconds: 3)) {
+      return;
+    }
+
     // Find the closest point on the route to current location
     var closestPointIndex = 0;
     var minDistance = double.infinity;
 
-    // Only check every 3rd point for performance
-    for (var i = 0; i < _remainingRoute.length; i += 3) {
+    // Performance improvement: Check every 5th point instead of every 3rd
+    for (var i = 0; i < _remainingRoute.length; i += 5) {
       final distance =
           RouteManager.calculateDistance(currentLocation, _remainingRoute[i]);
 
@@ -106,8 +140,9 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
     }
 
     // If we're close enough to the closest point, update the route
-    if (minDistance < 0.00015) {
-      // About 15 meters
+    // Slightly increased threshold for more stable tracking
+    if (minDistance < 0.0002) {
+      // About 20 meters
       setState(() {
         // Remove traversed points
         _remainingRoute = _remainingRoute.sublist(closestPointIndex);
@@ -122,6 +157,9 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
       if (_remainingRoute.length <= 2) {
         _showDestinationReachedDialog();
       }
+
+      // Update last proximity check time
+      _lastProximityCheckTime = DateTime.now();
     }
   }
 
@@ -156,7 +194,28 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
     if (_instructions.isEmpty) {
       return {'direction': 'Calculating...', 'distance': '0m'};
     }
-    return _instructions[_currentInstructionIndex];
+
+    // Get current instruction
+    final instruction = _instructions[_currentInstructionIndex];
+
+    // Calculate remaining distance (you might need to adjust this based on your RouteManager)
+    final remainingDistance = _calculateRemainingDistance();
+
+    return {...instruction, 'distance': '${remainingDistance.round()}m'};
+  }
+
+  // Helper method to calculate remaining distance
+  double _calculateRemainingDistance() {
+    if (_remainingRoute.length < 2) return 0;
+
+    // Implement a method to calculate total distance of remaining route
+    double totalDistance = 0;
+    for (int i = 1; i < _remainingRoute.length; i++) {
+      totalDistance += RouteManager.calculateDistance(
+          _remainingRoute[i - 1], _remainingRoute[i]);
+    }
+
+    return totalDistance * 1000; // Convert to meters
   }
 
   @override
