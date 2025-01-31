@@ -89,7 +89,7 @@ class SavedPageState extends State<SavedPage> {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                    vertical: 20.0,
+                    vertical: 11.0,
                     horizontal: 16.0,
                   ),
                   child: CustomSearchBar(
