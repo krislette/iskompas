@@ -12,6 +12,12 @@
     "image": "assets/facilities/amphitheater.png"
   },
   {
+    "name": "Basketball Court",
+    "description": "A court where students can play basketball",
+    "location": "Beside the Open Court, near the Obelisk",
+    "image": "assets/facilities/basketball-court.jpg"
+  },
+  {
     "name": "Campus Development Building",
     "description": "A building where campus development initiatives and maintenance services are planned and organized",
     "location": "Behind East Wing, near Nutrition and Food Science Building",
@@ -96,6 +102,18 @@
     "image": "assets/facilities/obelisk.png"
   },
   {
+    "name": "Mabini Museum",
+    "description": "An interactive museum chronicling the life and legacy of Apolinario Mabini, featuring thematic galleries and exhibits",
+    "location": "Beside the Mabini Shrine, near the flagpole and Freedom Park",
+    "image": "assets/facilities/mabini-museum.png"
+  },
+  {
+    "name": "Mabini Shrine",
+    "description": "A historic site that was once the residence of Apolinario Mabini, a key figure in the Philippine Revolution. Moved to PUP in the mid-2000s",
+    "location": "Near the flagpole and obelisk",
+    "image": "assets/facilities/mabini-shrine.png"
+  },
+  {
     "name": "Nemesio E. Prudente Freedom Park",
     "description": "Under construction",
     "location": "Near flagpole and North Wing of the Main Building",
@@ -112,12 +130,6 @@
     "description": "An area where students can buy school supplies, photocopying services, and other services",
     "location": "Beside NALLRC and near the end of Lagoon",
     "image": "assets/facilities/non-food-stalls-bldg.jpg"
-  },
-  {
-    "name": "The Mural",
-    "description": "A brass sculpture by National Artist Eduardo Castrillo (1974) symbolizing youth empowerment through education and nation-building",
-    "location": "Exit, near the campus main gates and guard house",
-    "image": "assets/facilities/mural.png"
   },
   {
     "name": "North Parking Area",
@@ -222,10 +234,10 @@
     "image": "assets/facilities/tennis-court.png"
   },
   {
-    "name": "Basketball Court",
-    "description": "A court where students can play basketball",
-    "location": "Beside the Open Court, near the Obelisk",
-    "image": "assets/facilities/basketball-court.jpg"
+    "name": "The Mural",
+    "description": "A brass sculpture by National Artist Eduardo Castrillo (1974) symbolizing youth empowerment through education and nation-building",
+    "location": "Exit, near the campus main gates and guard house",
+    "image": "assets/facilities/mural.png"
   },
   {
     "name": "Track and Field Oval",
@@ -244,17 +256,5 @@
     "description": "The west wing of the main building",
     "location": "Main building",
     "image": "assets/facilities/west-wing.png"
-  },
-  {
-    "name": "Mabini Shrine",
-    "description": "A historic site that was once the residence of Apolinario Mabini, a key figure in the Philippine Revolution. Moved to PUP in the mid-2000s",
-    "location": "Near the flagpole and obelisk",
-    "image": "assets/facilities/mabini-shrine.png"
-  },
-  {
-    "name": "Mabini Museum",
-    "description": "An interactive museum chronicling the life and legacy of Apolinario Mabini, featuring thematic galleries and exhibits",
-    "location": "Beside the Mabini Shrine, near the flagpole and Freedom Park",
-    "image": "assets/facilities/mabini-museum.png"
   }
 ]
