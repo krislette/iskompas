@@ -487,8 +487,9 @@ class MapPageState extends State<MapPage> {
           ),
           if (currentRoute.isNotEmpty)
             NavigationButton(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                // Navigate to the TurnByTurnPage and wait for the result
+                final remainingRoute = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => TurnByTurnPage(
@@ -496,6 +497,15 @@ class MapPageState extends State<MapPage> {
                     ),
                   ),
                 );
+
+                // If a remaining route is returned, update the polyline
+                if (remainingRoute != null && remainingRoute is List<Point>) {
+                  setState(() {
+                    currentRoute = remainingRoute; // Update the current route
+                  });
+                  clearPolylines(); // Clear existing polylines
+                  addPolyline(currentRoute); // Draw the updated polyline
+                }
               },
             ),
           // Theme Toggle Button
