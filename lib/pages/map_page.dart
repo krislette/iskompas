@@ -30,10 +30,10 @@ class MapPage extends StatefulWidget {
       this.focusFacilityName});
 
   @override
-  State<MapPage> createState() => _MapPageState();
+  State<MapPage> createState() => MapPageState();
 }
 
-class _MapPageState extends State<MapPage> {
+class MapPageState extends State<MapPage> {
   late MapboxMap _mapboxMap;
   late PointAnnotationManager _pointAnnotationManager;
   late PolylineAnnotationManager _polylineAnnotationManager;
@@ -53,6 +53,8 @@ class _MapPageState extends State<MapPage> {
       {}; // Maps custom id to metadata
 
   final Map<String, List<Point>> _routeCache = {};
+
+  final TextEditingController _searchController = TextEditingController();
 
   bool isMapInitialized = false;
   GeoFeature? deferredFocusFeature;
@@ -345,6 +347,10 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
+  void clearSearch() {
+    _searchController.clear();
+  }
+
   @override
   Widget build(BuildContext context) {
     final locationProvider = Provider.of<LocationProvider>(context);
@@ -393,6 +399,7 @@ class _MapPageState extends State<MapPage> {
                   padding: const EdgeInsets.symmetric(
                       vertical: 11.0, horizontal: 16.0),
                   child: CustomSearchBar(
+                    controller: _searchController,
                     hintText: 'Search location...',
                     isDarkMode: isNightMode,
                     onTap: () async {

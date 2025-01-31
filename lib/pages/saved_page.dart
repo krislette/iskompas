@@ -36,13 +36,6 @@ class SavedPageState extends State<SavedPage> {
     _searchController.addListener(_onSearchChanged);
   }
 
-  @override
-  void dispose() {
-    _searchController.removeListener(_onSearchChanged);
-    _searchController.dispose();
-    super.dispose();
-  }
-
   void _onSearchChanged() {
     filterFacilities(_searchController.text);
   }
@@ -69,6 +62,10 @@ class SavedPageState extends State<SavedPage> {
       filteredFacilities = List.from(facilities);
       isLoading = false;
     });
+  }
+
+  void clearSearch() {
+    _searchController.clear();
   }
 
   @override
