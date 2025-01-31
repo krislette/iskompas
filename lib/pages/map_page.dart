@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:iskompas/utils/color_extension.dart';
+import 'package:iskompas/utils/shared/color_extension.dart';
 import 'package:provider/provider.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:iskompas/utils/colors.dart';
-import 'package:iskompas/utils/pathfinder.dart';
-import 'package:iskompas/utils/annotation_listener.dart';
+import 'package:iskompas/utils/shared/colors.dart';
+import 'package:iskompas/utils/map/pathfinder.dart';
+import 'package:iskompas/utils/map/annotation_listener.dart';
 import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/models/feature_model.dart';
 import 'package:iskompas/widgets/category_filter_list.dart';
-import 'package:iskompas/utils/location_provider.dart';
-import 'package:iskompas/utils/theme_provider.dart';
+import 'package:iskompas/utils/map/location_provider.dart';
+import 'package:iskompas/utils/shared/theme_provider.dart';
 import 'package:iskompas/widgets/navigation_button.dart';
 import 'package:iskompas/widgets/theme_toggle_button.dart';
 import 'package:iskompas/pages/turn_by_turn_page.dart';
 import 'package:iskompas/pages/map_search_page.dart';
 import 'package:iskompas/widgets/marker_popup.dart';
 import 'package:iskompas/widgets/no_route_popup.dart';
-import 'package:iskompas/utils/map_animations.dart';
+import 'package:iskompas/utils/map/map_animations.dart';
 
 class MapPage extends StatefulWidget {
   final Map<String, dynamic> mapData;

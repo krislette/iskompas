@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:iskompas/utils/theme_provider.dart';
+import 'package:iskompas/utils/shared/theme_provider.dart';
 import 'package:iskompas/widgets/search_bar.dart';
-import 'package:iskompas/utils/colors.dart';
+import 'package:iskompas/utils/shared/colors.dart';
 
 class SearchPage extends StatefulWidget {
   final List<dynamic> facilities;

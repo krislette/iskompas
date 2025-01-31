@@ -2,10 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:iskompas/utils/colors.dart';
-import 'package:iskompas/utils/route_manager.dart';
-import 'package:iskompas/utils/location_provider.dart';
-import 'package:iskompas/utils/theme_provider.dart';
+import 'package:iskompas/utils/shared/colors.dart';
+import 'package:iskompas/utils/map/route_manager.dart';
+import 'package:iskompas/utils/map/location_provider.dart';
+import 'package:iskompas/utils/shared/theme_provider.dart';
 
 class TurnByTurnPage extends StatefulWidget {
   final List<Point> route;

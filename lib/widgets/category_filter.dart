@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:iskompas/utils/colors.dart';
+import 'package:iskompas/utils/shared/colors.dart';
 
 class CategoryFilter extends StatelessWidget {
   final IconData icon;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:iskompas/utils/cache_manager.dart';
-import 'package:iskompas/utils/colors.dart';
+import 'package:iskompas/utils/facilities/cache_manager.dart';
+import 'package:iskompas/utils/shared/colors.dart';
 import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/pages/facility_details_page.dart';
 import 'package:iskompas/widgets/facility_row_skeleton.dart';

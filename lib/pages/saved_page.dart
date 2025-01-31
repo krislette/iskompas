@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart' hide CarouselController;
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:iskompas/utils/colors.dart';
+import 'package:iskompas/utils/shared/colors.dart';
 import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/models/facility_model.dart';
-import 'package:iskompas/utils/saved_facilities_service.dart';
+import 'package:iskompas/utils/saved/saved_facilities_service.dart';
 import 'package:iskompas/widgets/navbar.dart';
 
 class SavedPage extends StatefulWidget {

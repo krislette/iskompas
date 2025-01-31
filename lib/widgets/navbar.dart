@@ -4,8 +4,8 @@ import 'package:curved_labeled_navigation_bar/curved_navigation_bar_item.dart';
 import 'package:iskompas/pages/map_page.dart';
 import 'package:iskompas/pages/saved_page.dart';
 import 'package:iskompas/pages/facilities_page.dart';
-import 'package:iskompas/utils/set_color.dart';
-import 'package:iskompas/utils/colors.dart';
+import 'package:iskompas/utils/shared/set_color.dart';
+import 'package:iskompas/utils/shared/colors.dart';
 
 class Navbar extends StatefulWidget {
   final Map<String, dynamic> mapData;
