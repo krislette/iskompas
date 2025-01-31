@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_map_math/flutter_geo_math.dart';
 import 'package:iskompas/utils/shared/colors.dart';
 import 'package:iskompas/utils/map/route_manager.dart';
 import 'package:iskompas/utils/map/location_provider.dart';
@@ -28,6 +29,7 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
   List<Point> _remainingRoute = [];
   Timer? _locationCheckTimer;
   DateTime? _lastProximityCheckTime;
+  double totalDistance = 0;
 
   @override
   void initState() {
@@ -218,6 +220,28 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
     return totalDistance * 1000; // Convert to meters
   }
 
+  int _calculateTotalDistance(List<Point> route) {
+    if (route.length < 2) return 0; // Need at least two points
+
+    // Create an instance of FlutterMapMath
+    final FlutterMapMath math = FlutterMapMath();
+
+    // Get first and last points in the route
+    Point firstPoint = route.first;
+    Point lastPoint = route.last;
+
+    // Calculate the distance in meters
+    double totalDistance = math.distanceBetween(
+      firstPoint.coordinates[1]!.toDouble(),
+      firstPoint.coordinates[0]!.toDouble(),
+      lastPoint.coordinates[1]!.toDouble(),
+      lastPoint.coordinates[0]!.toDouble(),
+      "meters",
+    );
+
+    return totalDistance.round(); // Return total distance in meters
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -304,7 +328,7 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
                         fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    '${(widget.route.length * 5).round()}m',
+                    '${_calculateTotalDistance(widget.route)}m',
                     style: const TextStyle(
                       color: Iskolors.colorGrey,
                       fontSize: 18,
