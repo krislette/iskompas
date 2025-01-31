@@ -24,17 +24,11 @@ class LocationProvider extends ChangeNotifier {
 
   Future<void> getUserLocation() async {
     try {
-      // final userLocation = await location.getLocation();
-      // currentLocation = Point(
-      //   coordinates: Position(
-      //     userLocation.longitude!,
-      //     userLocation.latitude!,
-      //   ),
-      // );
+      final userLocation = await location.getLocation();
       currentLocation = Point(
         coordinates: Position(
-          121.01053859578796,
-          14.59647159542187,
+          userLocation.longitude!,
+          userLocation.latitude!,
         ),
       );
       notifyListeners();
