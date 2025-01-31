@@ -26,7 +26,7 @@ Map<String, dynamic> parseGeoJson(String geoJsonString) {
             'id': feature['id']
           });
         }
-        // All other types (facility, faculty, bathroom, sports) go into facilities
+        // All other types (facility, faculty, sports) go into facilities
         else {
           facilities.add({
             'geometry': point,

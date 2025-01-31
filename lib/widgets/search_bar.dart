@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:iskompas/utils/colors.dart';
+import 'package:iskompas/utils/shared/colors.dart';
 
 class CustomSearchBar extends StatelessWidget {
   final String hintText;
+  final bool isDarkMode;
   final ValueChanged<String>? onChanged;
   final TextEditingController? controller;
-  final bool isDarkMode;
   final VoidCallback? onTap;
+  final FocusNode? focusNode;
 
   const CustomSearchBar({
     super.key,
     this.hintText = 'Search...',
+    this.onTap,
     this.onChanged,
     this.controller,
     this.isDarkMode = true,
-    this.onTap,
+    this.focusNode,
   });
 
   @override
@@ -51,6 +53,7 @@ class CustomSearchBar extends StatelessWidget {
           ignoring: onTap != null,
           child: TextField(
             controller: controller,
+            focusNode: focusNode,
             style: TextStyle(color: textColor),
             cursorColor: textColor,
             decoration: InputDecoration(

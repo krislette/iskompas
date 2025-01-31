@@ -1,38 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:iskompas/utils/color_extension.dart';
+import 'package:iskompas/utils/shared/color_extension.dart';
 import 'package:provider/provider.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:iskompas/utils/colors.dart';
-import 'package:iskompas/utils/pathfinder.dart';
-import 'package:iskompas/utils/annotation_listener.dart';
+import 'package:iskompas/utils/shared/colors.dart';
+import 'package:iskompas/utils/map/pathfinder.dart';
+import 'package:iskompas/utils/map/annotation_listener.dart';
 import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/models/feature_model.dart';
 import 'package:iskompas/widgets/category_filter_list.dart';
-import 'package:iskompas/utils/location_provider.dart';
-import 'package:iskompas/utils/theme_provider.dart';
+import 'package:iskompas/utils/map/location_provider.dart';
+import 'package:iskompas/utils/shared/theme_provider.dart';
 import 'package:iskompas/widgets/navigation_button.dart';
 import 'package:iskompas/widgets/theme_toggle_button.dart';
 import 'package:iskompas/pages/turn_by_turn_page.dart';
 import 'package:iskompas/pages/map_search_page.dart';
 import 'package:iskompas/widgets/marker_popup.dart';
+import 'package:iskompas/widgets/no_route_popup.dart';
+import 'package:iskompas/utils/map/map_animations.dart';
 
 class MapPage extends StatefulWidget {
   final Map<String, dynamic> mapData;
   final List<dynamic> facilities;
   final String? focusFacilityName;
 
-  const MapPage(
-      {super.key,
-      required this.mapData,
-      required this.facilities,
-      this.focusFacilityName});
+  const MapPage({
+    super.key,
+    required this.mapData,
+    required this.facilities,
+    this.focusFacilityName,
+  });
 
   @override
-  State<MapPage> createState() => _MapPageState();
+  State<MapPage> createState() => MapPageState();
 }
 
-class _MapPageState extends State<MapPage> {
+class MapPageState extends State<MapPage> {
   late MapboxMap _mapboxMap;
   late PointAnnotationManager _pointAnnotationManager;
   late PolylineAnnotationManager _polylineAnnotationManager;
@@ -52,6 +55,8 @@ class _MapPageState extends State<MapPage> {
       {}; // Maps custom id to metadata
 
   final Map<String, List<Point>> _routeCache = {};
+
+  final TextEditingController _searchController = TextEditingController();
 
   bool isMapInitialized = false;
   GeoFeature? deferredFocusFeature;
@@ -93,9 +98,6 @@ class _MapPageState extends State<MapPage> {
             facilities.where((f) => f.properties['type'] == 'faculty').toList(),
         'sports':
             facilities.where((f) => f.properties['type'] == 'sports').toList(),
-        'bathroom': facilities
-            .where((f) => f.properties['type'] == 'bathroom')
-            .toList(),
         'hangout':
             facilities.where((f) => f.properties['type'] == 'hangout').toList(),
         'landmark': facilities
@@ -135,6 +137,18 @@ class _MapPageState extends State<MapPage> {
 
     await _mapboxMap.style
         .setStyleImportConfigProperty("basemap", "showTransitLabels", false);
+
+    await _mapboxMap.setBounds(
+      CameraBoundsOptions(
+        bounds: CoordinateBounds(
+          // Lang: As is, Lat: higher is tighter; lower is wider
+          southwest: Point(coordinates: Position(121.006, 14.594)),
+          // Lang: As is, Last: higher is wider; lower is tighter
+          northeast: Point(coordinates: Position(121.015, 14.602)),
+          infiniteBounds: false,
+        ),
+      ),
+    );
 
     _pointAnnotationManager =
         await _mapboxMap.annotations.createPointAnnotationManager();
@@ -248,7 +262,9 @@ class _MapPageState extends State<MapPage> {
     });
 
     if (category != null && categorizedFeatures.containsKey(category)) {
+      final features = categorizedFeatures[category]!;
       addMarkersFromFeatures(categorizedFeatures[category]!);
+      MapAnimations.fitMarkersInView(_mapboxMap, features);
     }
   }
 
@@ -336,14 +352,17 @@ class _MapPageState extends State<MapPage> {
       });
       addPolyline(route);
       _routeCache[routeKey] = route;
+      MapAnimations.fitRouteInView(_mapboxMap, route);
     } else {
       setState(() {
         currentRoute = [];
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No route found')),
-      );
+      NoRoutePopup.show(context);
     }
+  }
+
+  void clearSearch() {
+    _searchController.clear();
   }
 
   @override
@@ -394,6 +413,7 @@ class _MapPageState extends State<MapPage> {
                   padding: const EdgeInsets.symmetric(
                       vertical: 11.0, horizontal: 16.0),
                   child: CustomSearchBar(
+                    controller: _searchController,
                     hintText: 'Search location...',
                     isDarkMode: isNightMode,
                     onTap: () async {
@@ -464,8 +484,9 @@ class _MapPageState extends State<MapPage> {
           ),
           if (currentRoute.isNotEmpty)
             NavigationButton(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                // Navigate to the TurnByTurnPage and wait for the result
+                final remainingRoute = await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => TurnByTurnPage(
@@ -473,6 +494,15 @@ class _MapPageState extends State<MapPage> {
                     ),
                   ),
                 );
+
+                // If a remaining route is returned, update the polyline
+                if (remainingRoute != null && remainingRoute is List<Point>) {
+                  setState(() {
+                    currentRoute = remainingRoute; // Update the current route
+                  });
+                  clearPolylines(); // Clear existing polylines
+                  addPolyline(currentRoute); // Draw the updated polyline
+                }
               },
             ),
           // Theme Toggle Button

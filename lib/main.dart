@@ -4,10 +4,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'pages/splash_screen.dart';
 import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:iskompas/utils/geojson_parser.dart';
+import 'package:iskompas/utils/shared/geojson_parser.dart';
 import 'package:provider/provider.dart';
-import 'package:iskompas/utils/location_provider.dart';
-import 'package:iskompas/utils/theme_provider.dart';
+import 'package:iskompas/utils/map/location_provider.dart';
+import 'package:iskompas/utils/shared/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
