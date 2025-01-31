@@ -17,11 +17,25 @@ class SearchPageState extends State<SearchPage> {
   List<dynamic> filteredFacilities = [];
   TextEditingController searchController = TextEditingController();
   final int _displayLimit = 9;
+  FocusNode searchFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
     filteredFacilities = widget.facilities;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      searchFocusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    // Always unfocus and clear the keyboard when leaving the page
+    searchFocusNode.unfocus();
+    searchController.dispose();
+    searchFocusNode.dispose();
+    super.dispose();
   }
 
   void filterSearchResults(String query) {
@@ -60,6 +74,7 @@ class SearchPageState extends State<SearchPage> {
                   Expanded(
                     child: CustomSearchBar(
                       controller: searchController,
+                      focusNode: searchFocusNode,
                       onChanged: filterSearchResults,
                       hintText: 'Search location...',
                       isDarkMode: isNightMode,
