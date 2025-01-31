@@ -59,6 +59,15 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
     mapboxMap.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
     mapboxMap.compass.updateSettings(CompassSettings(enabled: false));
 
+    await _mapboxMap.style.setStyleImportConfigProperty(
+        "basemap", "showPointOfInterestLabels", false);
+
+    await _mapboxMap.style
+        .setStyleImportConfigProperty("basemap", "showPlaceLabels", false);
+
+    await _mapboxMap.style
+        .setStyleImportConfigProperty("basemap", "showTransitLabels", false);
+
     // Enable location component
     await mapboxMap.location.updateSettings(
       LocationComponentSettings(
@@ -113,16 +122,22 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
 
     // Update camera position to follow user
     if (_remainingRoute.length > 1) {
-      _mapboxMap.easeTo(
-        CameraOptions(
-          center: currentLocation,
-          bearing: RouteManager.calculateBearing(
-              _remainingRoute[0], _remainingRoute[1]),
-          zoom: 20.0,
-          pitch: 65.0,
-        ),
-        MapAnimationOptions(duration: 1000), // 1 second smooth transition
-      );
+      // Retrieve the current camera state to preserve the user-selected pitch
+      _mapboxMap.getCameraState().then((currentCameraState) {
+        final currentPitch = currentCameraState.pitch;
+
+        _mapboxMap.easeTo(
+          CameraOptions(
+            center: currentLocation,
+            bearing: RouteManager.calculateBearing(
+                _remainingRoute[0], _remainingRoute[1]),
+            zoom: 20.0,
+            pitch:
+                currentPitch, // Use the current pitch instead of hardcoding 65.0
+          ),
+          MapAnimationOptions(duration: 1000), // 1 second smooth transition
+        );
+      });
     }
 
     // Optimization: Only check proximity every few seconds
@@ -253,8 +268,36 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
     return estimatedMinutes;
   }
 
+  void _toggleMapPitch() {
+    _mapboxMap.getCameraState().then((currentOptions) {
+      final currentPitch = currentOptions.pitch;
+      double newPitch;
+
+      // Cycle through pitch values
+      if (currentPitch == 0.0) {
+        newPitch = 45.0;
+      } else if (currentPitch == 45.0) {
+        newPitch = 65.0;
+      } else {
+        newPitch = 0.0;
+      }
+
+      _mapboxMap.easeTo(
+        CameraOptions(
+          pitch: newPitch,
+          center: currentOptions.center,
+          zoom: currentOptions.zoom,
+          bearing: currentOptions.bearing,
+        ),
+        MapAnimationOptions(duration: 500),
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
       body: Stack(
         children: [
@@ -314,7 +357,30 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
               ],
             ),
           ),
-
+          // Map pitch button
+          Positioned(
+            right: 16,
+            bottom: 175,
+            child: ElevatedButton(
+              onPressed: _toggleMapPitch,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: themeProvider.isDarkMode
+                    ? Iskolors.colorDarkShade // Dark mode color
+                    : Iskolors.colorWhite, // Light mode color
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                padding: const EdgeInsets.all(18),
+              ),
+              child: Icon(
+                Icons.view_in_ar,
+                color: themeProvider.isDarkMode
+                    ? Iskolors.colorWhite // Dark mode icon color
+                    : Iskolors.colorMaroon, // Light mode icon color
+                size: 24,
+              ),
+            ),
+          ),
           // Bottom info panel
           Positioned(
             left: 0,
@@ -322,9 +388,13 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
             bottom: 0,
             child: Container(
               padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: Iskolors.colorDarkShade,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              decoration: BoxDecoration(
+                color: themeProvider.isDarkMode
+                    ? Iskolors.colorDarkShade // Dark mode color
+                    : Iskolors.colorWhite, // Light mode color
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -332,15 +402,20 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
                 children: [
                   Text(
                     '${_calculateWalkingTime(widget.route)} minutes',
-                    style: const TextStyle(
-                        color: Iskolors.colorYellow,
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: themeProvider.isDarkMode
+                          ? Iskolors.colorYellow // Dark mode text color
+                          : Iskolors.colorMaroon, // Light mode text color
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(
                     '${_calculateTotalDistance(widget.route)}m',
-                    style: const TextStyle(
-                      color: Iskolors.colorGrey,
+                    style: TextStyle(
+                      color: themeProvider.isDarkMode
+                          ? Iskolors.colorGrey // Dark mode text color
+                          : Iskolors.colorDarkGrey, // Light mode text color
                       fontSize: 18,
                     ),
                   ),
@@ -352,7 +427,9 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
                           Navigator.of(context).pop(_remainingRoute),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 18),
-                        backgroundColor: Iskolors.colorMaroon,
+                        backgroundColor: themeProvider.isDarkMode
+                            ? Iskolors.colorMaroon // Dark mode button color
+                            : Iskolors.colorMaroon, // Light mode button color
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -360,7 +437,7 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
                       child: const Text(
                         'Stop Navigation',
                         style: TextStyle(
-                          color: Iskolors.colorPureWhite,
+                          color: Iskolors.colorPureWhite, // Button text color
                           fontSize: 16,
                         ),
                       ),
