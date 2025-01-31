@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:iskompas/utils/color_extension.dart';
@@ -139,6 +140,18 @@ class MapPageState extends State<MapPage> {
     await _mapboxMap.style
         .setStyleImportConfigProperty("basemap", "showTransitLabels", false);
 
+    await _mapboxMap.setBounds(
+      CameraBoundsOptions(
+        bounds: CoordinateBounds(
+          // Lang: As is, Lat: higher is tighter; lower is wider
+          southwest: Point(coordinates: Position(121.006, 14.594)),
+          // Lang: As is, Last: higher is wider; lower is tighter
+          northeast: Point(coordinates: Position(121.015, 14.602)),
+          infiniteBounds: false,
+        ),
+      ),
+    );
+
     _pointAnnotationManager =
         await _mapboxMap.annotations.createPointAnnotationManager();
     _polylineAnnotationManager =
@@ -251,8 +264,63 @@ class MapPageState extends State<MapPage> {
     });
 
     if (category != null && categorizedFeatures.containsKey(category)) {
+      final features = categorizedFeatures[category]!;
       addMarkersFromFeatures(categorizedFeatures[category]!);
+      _fitMarkersInView(features);
     }
+  }
+
+  void _fitMarkersInView(List<GeoFeature> features) {
+    if (features.isEmpty) return;
+
+    // Find the bounds of all markers
+    double minLng = features.first.geometry.coordinates[0]!.toDouble();
+    double maxLng = features.first.geometry.coordinates[0]!.toDouble();
+    double minLat = features.first.geometry.coordinates[1]!.toDouble();
+    double maxLat = features.first.geometry.coordinates[1]!.toDouble();
+
+    for (var feature in features) {
+      final lng = feature.geometry.coordinates[0]!.toDouble();
+      final lat = feature.geometry.coordinates[1]!.toDouble();
+
+      minLng = min(minLng, lng);
+      maxLng = max(maxLng, lng);
+      minLat = min(minLat, lat);
+      maxLat = max(maxLat, lat);
+    }
+
+    // Add less padding to the bounds (adjust the 0.3 multiplier for tighter zoom)
+    final lngPadding = (maxLng - minLng) * 0.4; // Reduce padding
+    final latPadding = (maxLat - minLat) * 0.4; // Reduce padding
+
+    minLng -= lngPadding;
+    maxLng += lngPadding;
+    minLat -= latPadding;
+    maxLat += latPadding;
+
+    // Calculate center point
+    final centerLng = (minLng + maxLng) / 2;
+    final centerLat = (minLat + maxLat) / 2;
+
+    // Calculate appropriate zoom level based on bounds
+    final lngSpan = (maxLng - minLng).abs();
+    final latSpan = (maxLat - minLat).abs();
+
+    // Base zoom level on the larger span
+    final zoomLevel = max(
+        16.0,
+        -log(max(lngSpan, latSpan)) *
+            3.0); // Adjust zoom multiplier for tighter zoom
+
+    _mapboxMap.flyTo(
+      CameraOptions(
+        center: Point(coordinates: Position(centerLng, centerLat)),
+        zoom: zoomLevel,
+        bearing: 0.0,
+        pitch: 45.0,
+      ),
+      MapAnimationOptions(duration: 1000),
+    );
   }
 
   void _showMarkerPopupBottomSheet(
@@ -339,12 +407,102 @@ class MapPageState extends State<MapPage> {
       });
       addPolyline(route);
       _routeCache[routeKey] = route;
+      _fitRouteInView(route);
     } else {
       setState(() {
         currentRoute = [];
       });
       NoRoutePopup.show(context);
     }
+  }
+
+  void _fitRouteInView(List<Point> route) {
+    if (route.isEmpty) return;
+
+    // Find the bounds of the route
+    double minLng = route.first.coordinates[0]!.toDouble();
+    double maxLng = route.first.coordinates[0]!.toDouble();
+    double minLat = route.first.coordinates[1]!.toDouble();
+    double maxLat = route.first.coordinates[1]!.toDouble();
+
+    for (var point in route) {
+      final lng = point.coordinates[0]!.toDouble();
+      final lat = point.coordinates[1]!.toDouble();
+
+      minLng = min(minLng, lng);
+      maxLng = max(maxLng, lng);
+      minLat = min(minLat, lat);
+      maxLat = max(maxLat, lat);
+    }
+
+    // Calculate the route's span
+    final lngSpan = (maxLng - minLng).abs();
+    final latSpan = (maxLat - minLat).abs();
+
+    // Force a closer zoom based on route length
+    double zoomLevel;
+    final routeLength = route.length;
+
+    if (routeLength <= 2) {
+      zoomLevel = 19.0; // Very close for direct routes
+    } else if (routeLength <= 4) {
+      zoomLevel = 18.5;
+    } else if (routeLength <= 6) {
+      zoomLevel = 18.0;
+    } else if (routeLength <= 10) {
+      zoomLevel = 17.5;
+    } else {
+      // For longer routes, calculate based on span but ensure it's not too far out
+      zoomLevel = max(17.0, -log(max(lngSpan, latSpan)) * 2.5);
+    }
+
+    // Calculate center point
+    final centerLng = (minLng + maxLng) / 2;
+    final centerLat = (minLat + maxLat) / 2;
+
+    // Get current camera position
+    _mapboxMap.getCameraState().then((currentCamera) {
+      // Force the zoom change by first zooming out slightly
+      final initialZoom = currentCamera.zoom;
+
+      // Two-step animation for more dramatic effect
+      // First zoom out slightly if we're already zoomed in
+      if (initialZoom > zoomLevel - 1) {
+        _mapboxMap
+            .flyTo(
+          CameraOptions(
+            center: Point(coordinates: Position(centerLng, centerLat)),
+            zoom: zoomLevel - 1,
+            bearing: 0.0,
+            pitch: 45.0,
+          ),
+          MapAnimationOptions(duration: 500),
+        )
+            .then((_) {
+          // Then zoom in to the final position
+          _mapboxMap.flyTo(
+            CameraOptions(
+              center: Point(coordinates: Position(centerLng, centerLat)),
+              zoom: zoomLevel,
+              bearing: 0.0,
+              pitch: 45.0,
+            ),
+            MapAnimationOptions(duration: 500),
+          );
+        });
+      } else {
+        // Direct animation if we're already zoomed out
+        _mapboxMap.flyTo(
+          CameraOptions(
+            center: Point(coordinates: Position(centerLng, centerLat)),
+            zoom: zoomLevel,
+            bearing: 0.0,
+            pitch: 45.0,
+          ),
+          MapAnimationOptions(duration: 1000),
+        );
+      }
+    });
   }
 
   void clearSearch() {
