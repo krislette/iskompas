@@ -6,6 +6,7 @@ import 'package:iskompas/models/facility_model.dart';
 import 'package:iskompas/utils/saved/saved_facilities_service.dart';
 import 'package:iskompas/widgets/navbar.dart';
 
+// Stateful widget for displaying saved facilities
 class SavedPage extends StatefulWidget {
   final List<dynamic> facilities;
   final Map<String, dynamic> mapData;
@@ -20,9 +21,11 @@ class SavedPage extends StatefulWidget {
   SavedPageState createState() => SavedPageState();
 }
 
+// State class for managing the saved page
 class SavedPageState extends State<SavedPage> {
   List<Facility> facilities = [];
   List<Facility> filteredFacilities = [];
+
   bool isLoading = true;
   final TextEditingController _searchController = TextEditingController();
 
@@ -36,10 +39,12 @@ class SavedPageState extends State<SavedPage> {
     _searchController.addListener(_onSearchChanged);
   }
 
+  // Callback for search input changes
   void _onSearchChanged() {
     filterFacilities(_searchController.text);
   }
 
+  // Filters facilities based on the search query
   void filterFacilities(String query) {
     setState(() {
       filteredFacilities = facilities
@@ -49,7 +54,9 @@ class SavedPageState extends State<SavedPage> {
     });
   }
 
+  // Loads the saved facilities from the service
   Future<void> loadFacilities() async {
+    // Set loading state while facilities are being loaded
     setState(() {
       isLoading = true;
     });
@@ -64,6 +71,7 @@ class SavedPageState extends State<SavedPage> {
     });
   }
 
+  // Clears the search input
   void clearSearch() {
     _searchController.clear();
   }
@@ -76,6 +84,7 @@ class SavedPageState extends State<SavedPage> {
     final double availableHeight =
         screenHeight - searchBarHeight - bottomPadding;
 
+    // Builds the UI for the entire saved page
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Iskolors.colorBlack,

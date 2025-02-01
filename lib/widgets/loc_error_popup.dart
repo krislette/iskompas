@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iskompas/utils/shared/colors.dart';
 
-class NoRoutePopup {
+class LocationErrorPopup {
   static void show(BuildContext context) {
     showDialog(
       context: context,
@@ -12,7 +12,7 @@ class NoRoutePopup {
             borderRadius: BorderRadius.circular(16),
           ),
           title: const Text(
-            'No Route Found',
+            'Location Not Available',
             style: TextStyle(
               color: Iskolors.colorDarkShade,
               fontSize: 22,
@@ -21,7 +21,7 @@ class NoRoutePopup {
             textAlign: TextAlign.center,
           ),
           content: const Text(
-            'Iskompas is having a hard time finding a route for you. You might want to go near a road or outside a facility and try again.',
+            'Unable to get your location. Please make sure location services are enabled and try again.',
             style: TextStyle(
               color: Iskolors.colorDarkGrey,
               fontSize: 16,

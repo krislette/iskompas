@@ -4,6 +4,7 @@ import 'package:iskompas/utils/shared/theme_provider.dart';
 import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/utils/shared/colors.dart';
 
+// SearchPage widget for searching facilities on map page
 class SearchPage extends StatefulWidget {
   final List<dynamic> facilities;
 
@@ -13,10 +14,12 @@ class SearchPage extends StatefulWidget {
   SearchPageState createState() => SearchPageState();
 }
 
+// State class for SearchPage which handles facility search and filtering
 class SearchPageState extends State<SearchPage> {
   List<dynamic> filteredFacilities = [];
-  TextEditingController searchController = TextEditingController();
   final int _displayLimit = 9;
+
+  TextEditingController searchController = TextEditingController();
   FocusNode searchFocusNode = FocusNode();
 
   @override
@@ -24,6 +27,7 @@ class SearchPageState extends State<SearchPage> {
     super.initState();
     filteredFacilities = widget.facilities;
 
+    // Automatically focus on the search field when the page is opened
     WidgetsBinding.instance.addPostFrameCallback((_) {
       searchFocusNode.requestFocus();
     });
@@ -38,6 +42,7 @@ class SearchPageState extends State<SearchPage> {
     super.dispose();
   }
 
+  // Filters facilities based on the search query
   void filterSearchResults(String query) {
     if (query.isEmpty) {
       setState(() {
@@ -64,7 +69,7 @@ class SearchPageState extends State<SearchPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Search header
+            // Search header with a search bar
             Padding(
               padding:
                   const EdgeInsets.symmetric(vertical: 11.0, horizontal: 16.0),
@@ -136,7 +141,6 @@ class SearchPageState extends State<SearchPage> {
         ),
       ),
       // Bottom capsule-like back button
-      // Inside the SearchPage's build method
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ElevatedButton(

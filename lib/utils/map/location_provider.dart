@@ -16,21 +16,27 @@ class LocationProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    // Cancel any ongoing location updates when disposed
     _locationUpdateTimer?.cancel();
     super.dispose();
   }
 
+  // Method to check location permission
   Future<void> checkLocationPermission() async {
     final permissionStatus = await Permission.locationWhenInUse.request();
     isLocationPermissionGranted = permissionStatus.isGranted;
 
+    // Get user location if permission is granted and start updates
     if (isLocationPermissionGranted) {
       await getUserLocation();
       startPeriodicLocationUpdates();
     }
+
+    // Notify listeners abotu the permission status change
     notifyListeners();
   }
 
+  // Method to fetch the user's current location
   Future<void> getUserLocation() async {
     try {
       final userLocation = await location.getLocation();
@@ -46,13 +52,14 @@ class LocationProvider extends ChangeNotifier {
     }
   }
 
+  // Method to start periodic updates of the user's location every second
   void startPeriodicLocationUpdates() {
     // Stop any existing timer to prevent multiple timers
     _locationUpdateTimer?.cancel();
 
-    // Update location every 3 seconds to balance accuracy and battery life
+    // Update location every second to balance accuracy and battery life
     _locationUpdateTimer =
-        Timer.periodic(const Duration(seconds: 3), (_) async {
+        Timer.periodic(const Duration(seconds: 1), (_) async {
       try {
         final userLocation = await location.getLocation();
         currentLocation = Point(

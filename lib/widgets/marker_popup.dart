@@ -5,6 +5,7 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:iskompas/utils/shared/colors.dart';
 import 'package:iskompas/utils/map/location_provider.dart';
 import 'package:iskompas/utils/saved/saved_facilities_service.dart';
+import 'package:iskompas/widgets/loc_error_popup.dart';
 
 class MarkerPopup extends StatefulWidget {
   final Point geometry;
@@ -146,11 +147,12 @@ class _MarkerPopupState extends State<MarkerPopup> {
                                       locationProvider.currentLocation!,
                                       widget.geometry);
                                 } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content: Text(
-                                            'Unable to get your location')),
-                                  );
+                                  WidgetsBinding.instance
+                                      .addPostFrameCallback((_) {
+                                    if (mounted) {
+                                      LocationErrorPopup.show(context);
+                                    }
+                                  });
                                 }
                               } else {
                                 widget.onNavigate(
