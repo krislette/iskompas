@@ -127,9 +127,10 @@ Before running the application, ensure you have the following installed on your 
 - **[Dart](https://dart.dev/get-dart)** (Included with Flutter)
 - **[Android Studio](https://developer.android.com/studio)** (For Android development)
 - **[Android SDK](https://developer.android.com/studio/releases/sdk-tools)** (Installed via Android Studio)
+- **[Visual Studio Code (VS Code)](https://code.visualstudio.com/)** (Optional but recommended for Flutter development)
 - **Device Emulator** (or a physical device with USB debugging enabled)
 
-#### Setup
+### Setup
 1. Clone the repository:
 ```
 git clone https://github.com/yourusername/your-repo.git
@@ -138,24 +139,121 @@ git clone https://github.com/yourusername/your-repo.git
 ```
 cd your-project-folder
 ```
-3. Install dependencies:
+3. Open the code in visual studio code:
+```
+code .
+```
+4. Run this to download all dependencies listed on ```pubspec.yaml```:
 ```
 flutter pub get
 ```
+<br>
+Ensure you have the following files in your project directory:
 
+5. **`.env` File**:  
+   Create a `.env` file in the root of your project and add the following line:
+   ```
+   ACCESS_TOKEN=<your-access-token>
+   ```
+   Replace ```<your-access-token>``` with your actual Mapbox access token.
+
+6. ```nodes.geojson``` File: <br>
+Ensure you have a ```nodes.geojson``` file in your project directory. This file should contain your dataset from Mapbox in ```GeoJSON format```.
+
+
+
+#### Optional
+
+1. Add the following code to your shell configuration file (e.g., ```~/.bashrc```, ```~/.zshrc```, etc.):
+```
+runflutter() {
+    if [ -z "$1" ]; then
+        echo "Usage: runflutter <device-name>"
+        return 1
+    fi
+    flutter run -d "$1" | grep -v -e 'updateAcquireFence' -e 'err open mi_exception_log' -e 'err write to mi_exception_log' -e 'QueueBuffer time out'
+}
+```
+2. Save the file and reload your shell configuration:
+```
+source ~/.bashrc  # or source ~/.zshrc
+```
+3. The ```runflutter``` command in your terminal will later be used in running the application.
+
+<!-- PHONE SETUP -->
+### Phone Setup
+
+If you're going to use an **emulator** instead of a physical phone to run the app, you can **skip** this section. However, if you want to use a **physical phone**, follow the steps below to configure your device.
+
+#### Step 1: Enable Developer Options and USB Debugging
+1. Watch this video to learn how to enable **Developer Options** on your phone:  
+   [How to Enable Developer Options on Android](https://youtu.be/zu9oCE9N8H0?si=aNqJr9S2lwZdXRNF).
+2. Once Developer Options is enabled, locate **USB Debugging** and turn it on.
+3. Near the USB Debugging option, find **Wireless Debugging** and turn it on as well.
+
+#### Step 2: Pair Your Device with Your Laptop/PC
+To pair your device with your development machine:
+1. Open **Android Studio**.
+2. Click the **Wi-Fi icon** (or go to the **Device Manager**) to view available connections.
+3. Pair your device using one of the following methods:
+   - **QR Code**: Click "Pair using QR Code" on your phone and scan the QR code displayed in Android Studio.
+   - **Pairing Code**: Click "Pair using Pairing Code" and enter the code displayed on your phone.
+
+#### Step 3: Verify Connection
+- Once paired, your phone will show a notification confirming it is connected to **Wireless Debugging**.
+- If the connection is successful, you can proceed to the next steps in your development workflow.
+
+---
+
+**Note**: Ensure your phone and laptop/PC are on the same Wi-Fi network for Wireless Debugging to work properly.
+   
 <!-- HOW TO RUN THE PROGRAM -->
 ##  Run
-To run the application, follow these steps:
 
-1. Start an emulator (or connect a physical device):
+### Step 1: List Connected Devices
+To get a list of all connected devices, run the following command in your terminal:
 ```
 flutter devices
 ```
-2. Run the app:
+An output like this will appear:
 ```
-flutter run
+Found 3 connected devices:
+  Windows (desktop) • windows • windows-x64    • Microsoft Windows [Version 10.0.26100.2894]
+  Chrome (web)      • chrome  • web-javascript • Google Chrome 132.0.6834.160
+  Edge (web)        • edge    • web-javascript • Microsoft Edge 132.0.2957.127
+
+Found 1 wirelessly connected device:
+  M2101K6G (mobile) • adb-de63fc98-IyvXZg._adb-tls-connect._tcp • android-arm64 • Android 13 (API 33)
 ```
-3. If using Android Studio, open the project and click on Run > Run 'main.dart'.
+Copy the phone ID (e.g., ```adb-de63fc98-IyvXZg._adb-tls-connect._tcp```) from the output.
+
+### Step 2: Run the App
+There are three ways to run the app:
+
+#### Option 1: Automated Process (Recommended)
+If you’ve automated the process using the ```runflutter``` function, simply type:
+```
+runflutter <phone-id>
+```
+Example: 
+```
+runflutter adb-de63fc98-IyvXZg._adb-tls-connect._tcp
+```
+
+#### Option 2: Manual Process
+If you didn’t set up the automation, use the following command:
+```
+flutter run -d <phone-id> | grep -v -e 'updateAcquireFence' -e 'err open mi_exception_log' -e 'err write to mi_exception_log' -e 'QueueBuffer time out'
+```
+
+#### Option 3: Using an Emulator
+If you’re using an emulator:
+1. Open the cloned project in **Android Studio**.
+2. Set up and start an emulator from the **Device Manager**.
+3. Click the **Run** button in Android Studio to launch the app on the emulator.
+
+### Step 3: Wait for the App to Run
+Once you’ve entered the command or clicked the Run button in Android Studio, wait for the app to build and launch on your device or emulator.
 
 <!-- Contributor's Table -->
 ## Contributors
