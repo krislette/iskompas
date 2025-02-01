@@ -24,7 +24,9 @@
 
 <!-- PROJECT DEMO -->
 ## Demo
-
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/6f3e3657-7861-4d8f-86ce-6330ed4a910c" alt="Demo" width="20%">
+</div>
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
@@ -364,6 +366,6 @@ Once you’ve entered the command or clicked the Run button in Android Studio, w
 
 ## License
 
-Distributed under the [MIT](https://choosealicense.com/licenses/mit/) License. See [LICENSE](LICENSE) for more information.
+Distributed under the [Creative Commons Attribution-NoDerivatives 4.0 International](https://github.com/vitorsr/cc/blob/master/CC-BY-ND-4.0.md) License. See [LICENSE](LICENSE) for more information.
 
 <p align="right">[<a href="#readme-top">Back to top</a>]</p>
