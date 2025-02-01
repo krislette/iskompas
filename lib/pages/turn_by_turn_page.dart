@@ -159,24 +159,25 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
 
     if (currentLocation == null || _remainingRoute.isEmpty) return;
 
-    // Check if there's significant movement before proceeding with updates
+    // Always update camera position regardless of significant movement
+    if (_remainingRoute.length > 1) {
+      _mapboxMap.getCameraState().then((currentCameraState) {
+        final currentPitch = currentCameraState.pitch;
+        _mapboxMap.easeTo(
+          CameraOptions(
+            center: currentLocation,
+            bearing: RouteManager.calculateBearing(
+                _remainingRoute[0], _remainingRoute[1]),
+            zoom: 20.0,
+            pitch: currentPitch,
+          ),
+          MapAnimationOptions(duration: 1000),
+        );
+      });
+    }
+
+    // Only proceed with route updates if a movement is detected
     if (!_hasSignificantMovement(currentLocation)) {
-      // If no significant movement, only update camera position
-      if (_remainingRoute.length > 1) {
-        _mapboxMap.getCameraState().then((currentCameraState) {
-          final currentPitch = currentCameraState.pitch;
-          _mapboxMap.easeTo(
-            CameraOptions(
-              center: currentLocation,
-              bearing: RouteManager.calculateBearing(
-                  _remainingRoute[0], _remainingRoute[1]),
-              zoom: 20.0,
-              pitch: currentPitch,
-            ),
-            MapAnimationOptions(duration: 1000),
-          );
-        });
-      }
       return;
     }
 
