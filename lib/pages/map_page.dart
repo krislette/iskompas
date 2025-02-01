@@ -19,6 +19,7 @@ import 'package:iskompas/widgets/marker_popup.dart';
 import 'package:iskompas/widgets/no_route_popup.dart';
 import 'package:iskompas/utils/map/map_animations.dart';
 
+// Page that displays a map with various facilities and functionalities
 class MapPage extends StatefulWidget {
   final Map<String, dynamic> mapData;
   final List<dynamic> facilities;
@@ -35,13 +36,16 @@ class MapPage extends StatefulWidget {
   State<MapPage> createState() => MapPageState();
 }
 
+// Manages the state and functionality of the map page
 class MapPageState extends State<MapPage> {
+  // Initialize significant mapbox components
   late MapboxMap _mapboxMap;
   late PointAnnotationManager _pointAnnotationManager;
   late PolylineAnnotationManager _polylineAnnotationManager;
 
-  List<Point> currentRoute = []; // Route for navigation
-  List<Point> pathfindingNodes = []; // Nodes for pathfinding
+  // Initialize routing objects
+  List<Point> currentRoute = [];
+  List<Point> pathfindingNodes = [];
 
   // Pin categories
   String? selectedCategory;
@@ -54,10 +58,13 @@ class MapPageState extends State<MapPage> {
   final Map<String, Map<String, String>> annotationMetadata =
       {}; // Maps custom id to metadata
 
+  // Used for route caching to avoid reloading everything
   final Map<String, List<Point>> _routeCache = {};
 
+  // Controller for the search button
   final TextEditingController _searchController = TextEditingController();
 
+  // Misc initializations and declarations for map design
   bool isMapInitialized = false;
   GeoFeature? deferredFocusFeature;
 
@@ -67,6 +74,7 @@ class MapPageState extends State<MapPage> {
     initializeMapData();
   }
 
+  // Initializes map data by extracting faciltiies and nodes
   void initializeMapData() {
     try {
       final facilities = (widget.mapData['facilities'] as List).map((facility) {
@@ -89,7 +97,7 @@ class MapPageState extends State<MapPage> {
       pathfindingNodes =
           [...facilities, ...nodes].map((feature) => feature.geometry).toList();
 
-      // Categorize features
+      // Categorize features into specific types
       categorizedFeatures = {
         'facility': facilities
             .where((f) => f.properties['type'] == 'facility')
@@ -106,7 +114,7 @@ class MapPageState extends State<MapPage> {
         'node': nodes,
       };
 
-      // If there's a facility to focus on
+      // If there's a specific facility to focus on, find it
       if (widget.focusFacilityName != null) {
         final facilityFeature = facilities.firstWhere(
           (feature) => feature.properties['name'] == widget.focusFacilityName,
@@ -118,7 +126,7 @@ class MapPageState extends State<MapPage> {
         );
 
         if (facilityFeature.id.isNotEmpty) {
-          deferredFocusFeature = facilityFeature; // Save for later
+          deferredFocusFeature = facilityFeature;
         }
       }
     } catch (e) {
@@ -126,18 +134,19 @@ class MapPageState extends State<MapPage> {
     }
   }
 
+  // Initializes managers for handling map interactions, annotations, & styles
   Future<void> initializeManagers(MapboxMap mapboxMap) async {
     _mapboxMap = mapboxMap;
 
+    // Disable unnecessary labels on the basemap
     await _mapboxMap.style.setStyleImportConfigProperty(
         "basemap", "showPointOfInterestLabels", false);
-
     await _mapboxMap.style
         .setStyleImportConfigProperty("basemap", "showPlaceLabels", false);
-
     await _mapboxMap.style
         .setStyleImportConfigProperty("basemap", "showTransitLabels", false);
 
+    // Set bounding box to restrict map view within specific coordinates
     await _mapboxMap.setBounds(
       CameraBoundsOptions(
         bounds: CoordinateBounds(
@@ -150,11 +159,13 @@ class MapPageState extends State<MapPage> {
       ),
     );
 
+    // Create managers for handling annotations (points and polylines)
     _pointAnnotationManager =
         await _mapboxMap.annotations.createPointAnnotationManager();
     _polylineAnnotationManager =
         await _mapboxMap.annotations.createPolylineAnnotationManager();
 
+    // Set up a click listener for point annotations to show marker detail
     _pointAnnotationManager.addOnPointAnnotationClickListener(
       CustomPointAnnotationClickListener(
           showMarkerPopup: (geometry, title, description) {
@@ -164,6 +175,7 @@ class MapPageState extends State<MapPage> {
           annotationIdMap: annotationIdMap),
     );
 
+    // Apply theme updates based on the current theme mode
     if (mounted) {
       final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
       updateMapTheme(themeProvider.isDarkMode);
@@ -171,11 +183,11 @@ class MapPageState extends State<MapPage> {
 
     isMapInitialized = true;
 
-    // Perform deferred focus and marker addition
+    // Handle deferred focus if a feature was selected before initialization
     if (deferredFocusFeature != null) {
       focusOnLocation(deferredFocusFeature!.geometry);
       addMarkersFromFeatures([deferredFocusFeature!]);
-      deferredFocusFeature = null; // Clear deferred action
+      deferredFocusFeature = null;
     }
   }
 
@@ -185,12 +197,14 @@ class MapPageState extends State<MapPage> {
         "basemap", "lightPreset", isDarkMode ? "dusk" : "day");
   }
 
+  // Toggles the map theme between light and dark
   void toggleMapTheme() async {
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     await themeProvider.toggleTheme();
     updateMapTheme(themeProvider.isDarkMode);
   }
 
+  // Moves the camera to focus on a specific location
   void focusOnLocation(Point location) {
     if (!isMapInitialized) {
       return;
@@ -205,11 +219,12 @@ class MapPageState extends State<MapPage> {
     );
   }
 
+  // Adds markers to the map based on a list of geographic features
   Future<void> addMarkersFromFeatures(List<GeoFeature> features) async {
-    // Cache to store loaded images
+    // Cache to store loaded images for marker types
     final Map<String, Uint8List> imageCache = {};
 
-    // Load image for each feature
+    // Loads an image corresponding to the feature type, caching it if necessary
     Future<Uint8List> getImageForType(String type) async {
       if (!imageCache.containsKey(type)) {
         final ByteData bytes =
@@ -219,7 +234,7 @@ class MapPageState extends State<MapPage> {
       return imageCache[type]!;
     }
 
-    // Create a list to hold all annotation options
+    // Generate annotation options for each feature
     final List<PointAnnotationOptions> annotationOptionsList =
         await Future.wait(features.map((feature) async {
       final String type = feature.properties['type'].toString().toLowerCase();
@@ -229,13 +244,10 @@ class MapPageState extends State<MapPage> {
         geometry: feature.geometry,
         image: imageData,
         iconSize: 1,
-        // textField: feature.properties['name'],
-        // textOffset: [0, -2],
-        // textSize: 12
       );
     }));
 
-    // Create all annotations at once
+    // Create all annotations at once and filter out null values
     final List<PointAnnotation> annotations =
         (await _pointAnnotationManager.createMulti(annotationOptionsList))
             .where((annotation) => annotation != null)
@@ -254,6 +266,7 @@ class MapPageState extends State<MapPage> {
     }
   }
 
+  // Updates markers on the map based on selected category
   void updateMarkers(String? category) {
     _pointAnnotationManager.deleteAll();
     setState(() {
@@ -261,6 +274,7 @@ class MapPageState extends State<MapPage> {
       currentRoute = [];
     });
 
+    // Add markers for the selected category and adjust the map view
     if (category != null && categorizedFeatures.containsKey(category)) {
       final features = categorizedFeatures[category]!;
       addMarkersFromFeatures(categorizedFeatures[category]!);
@@ -268,6 +282,7 @@ class MapPageState extends State<MapPage> {
     }
   }
 
+  // Displays a popup bottom sheet for marker details and navigation
   void _showMarkerPopupBottomSheet(
       Point geometry, String title, String description) {
     showModalBottomSheet(
@@ -288,7 +303,9 @@ class MapPageState extends State<MapPage> {
     );
   }
 
+  // Adds a polyline on the map representing a route
   void addPolyline(List<Point> route) {
+    // Reduce route complexity
     final simplifiedRoute = _simplifyRoute(route);
 
     final polylineOptions = PolylineAnnotationOptions(
@@ -302,6 +319,7 @@ class MapPageState extends State<MapPage> {
     _polylineAnnotationManager.create(polylineOptions);
   }
 
+  // Simplfies the route by removing unnecessary points while preserving shape
   List<Point> _simplifyRoute(List<Point> route) {
     if (route.length < 3) return route;
 
@@ -318,6 +336,7 @@ class MapPageState extends State<MapPage> {
       final dx2 = next.coordinates[0]! - curr.coordinates[0]!;
       final dy2 = next.coordinates[1]! - curr.coordinates[1]!;
 
+      // Retain points that contribute significantly to route shape
       if (dx1 * dx1 + dy1 * dy1 > minDistance * minDistance ||
           dx2 * dx2 + dy2 * dy2 > minDistance * minDistance) {
         simplified.add(curr);
@@ -328,10 +347,12 @@ class MapPageState extends State<MapPage> {
     return simplified;
   }
 
+  // Clears all polylines from the map
   void clearPolylines() {
     _polylineAnnotationManager.deleteAll();
   }
 
+  // Calculates the shortest route between two points and displays it on the map
   void calculateRoute(Point from, Point to) {
     clearPolylines();
 
@@ -361,6 +382,7 @@ class MapPageState extends State<MapPage> {
     }
   }
 
+  // Clears the search input field
   void clearSearch() {
     _searchController.clear();
   }
@@ -471,7 +493,6 @@ class MapPageState extends State<MapPage> {
                     },
                   ),
                 ),
-
                 // Category filters
                 CategoryFiltersList(
                   selectedCategory: selectedCategory,
@@ -482,6 +503,7 @@ class MapPageState extends State<MapPage> {
               ],
             ),
           ),
+          // Turn by turn navigation button
           if (currentRoute.isNotEmpty)
             NavigationButton(
               onPressed: () async {
@@ -498,10 +520,10 @@ class MapPageState extends State<MapPage> {
                 // If a remaining route is returned, update the polyline
                 if (remainingRoute != null && remainingRoute is List<Point>) {
                   setState(() {
-                    currentRoute = remainingRoute; // Update the current route
+                    currentRoute = remainingRoute;
                   });
-                  clearPolylines(); // Clear existing polylines
-                  addPolyline(currentRoute); // Draw the updated polyline
+                  clearPolylines();
+                  addPolyline(currentRoute);
                 }
               },
             ),

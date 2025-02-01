@@ -4,17 +4,22 @@ import 'package:simple_animations/simple_animations.dart';
 import 'package:iskompas/utils/shared/colors.dart';
 import 'package:iskompas/widgets/navbar.dart';
 
+// Stateful widget for displaying the splash screen
 class SplashScreen extends StatefulWidget {
   final Map<String, dynamic> mapData;
   final List<dynamic> facilities;
 
-  const SplashScreen(
-      {super.key, required this.mapData, required this.facilities});
+  const SplashScreen({
+    super.key,
+    required this.mapData,
+    required this.facilities,
+  });
 
   @override
   SplashScreenState createState() => SplashScreenState();
 }
 
+// State handler for the splash screen
 class SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   final string1 = 'Find your way,';
@@ -35,6 +40,7 @@ class SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
+    // Initialize the rotation controller for the compass animation
     _rotationController = AnimationController(
       duration: const Duration(milliseconds: 4200),
       vsync: this,
@@ -43,30 +49,35 @@ class SplashScreenState extends State<SplashScreen>
     _rotationAnimation = Tween<double>(begin: 0, end: 1).animate(
         CurvedAnimation(parent: _rotationController, curve: Curves.easeInOut));
 
+    // Show compass animation after 100ms
     Future.delayed(const Duration(milliseconds: 100), () {
       setState(() {
         showCompass = true;
       });
     });
 
+    // Show second text after 3 seconds
     Future.delayed(const Duration(milliseconds: 3000), () {
       setState(() {
         showSecondText = true;
       });
     });
 
+    // Show third text after 3.6 seconds
     Future.delayed(const Duration(milliseconds: 3600), () {
       setState(() {
         showThirdText = true;
       });
     });
 
+    // Show fourth text after 4.2 seconds
     Future.delayed(const Duration(milliseconds: 4200), () {
       setState(() {
         showFourthText = true;
       });
     });
 
+    // Show location pin after 5 seconds
     Future.delayed(const Duration(milliseconds: 5000), () {
       setState(() {
         showPin = true;
@@ -75,6 +86,7 @@ class SplashScreenState extends State<SplashScreen>
 
     _rotationController.forward();
 
+    // Navigate to the next screen after 6.6 seconds
     Timer(const Duration(milliseconds: 6600), () {
       Navigator.pushReplacement(
         context,
@@ -254,7 +266,7 @@ class SplashScreenState extends State<SplashScreen>
 
           // Compass logo
           Positioned(
-            bottom: 150, // Temporary fix
+            bottom: 150,
             right: -109,
             child: AnimatedScale(
               scale: showCompass ? 1.0 : 0.0,

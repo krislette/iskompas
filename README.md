@@ -24,7 +24,9 @@
 
 <!-- PROJECT DEMO -->
 ## Demo
-
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/6f3e3657-7861-4d8f-86ce-6330ed4a910c" alt="Demo" width="20%">
+</div>
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
@@ -116,6 +118,60 @@ These technologies enable Iskompas to provide an intuitive and efficient campus 
 
 <!-- APPLICATION SNAPSHOTS -->
 ## Application Snapshots
+### Map Page
+**Light and Dark Mode**
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/50d6b79f-e8c8-48cd-8ada-cd4d3208d8ce" alt="App Screenshot 1" width="25%">
+  <img src="https://github.com/user-attachments/assets/885e8e3e-d41c-4189-9373-6c15216c3d17" alt="App Screenshot 2" width="25%">
+</p>
+
+### Pins
+**Light Mode**
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/10e80b74-34ee-494a-a706-6b9e38a58c35" alt="App Screenshot 3" width="15%">
+  <img src="https://github.com/user-attachments/assets/5690a17d-b624-44a4-9742-eeab76a81400" alt="App Screenshot 4" width="15%">
+  <img src="https://github.com/user-attachments/assets/1affda42-fe0f-49e7-ac32-a9c9fb822726" alt="App Screenshot 5" width="15%">
+  <img src="https://github.com/user-attachments/assets/0ef08aad-514b-4013-9239-b455449d6b39" alt="App Screenshot 6" width="15%">
+  <img src="https://github.com/user-attachments/assets/abee38b6-b648-4474-9646-a8e7e5ff3f77" alt="App Screenshot 7" width="15%">
+</p>
+
+**Dark Mode**
+<p align="center"> 
+  <img src="https://github.com/user-attachments/assets/52a6758b-be1c-41b7-8c67-1effb04773b3" alt="App Screenshot 8" width="15%">
+  <img src="https://github.com/user-attachments/assets/f1f84be0-fa26-4abc-a617-596df8674a8b" alt="App Screenshot 9" width="15%">
+  <img src="https://github.com/user-attachments/assets/5290eb3a-3447-4b45-b342-5b3dc05c0d42" alt="App Screenshot 10" width="15%">
+  <img src="https://github.com/user-attachments/assets/54d6dc35-a80a-490e-b840-3099c43a1adf" alt="App Screenshot 11" width="15%">
+  <img src="https://github.com/user-attachments/assets/7e054939-a6a6-4f31-8df0-93f858633672" alt="App Screenshot 12" width="15%">
+</p>
+
+### Search Location in Map Page
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/ffaa2144-420c-411b-842a-12183b88ac3f" alt="App Screenshot 13" width="25%">
+</p>
+
+### Turn-by-turn Navigation
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f16e3653-6360-4be5-862a-bc177a019b1b" alt="App Screenshot 14" width="25%">
+  <img src="https://github.com/user-attachments/assets/2b6c0c0b-107f-4cdd-8151-3941bfb57711" alt="App Screenshot 15" width="25%">
+</p>
+
+### Save Page
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/64d343b9-d907-4187-a9b7-8851aa67fa48" alt="App Screenshot 16" width="25%">
+  <img src="https://github.com/user-attachments/assets/a9e66ecd-e1a8-4181-811e-c108cf5be3d7" alt="App Screenshot 17" width="25%">
+</p>
+
+### Facilities Page
+<p align="center"> 
+  <img src="https://github.com/user-attachments/assets/fdfb2d30-0726-4881-9ba5-1963813d0b30" alt="App Screenshot 18" width="25%">
+  <img src="https://github.com/user-attachments/assets/a4c9fb3f-623e-4008-9006-e42ffd1e84d1" alt="App Screenshot 19" width="25%">
+</p>
+
+**Floor Plan**
+<p align="center"> 
+  <img src="https://github.com/user-attachments/assets/fdfb2d30-0726-4881-9ba5-1963813d0b30" alt="App Screenshot 20" width="25%">
+  <img src="https://github.com/user-attachments/assets/ac741a07-1fba-4c8b-b425-1b2f19d49f32" alt="App Screenshot 21" width="25%">
+</p>
 
 <!-- INSTALLATION -->
 ## Installation
@@ -127,9 +183,10 @@ Before running the application, ensure you have the following installed on your 
 - **[Dart](https://dart.dev/get-dart)** (Included with Flutter)
 - **[Android Studio](https://developer.android.com/studio)** (For Android development)
 - **[Android SDK](https://developer.android.com/studio/releases/sdk-tools)** (Installed via Android Studio)
+- **[Visual Studio Code (VS Code)](https://code.visualstudio.com/)** (Optional but recommended for Flutter development)
 - **Device Emulator** (or a physical device with USB debugging enabled)
 
-#### Setup
+### Setup
 1. Clone the repository:
 ```
 git clone https://github.com/yourusername/your-repo.git
@@ -138,24 +195,121 @@ git clone https://github.com/yourusername/your-repo.git
 ```
 cd your-project-folder
 ```
-3. Install dependencies:
+3. Open the code in visual studio code:
+```
+code .
+```
+4. Run this to download all dependencies listed on ```pubspec.yaml```:
 ```
 flutter pub get
 ```
+<br>
+Ensure you have the following files in your project directory:
 
+5. **`.env` File**:  
+   Create a `.env` file in the root of your project and add the following line:
+   ```
+   ACCESS_TOKEN=<your-access-token>
+   ```
+   Replace ```<your-access-token>``` with your actual Mapbox access token.
+
+6. ```nodes.geojson``` File: <br>
+Ensure you have a ```nodes.geojson``` file in your project directory. This file should contain your dataset from Mapbox in ```GeoJSON format```.
+
+
+
+#### Optional
+
+1. Add the following code to your shell configuration file (e.g., ```~/.bashrc```, ```~/.zshrc```, etc.):
+```
+runflutter() {
+    if [ -z "$1" ]; then
+        echo "Usage: runflutter <device-name>"
+        return 1
+    fi
+    flutter run -d "$1" | grep -v -e 'updateAcquireFence' -e 'err open mi_exception_log' -e 'err write to mi_exception_log' -e 'QueueBuffer time out'
+}
+```
+2. Save the file and reload your shell configuration:
+```
+source ~/.bashrc  # or source ~/.zshrc
+```
+3. The ```runflutter``` command in your terminal will later be used in running the application.
+
+<!-- PHONE SETUP -->
+### Phone Setup
+
+If you're going to use an **emulator** instead of a physical phone to run the app, you can **skip** this section. However, if you want to use a **physical phone**, follow the steps below to configure your device.
+
+#### Step 1: Enable Developer Options and USB Debugging
+1. Watch this video to learn how to enable **Developer Options** on your phone:  
+   [How to Enable Developer Options on Android](https://youtu.be/zu9oCE9N8H0?si=aNqJr9S2lwZdXRNF).
+2. Once Developer Options is enabled, locate **USB Debugging** and turn it on.
+3. Near the USB Debugging option, find **Wireless Debugging** and turn it on as well.
+
+#### Step 2: Pair Your Device with Your Laptop/PC
+To pair your device with your development machine:
+1. Open **Android Studio**.
+2. Click the **Wi-Fi icon** (or go to the **Device Manager**) to view available connections.
+3. Pair your device using one of the following methods:
+   - **QR Code**: Click "Pair using QR Code" on your phone and scan the QR code displayed in Android Studio.
+   - **Pairing Code**: Click "Pair using Pairing Code" and enter the code displayed on your phone.
+
+#### Step 3: Verify Connection
+- Once paired, your phone will show a notification confirming it is connected to **Wireless Debugging**.
+- If the connection is successful, you can proceed to the next steps in your development workflow.
+
+---
+
+**Note**: Ensure your phone and laptop/PC are on the same Wi-Fi network for Wireless Debugging to work properly.
+   
 <!-- HOW TO RUN THE PROGRAM -->
 ##  Run
-To run the application, follow these steps:
 
-1. Start an emulator (or connect a physical device):
+### Step 1: List Connected Devices
+To get a list of all connected devices, run the following command in your terminal:
 ```
 flutter devices
 ```
-2. Run the app:
+An output like this will appear:
 ```
-flutter run
+Found 3 connected devices:
+  Windows (desktop) • windows • windows-x64    • Microsoft Windows [Version 10.0.26100.2894]
+  Chrome (web)      • chrome  • web-javascript • Google Chrome 132.0.6834.160
+  Edge (web)        • edge    • web-javascript • Microsoft Edge 132.0.2957.127
+
+Found 1 wirelessly connected device:
+  M2101K6G (mobile) • adb-de63fc98-IyvXZg._adb-tls-connect._tcp • android-arm64 • Android 13 (API 33)
 ```
-3. If using Android Studio, open the project and click on Run > Run 'main.dart'.
+Copy the phone ID (e.g., ```adb-de63fc98-IyvXZg._adb-tls-connect._tcp```) from the output.
+
+### Step 2: Run the App
+There are three ways to run the app:
+
+#### Option 1: Automated Process (Recommended)
+If you’ve automated the process using the ```runflutter``` function, simply type:
+```
+runflutter <phone-id>
+```
+Example: 
+```
+runflutter adb-de63fc98-IyvXZg._adb-tls-connect._tcp
+```
+
+#### Option 2: Manual Process
+If you didn’t set up the automation, use the following command:
+```
+flutter run -d <phone-id> | grep -v -e 'updateAcquireFence' -e 'err open mi_exception_log' -e 'err write to mi_exception_log' -e 'QueueBuffer time out'
+```
+
+#### Option 3: Using an Emulator
+If you’re using an emulator:
+1. Open the cloned project in **Android Studio**.
+2. Set up and start an emulator from the **Device Manager**.
+3. Click the **Run** button in Android Studio to launch the app on the emulator.
+
+### Step 3: Wait for the App to Run
+Once you’ve entered the command or clicked the Run button in Android Studio, wait for the app to build and launch on your device or emulator.
 
 <!-- Contributor's Table -->
 ## Contributors
@@ -212,6 +366,6 @@ flutter run
 
 ## License
 
-Distributed under the [MIT](https://choosealicense.com/licenses/mit/) License. See [LICENSE](LICENSE) for more information.
+Distributed under the [Creative Commons Attribution-NoDerivatives 4.0 International](https://github.com/vitorsr/cc/blob/master/CC-BY-ND-4.0.md) License. See [LICENSE](LICENSE) for more information.
 
 <p align="right">[<a href="#readme-top">Back to top</a>]</p>

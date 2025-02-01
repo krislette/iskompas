@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 
+// Manages route calculations and instructions based on given points
 class RouteManager {
   // Cache for bearing calculations to avoid recalculating
   static final Map<String, double> _bearingCache = {};
@@ -11,7 +12,7 @@ class RouteManager {
     return sqrt(dx * dx + dy * dy);
   }
 
-  // Calculate bearing between two points
+  // Calculate bearing (angle) between two points
   static double calculateBearing(Point start, Point end) {
     // Check cache first
     String key =
@@ -37,7 +38,7 @@ class RouteManager {
     return bearing;
   }
 
-  // Get turn direction between segments
+  // Determine the turn direction between two bearings
   static String getTurnDirection(
       double previousBearing, double currentBearing) {
     double angleDiff = (currentBearing - previousBearing + 360) % 360;
@@ -53,7 +54,7 @@ class RouteManager {
     return "Continue straight";
   }
 
-  // Get simplified instructions for a route
+  // Generate simplified instructions for a route by analyzing every 3rd point
   static List<Map<String, dynamic>> getRouteInstructions(List<Point> route) {
     if (route.length < 2) return [];
 
@@ -64,7 +65,6 @@ class RouteManager {
     for (int i = 0; i < route.length - 1; i += 3) {
       Point current = route[i];
       Point next = route[min(i + 1, route.length - 1)];
-
       double currentBearing = calculateBearing(current, next);
 
       if (previousBearing != null) {
@@ -76,7 +76,7 @@ class RouteManager {
           instructions.add({
             'point': current,
             'direction': direction,
-            'distance': '${(i * 5).round()}m', // Rough estimation
+            'distance': '${(i * 5).round()}m',
           });
         }
       }
