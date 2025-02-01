@@ -2,7 +2,9 @@ import 'dart:math';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:iskompas/models/feature_model.dart';
 
+// Class to handle map animations such as fitting markers and routes in view
 class MapAnimations {
+  // Fits markers within the visible map area by adjusting the zoom and center
   static void fitMarkersInView(MapboxMap mapboxMap, List<GeoFeature> features) {
     if (features.isEmpty) return;
 
@@ -22,9 +24,9 @@ class MapAnimations {
       maxLat = max(maxLat, lat);
     }
 
-    // Add less padding to the bounds (adjust the 0.3 multiplier for tighter zoom)
-    final lngPadding = (maxLng - minLng) * 0.4; // Reduce padding
-    final latPadding = (maxLat - minLat) * 0.4; // Reduce padding
+    // Add less padding to the bounds
+    final lngPadding = (maxLng - minLng) * 0.4;
+    final latPadding = (maxLat - minLat) * 0.4;
 
     minLng -= lngPadding;
     maxLng += lngPadding;
@@ -40,10 +42,7 @@ class MapAnimations {
     final latSpan = (maxLat - minLat).abs();
 
     // Base zoom level on the larger span
-    final zoomLevel = max(
-        16.0,
-        -log(max(lngSpan, latSpan)) *
-            3.0); // Adjust zoom multiplier for tighter zoom
+    final zoomLevel = max(16.0, -log(max(lngSpan, latSpan)) * 3.0);
 
     mapboxMap.flyTo(
       CameraOptions(
@@ -56,6 +55,7 @@ class MapAnimations {
     );
   }
 
+  // Fits the route within the visible map area by adjusting the zoom and center
   static void fitRouteInView(MapboxMap mapboxMap, List<Point> route) {
     if (route.isEmpty) return;
 
@@ -84,7 +84,7 @@ class MapAnimations {
     final routeLength = route.length;
 
     if (routeLength <= 2) {
-      zoomLevel = 19.0; // Very close for direct routes
+      zoomLevel = 19.0;
     } else if (routeLength <= 4) {
       zoomLevel = 18.5;
     } else if (routeLength <= 6) {
@@ -92,7 +92,7 @@ class MapAnimations {
     } else if (routeLength <= 10) {
       zoomLevel = 17.5;
     } else {
-      // For longer routes, calculate based on span but ensure it's not too far out
+      // For longer routes, calculate based on span & make sure it's not too far
       zoomLevel = max(17.0, -log(max(lngSpan, latSpan)) * 2.5);
     }
 

@@ -6,25 +6,32 @@ import 'package:iskompas/widgets/search_bar.dart';
 import 'package:iskompas/pages/facility_details_page.dart';
 import 'package:iskompas/widgets/facility_row_skeleton.dart';
 
+// Displays a page showing list of facilities with their details
 class FacilitiesPage extends StatefulWidget {
   final List<dynamic> facilities;
+
   const FacilitiesPage({super.key, required this.facilities});
 
   @override
   FacilitiesPageState createState() => FacilitiesPageState();
 }
 
+// Manages state and functionality for the facilities page
 class FacilitiesPageState extends State<FacilitiesPage> {
+  // Declare/initialize all variables needed for the state
   static const int itemsPerPage = 10;
 
   late List<dynamic> facilities;
   late List<dynamic> filteredFacilities;
+
   bool isLoading = false;
   int currentPage = 0;
   bool hasMore = true;
+
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
+  // Initialize state and set up scroll listener
   @override
   void initState() {
     super.initState();
@@ -37,6 +44,7 @@ class FacilitiesPageState extends State<FacilitiesPage> {
     });
   }
 
+  // Triggers loading more facilities when user scrolls near bottom
   void _scrollListener() {
     if (_scrollController.position.pixels >=
             _scrollController.position.maxScrollExtent - 200 &&
@@ -46,6 +54,7 @@ class FacilitiesPageState extends State<FacilitiesPage> {
     }
   }
 
+  // Loads first page of facilities
   Future<void> loadInitialFacilities() async {
     setState(() {
       isLoading = true;
@@ -65,6 +74,7 @@ class FacilitiesPageState extends State<FacilitiesPage> {
     }
   }
 
+  // Loads next page of facilities when scrolled
   Future<void> loadMoreFacilities() async {
     if (isLoading) return;
 
@@ -90,6 +100,7 @@ class FacilitiesPageState extends State<FacilitiesPage> {
     }
   }
 
+  // Filters facilities list based on search query
   void filterFacilities(String query) {
     setState(() {
       if (query.isEmpty) {
@@ -106,6 +117,7 @@ class FacilitiesPageState extends State<FacilitiesPage> {
     });
   }
 
+  // Clears search input and resets filtered list
   void clearSearch() {
     _searchController.clear();
     filterFacilities('');
@@ -152,12 +164,13 @@ class FacilitiesPageState extends State<FacilitiesPage> {
                           ),
                         ),
                       )
+                    // Main list view displaying facilities with infinite scroll
                     : ListView.builder(
                         controller: _scrollController,
                         itemCount:
                             filteredFacilities.length + (hasMore ? 1 : 0),
                         itemBuilder: (context, index) {
-                          // Only show the skeleton if lazy loading is enabled (`hasMore`) and not filtering
+                          // Show loading skeleton at the bottom while fetching more items
                           if (index >= filteredFacilities.length) {
                             return hasMore && _searchController.text.isEmpty
                                 ? const Padding(
@@ -190,6 +203,7 @@ class FacilitiesPageState extends State<FacilitiesPage> {
   }
 }
 
+// Widget for displaying a single facility's information
 class FacilityRow extends StatefulWidget {
   final String name;
   final String description;
@@ -210,9 +224,12 @@ class FacilityRow extends StatefulWidget {
   FacilityRowState createState() => FacilityRowState();
 }
 
+// Manages the state and UI for individual facility row items
 class FacilityRowState extends State<FacilityRow> {
+  // Builds and configures image widget with caching based on image source type
   Widget _buildImage(String imagePath, {bool isLarge = false}) {
     if (imagePath.startsWith('http')) {
+      // Handle network images with caching and placeholder
       return CachedNetworkImage(
         imageUrl: imagePath,
         fit: BoxFit.cover,
@@ -237,6 +254,7 @@ class FacilityRowState extends State<FacilityRow> {
         cacheKey: '${imagePath}_${isLarge ? 'large' : 'small'}',
       );
     } else {
+      // Handle local asset images
       return Image.asset(
         imagePath,
         fit: BoxFit.cover,
@@ -247,7 +265,9 @@ class FacilityRowState extends State<FacilityRow> {
     }
   }
 
+  // Handles tap events on facility items, showing either a details page or dialog
   void _handleFacilityTap(BuildContext context) {
+    // Main building gets a dedicated details page
     if (widget.name.toLowerCase() == 'main building') {
       Navigator.push(
         context,
@@ -262,6 +282,7 @@ class FacilityRowState extends State<FacilityRow> {
         ),
       );
     } else {
+      // Other facilities show details in a dialog
       showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -356,6 +377,7 @@ class FacilityRowState extends State<FacilityRow> {
 
   @override
   Widget build(BuildContext context) {
+    // Builds a tappable facility row
     return GestureDetector(
       onTap: () => _handleFacilityTap(context),
       child: Column(

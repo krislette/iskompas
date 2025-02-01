@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// Page that displays detailed information about a facility
 class FacilityDetailsPage extends StatefulWidget {
   final String name;
   final String description;
@@ -20,10 +21,12 @@ class FacilityDetailsPage extends StatefulWidget {
   State<FacilityDetailsPage> createState() => _FacilityDetailsPageState();
 }
 
+// Manages the state and UI for the facility details page
 class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
   int selectedFloor = 1;
   final int maxFloors = 6;
 
+  // Builds the UI content for a regular facility
   Widget _buildRegularFacilityContent() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -89,6 +92,7 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
     );
   }
 
+  // Builds the UI content for the main building (with floor plans)
   Widget _buildMainBuildingContent() {
     return Column(
       children: [
@@ -186,6 +190,8 @@ class _FacilityDetailsPageState extends State<FacilityDetailsPage> {
     );
   }
 
+  // Builds the main UI structure of the facility details page,
+  // displaying either the main building content or a regular building
   @override
   Widget build(BuildContext context) {
     return Scaffold(

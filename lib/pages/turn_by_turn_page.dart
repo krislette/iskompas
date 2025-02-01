@@ -10,6 +10,7 @@ import 'package:iskompas/utils/shared/theme_provider.dart';
 import 'package:iskompas/utils/shared/color_extension.dart';
 import 'package:iskompas/widgets/dest_reached_popup.dart';
 
+// TurnByTurnPage class for displaying route turn-by-turn instructions
 class TurnByTurnPage extends StatefulWidget {
   final List<Point> route;
 
@@ -22,7 +23,9 @@ class TurnByTurnPage extends StatefulWidget {
   State<TurnByTurnPage> createState() => _TurnByTurnPageState();
 }
 
+// _TurnByTurnPageState handles the logic for turn-by-turn navigation
 class _TurnByTurnPageState extends State<TurnByTurnPage> {
+  // Initialize map and instructions
   late MapboxMap _mapboxMap;
   late List<Map<String, dynamic>> _instructions;
 
@@ -36,7 +39,9 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
   bool _isDestinationReached = false;
 
   Point? _previousLocation;
-  static const double _minimumMovementThreshold = 0.000005; // About 0.5 meters
+
+  // About 0.5 meters
+  static const double _minimumMovementThreshold = 0.000005;
 
   @override
   void initState() {
@@ -52,26 +57,28 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
 
   @override
   void dispose() {
+    // Cancel the periodic location check timer when the widget is disposed
     _locationCheckTimer?.cancel();
     super.dispose();
   }
 
+  // Initialize map features and settings
   Future<void> _initializeMap(MapboxMap mapboxMap) async {
     _mapboxMap = mapboxMap;
 
+    // Disable scale bar and compass on the map
     mapboxMap.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
     mapboxMap.compass.updateSettings(CompassSettings(enabled: false));
 
+    // Disable various labels on the map (POI, place, transit)
     await _mapboxMap.style.setStyleImportConfigProperty(
         "basemap", "showPointOfInterestLabels", false);
-
     await _mapboxMap.style
         .setStyleImportConfigProperty("basemap", "showPlaceLabels", false);
-
     await _mapboxMap.style
         .setStyleImportConfigProperty("basemap", "showTransitLabels", false);
 
-    // Enable location component
+    // Enable the location component for displaying the user's location
     await mapboxMap.location.updateSettings(
       LocationComponentSettings(
         enabled: true,
@@ -81,6 +88,7 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
       ),
     );
 
+    // Initialize polyline annotation manager for route visualization
     _polylineAnnotationManager =
         await _mapboxMap.annotations.createPolylineAnnotationManager();
 
@@ -90,14 +98,17 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
       updateMapTheme(themeProvider.isDarkMode);
     }
 
+    // Draw the initial route on the map
     _drawRoute(_remainingRoute);
   }
 
+  // Update theme based on prefs
   void updateMapTheme(bool isDarkMode) {
     _mapboxMap.style.setStyleImportConfigProperty(
         "basemap", "lightPreset", isDarkMode ? "dusk" : "day");
   }
 
+  // Draws the route as a polyline on the map
   Future<void> _drawRoute(List<Point> route) async {
     if (_polylineAnnotationManager == null) return;
 
@@ -114,26 +125,31 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
     await _polylineAnnotationManager!.create(polylineOptions);
   }
 
-  // Add this helper method to check if significant movement occurred
+  // Helper method to check if significant movement occurred
   bool _hasSignificantMovement(Point currentLocation) {
     if (_previousLocation == null) {
       _previousLocation = currentLocation;
       return true;
     }
 
+    // Calculate the distance between the previous and current location
     final distance = RouteManager.calculateDistance(
       _previousLocation!,
       currentLocation,
     );
 
+    // If the user moves, return true
     if (distance > _minimumMovementThreshold) {
       _previousLocation = currentLocation;
       return true;
     }
 
+    // If the movement is not significant, return false
     return false;
   }
 
+  // Checks if the destination is reached, then updates the route and camera
+  // based on the current location
   void _checkLocationAndUpdateRoute() {
     if (_isDestinationReached) return;
 
@@ -164,7 +180,7 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
       return;
     }
 
-    // Only proceed with route updates if we detected movement
+    // Only proceed with route updates if a movement is detected
     if (_lastProximityCheckTime != null &&
         DateTime.now().difference(_lastProximityCheckTime!) <
             const Duration(seconds: 1)) {
@@ -186,10 +202,9 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
       }
     }
 
-    // If we're close enough to the closest point, update the route
-    // Slightly increased threshold for more stable tracking
+    // If user is close enough to the closest point, update the route
+    // Slightly increased threshold for more stable tracking (around 15 meters)
     if (minDistance < 0.00015) {
-      // About 20 meters
       setState(() {
         // Remove traversed points
         _remainingRoute = _remainingRoute.sublist(closestPointIndex);
@@ -200,7 +215,7 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
 
       _drawRoute(_remainingRoute);
 
-      // Check if we've reached the destination
+      // Check if user has reached the destination
       if (_remainingRoute.length <= 2 && _calculateRemainingDistance() < 8) {
         // Set the destination reached flag
         _isDestinationReached = true;
@@ -210,11 +225,9 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
 
         // Show the destination reached popup
         DestinationReachedPopup.show(context).then((_) {
-          // Check if the widget is still mounted before using the context
           if (mounted) {
             // After the popup is dismissed, navigate back to the main map page
-            Navigator.of(context)
-                .pop(_remainingRoute); // Only one pop() call here
+            Navigator.of(context).pop(_remainingRoute);
           }
         });
       }
@@ -224,22 +237,25 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
     }
   }
 
+  // Method to update route instructions based on remaining route
   void _updateInstructions() {
     if (_remainingRoute.isNotEmpty) {
+      // Refresh instructions based on the updated remaining route
       _instructions = RouteManager.getRouteInstructions(_remainingRoute);
       _currentInstructionIndex = 0;
     }
   }
 
+  // Getter to retrieve the current instruction with the remaining distance
   Map<String, dynamic> get currentInstruction {
     if (_instructions.isEmpty) {
       return {'direction': 'Desination Reached', 'distance': '0m'};
     }
 
-    // Get current instruction
+    // Get current instruction from the list
     final instruction = _instructions[_currentInstructionIndex];
 
-    // Calculate remaining distance (you might need to adjust this based on your RouteManager)
+    // Calculate remaining distance
     final remainingDistance = _calculateRemainingDistance();
 
     return {...instruction, 'distance': '${remainingDistance.round()}m'};
@@ -249,18 +265,22 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
   double _calculateRemainingDistance() {
     if (_remainingRoute.length < 2) return 0;
 
-    // Implement a method to calculate total distance of remaining route
+    // Calculate the total distance of the remaining route by
+    // summing up distances between consecutive points
     double totalDistance = 0;
     for (int i = 1; i < _remainingRoute.length; i++) {
       totalDistance += RouteManager.calculateDistance(
           _remainingRoute[i - 1], _remainingRoute[i]);
     }
 
-    return totalDistance * 1000; // Convert to meters
+    // Convert to meters
+    return totalDistance * 1000;
   }
 
+  // Calculates the total distance of the route in meters
   int _calculateTotalDistance(List<Point> route) {
-    if (route.length < 2) return 0; // Need at least two points
+    // Need at least two points
+    if (route.length < 2) return 0;
 
     // Create an instance of FlutterMapMath
     final FlutterMapMath math = FlutterMapMath();
@@ -269,7 +289,7 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
     Point firstPoint = route.first;
     Point lastPoint = route.last;
 
-    // Calculate the distance in meters
+    // Calculate the distance between the first and last points
     double totalDistance = math.distanceBetween(
       firstPoint.coordinates[1]!.toDouble(),
       firstPoint.coordinates[0]!.toDouble(),
@@ -278,20 +298,23 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
       "meters",
     );
 
-    return totalDistance.round(); // Return total distance in meters
+    return totalDistance.round();
   }
 
+  // Calculates the estimated walking time for the route
   int _calculateWalkingTime(List<Point> route) {
-    int totalDistance = _calculateTotalDistance(route); // in meters
-    double walkingSpeed = 0.75; // m/s (approx. 5 km/h)
+    // Total distance in meters
+    int totalDistance = _calculateTotalDistance(route);
+    // Walking speed in m/s
+    double walkingSpeed = 0.75;
 
     int estimatedTimeSeconds = (totalDistance / walkingSpeed).round();
-    int estimatedMinutes =
-        (estimatedTimeSeconds / 60).round(); // Convert to minutes
+    int estimatedMinutes = (estimatedTimeSeconds / 60).round();
 
     return estimatedMinutes;
   }
 
+  // Toggles the map's pitch between 0, 45, and 65 degrees
   void _toggleMapPitch() {
     _mapboxMap.getCameraState().then((currentOptions) {
       final currentPitch = currentOptions.pitch;
@@ -306,6 +329,7 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
         newPitch = 0.0;
       }
 
+      // Apply the new pitch value with a smooth animation
       _mapboxMap.easeTo(
         CameraOptions(
           pitch: newPitch,
@@ -322,6 +346,7 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
+    // Builds the UI for the entire turn by turn page
     return Scaffold(
       body: Stack(
         children: [
@@ -335,7 +360,6 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
             ),
             onMapCreated: _initializeMap,
           ),
-
           // Navigation header
           Container(
             padding: EdgeInsets.only(
@@ -389,8 +413,8 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
               onPressed: _toggleMapPitch,
               style: ElevatedButton.styleFrom(
                 backgroundColor: themeProvider.isDarkMode
-                    ? Iskolors.colorDarkShade // Dark mode color
-                    : Iskolors.colorWhite, // Light mode color
+                    ? Iskolors.colorDarkShade
+                    : Iskolors.colorWhite,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
                 ),
@@ -399,8 +423,8 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
               child: Icon(
                 Icons.view_in_ar,
                 color: themeProvider.isDarkMode
-                    ? Iskolors.colorWhite // Dark mode icon color
-                    : Iskolors.colorMaroon, // Light mode icon color
+                    ? Iskolors.colorWhite
+                    : Iskolors.colorMaroon,
                 size: 24,
               ),
             ),
@@ -414,8 +438,8 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: themeProvider.isDarkMode
-                    ? Iskolors.colorDarkShade // Dark mode color
-                    : Iskolors.colorWhite, // Light mode color
+                    ? Iskolors.colorDarkShade
+                    : Iskolors.colorWhite,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(16),
                 ),
@@ -428,8 +452,8 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
                     '${_calculateWalkingTime(widget.route)} ${_calculateWalkingTime(widget.route) == 1 ? "minute" : "minutes"}',
                     style: TextStyle(
                       color: themeProvider.isDarkMode
-                          ? Iskolors.colorYellow // Dark mode text color
-                          : Iskolors.colorMaroon, // Light mode text color
+                          ? Iskolors.colorYellow
+                          : Iskolors.colorMaroon,
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
                     ),
@@ -438,8 +462,8 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
                     '${_calculateTotalDistance(widget.route)}m',
                     style: TextStyle(
                       color: themeProvider.isDarkMode
-                          ? Iskolors.colorGrey // Dark mode text color
-                          : Iskolors.colorDarkGrey, // Light mode text color
+                          ? Iskolors.colorGrey
+                          : Iskolors.colorDarkGrey,
                       fontSize: 18,
                     ),
                   ),
@@ -452,8 +476,8 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 18),
                         backgroundColor: themeProvider.isDarkMode
-                            ? Iskolors.colorMaroon // Dark mode button color
-                            : Iskolors.colorMaroon, // Light mode button color
+                            ? Iskolors.colorMaroon
+                            : Iskolors.colorMaroon,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -461,7 +485,7 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
                       child: const Text(
                         'Stop Navigation',
                         style: TextStyle(
-                          color: Iskolors.colorPureWhite, // Button text color
+                          color: Iskolors.colorPureWhite,
                           fontSize: 16,
                         ),
                       ),
