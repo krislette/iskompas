@@ -116,6 +116,60 @@ These technologies enable Iskompas to provide an intuitive and efficient campus 
 
 <!-- APPLICATION SNAPSHOTS -->
 ## Application Snapshots
+### Map Page
+**Light and Dark Mode**
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/50d6b79f-e8c8-48cd-8ada-cd4d3208d8ce" alt="App Screenshot 1" width="25%">
+  <img src="https://github.com/user-attachments/assets/885e8e3e-d41c-4189-9373-6c15216c3d17" alt="App Screenshot 2" width="25%">
+</p>
+
+### Pins
+**Light Mode**
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/10e80b74-34ee-494a-a706-6b9e38a58c35" alt="App Screenshot 3" width="15%">
+  <img src="https://github.com/user-attachments/assets/5690a17d-b624-44a4-9742-eeab76a81400" alt="App Screenshot 4" width="15%">
+  <img src="https://github.com/user-attachments/assets/1affda42-fe0f-49e7-ac32-a9c9fb822726" alt="App Screenshot 5" width="15%">
+  <img src="https://github.com/user-attachments/assets/0ef08aad-514b-4013-9239-b455449d6b39" alt="App Screenshot 6" width="15%">
+  <img src="https://github.com/user-attachments/assets/abee38b6-b648-4474-9646-a8e7e5ff3f77" alt="App Screenshot 7" width="15%">
+</p>
+
+**Dark Mode**
+<p align="center"> 
+  <img src="https://github.com/user-attachments/assets/52a6758b-be1c-41b7-8c67-1effb04773b3" alt="App Screenshot 8" width="15%">
+  <img src="https://github.com/user-attachments/assets/f1f84be0-fa26-4abc-a617-596df8674a8b" alt="App Screenshot 9" width="15%">
+  <img src="https://github.com/user-attachments/assets/5290eb3a-3447-4b45-b342-5b3dc05c0d42" alt="App Screenshot 10" width="15%">
+  <img src="https://github.com/user-attachments/assets/54d6dc35-a80a-490e-b840-3099c43a1adf" alt="App Screenshot 11" width="15%">
+  <img src="https://github.com/user-attachments/assets/7e054939-a6a6-4f31-8df0-93f858633672" alt="App Screenshot 12" width="15%">
+</p>
+
+### Search Location in Map Page
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/ffaa2144-420c-411b-842a-12183b88ac3f" alt="App Screenshot 13" width="25%">
+</p>
+
+### Turn-by-turn Navigation
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f16e3653-6360-4be5-862a-bc177a019b1b" alt="App Screenshot 14" width="25%">
+  <img src="https://github.com/user-attachments/assets/2b6c0c0b-107f-4cdd-8151-3941bfb57711" alt="App Screenshot 15" width="25%">
+</p>
+
+### Save Page
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/64d343b9-d907-4187-a9b7-8851aa67fa48" alt="App Screenshot 16" width="25%">
+  <img src="https://github.com/user-attachments/assets/a9e66ecd-e1a8-4181-811e-c108cf5be3d7" alt="App Screenshot 17" width="25%">
+</p>
+
+### Facilities Page
+<p align="center"> 
+  <img src="https://github.com/user-attachments/assets/fdfb2d30-0726-4881-9ba5-1963813d0b30" alt="App Screenshot 18" width="25%">
+  <img src="https://github.com/user-attachments/assets/a4c9fb3f-623e-4008-9006-e42ffd1e84d1" alt="App Screenshot 19" width="25%">
+</p>
+
+**Floor Plan**
+<p align="center"> 
+  <img src="https://github.com/user-attachments/assets/fdfb2d30-0726-4881-9ba5-1963813d0b30" alt="App Screenshot 20" width="25%">
+  <img src="https://github.com/user-attachments/assets/ac741a07-1fba-4c8b-b425-1b2f19d49f32" alt="App Screenshot 21" width="25%">
+</p>
 
 <!-- INSTALLATION -->
 ## Installation
