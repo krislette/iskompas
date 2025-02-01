@@ -9,9 +9,11 @@ class LocationProvider extends ChangeNotifier {
   Point? currentLocation;
   bool isLocationPermissionGranted = false;
   Timer? _locationUpdateTimer;
+  bool _isGpsEnabled = false;
 
   LocationProvider() {
     checkLocationPermission();
+    _checkGpsStatus();
   }
 
   @override
@@ -19,6 +21,17 @@ class LocationProvider extends ChangeNotifier {
     // Cancel any ongoing location updates when disposed
     _locationUpdateTimer?.cancel();
     super.dispose();
+  }
+
+  // Add method to check GPS status
+  Future<void> _checkGpsStatus() async {
+    try {
+      _isGpsEnabled = await location.serviceEnabled();
+      notifyListeners();
+    } catch (e) {
+      _isGpsEnabled = false;
+      notifyListeners();
+    }
   }
 
   // Method to check location permission
@@ -53,7 +66,15 @@ class LocationProvider extends ChangeNotifier {
   }
 
   // Method to start periodic updates of the user's location every second
-  void startPeriodicLocationUpdates() {
+  void startPeriodicLocationUpdates() async {
+    // Check GPS status before starting updates
+    await _checkGpsStatus();
+
+    if (!_isGpsEnabled || !isLocationPermissionGranted) {
+      _locationUpdateTimer?.cancel();
+      return;
+    }
+
     // Stop any existing timer to prevent multiple timers
     _locationUpdateTimer?.cancel();
 
@@ -61,6 +82,15 @@ class LocationProvider extends ChangeNotifier {
     _locationUpdateTimer =
         Timer.periodic(const Duration(seconds: 1), (_) async {
       try {
+        // Check GPS status on each update
+        final isEnabled = await location.serviceEnabled();
+        if (!isEnabled) {
+          _isGpsEnabled = false;
+          notifyListeners();
+          _locationUpdateTimer?.cancel();
+          return;
+        }
+
         final userLocation = await location.getLocation();
         currentLocation = Point(
           coordinates: Position(
@@ -70,8 +100,26 @@ class LocationProvider extends ChangeNotifier {
         );
         notifyListeners();
       } catch (e) {
-        throw ('Error updating location: $e');
+        currentLocation = null;
+        notifyListeners();
       }
     });
   }
+
+  // Add method to request GPS
+  Future<bool> requestGps() async {
+    try {
+      final isEnabled = await location.requestService();
+      _isGpsEnabled = isEnabled;
+      notifyListeners();
+      if (isEnabled) {
+        startPeriodicLocationUpdates();
+      }
+      return isEnabled;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  bool get isGpsEnabled => _isGpsEnabled;
 }
