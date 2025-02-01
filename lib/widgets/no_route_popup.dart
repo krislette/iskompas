@@ -21,7 +21,7 @@ class NoRoutePopup {
             textAlign: TextAlign.center,
           ),
           content: const Text(
-            'Iskompas is having a hard time computing a route for you. You might want to go near a road or outside a facility and try again.',
+            'Iskompas is having a hard time finding a route for you. You might want to go near a road or outside a facility and try again.',
             style: TextStyle(
               color: Iskolors.colorDarkGrey,
               fontSize: 16,
