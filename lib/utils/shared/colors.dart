@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// Collection of predefined colors used across the application
 class Iskolors {
   static const Color colorMaroon = Color(0xFF651B1B);
   static const Color colorWhite = Color(0xFFFBF5F5);

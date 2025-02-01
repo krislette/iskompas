@@ -1,4 +1,3 @@
-// marker_popup.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -7,6 +6,7 @@ import 'package:iskompas/utils/map/location_provider.dart';
 import 'package:iskompas/utils/saved/saved_facilities_service.dart';
 import 'package:iskompas/widgets/loc_error_popup.dart';
 
+// A popup widget that appears when a user taps on a map marker, displaying facility details and actions
 class MarkerPopup extends StatefulWidget {
   final Point geometry;
   final String title;
@@ -28,6 +28,7 @@ class MarkerPopup extends StatefulWidget {
 }
 
 class _MarkerPopupState extends State<MarkerPopup> {
+  // Tracks if the facility is saved
   bool isSaved = false;
 
   @override
@@ -36,6 +37,7 @@ class _MarkerPopupState extends State<MarkerPopup> {
     _checkIfSaved();
   }
 
+  // Checks if the facility is saved and updates the UI accordingly
   Future<void> _checkIfSaved() async {
     isSaved = await SavedFacilitiesService.isFacilitySaved(widget.title);
     if (mounted) {
@@ -49,8 +51,9 @@ class _MarkerPopupState extends State<MarkerPopup> {
       builder: (BuildContext context, StateSetter setModalState) {
         return Stack(
           clipBehavior: Clip.none,
+          // Allows positioning elements outside the main container
           children: [
-            // Main content
+            // Main content of the popup
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
               child: SizedBox(
@@ -106,6 +109,7 @@ class _MarkerPopupState extends State<MarkerPopup> {
                                 return;
                               }
 
+                              // Toggle save/unsave status
                               if (isSaved) {
                                 final shouldDelete =
                                     await SavedFacilitiesService.removeFacility(
@@ -139,6 +143,7 @@ class _MarkerPopupState extends State<MarkerPopup> {
                               final locationProvider =
                                   Provider.of<LocationProvider>(context,
                                       listen: false);
+                              // Check if location is available, if not, request permission
                               if (locationProvider.currentLocation == null) {
                                 await locationProvider
                                     .checkLocationPermission();
@@ -182,7 +187,7 @@ class _MarkerPopupState extends State<MarkerPopup> {
                 ),
               ),
             ),
-            // Location icon at the top
+            // Floating location icon positioned at the top of the popup
             Positioned(
               top: -30,
               left: 0,

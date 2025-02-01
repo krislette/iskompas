@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:iskompas/utils/shared/colors.dart';
 
+// A popup dialog that informs the user when no route is found
 class NoRoutePopup {
+  // Displays a dialog when no route can be computed
   static void show(BuildContext context) {
     showDialog(
       context: context,

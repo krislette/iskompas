@@ -7,6 +7,7 @@ import 'package:iskompas/pages/facilities_page.dart';
 import 'package:iskompas/utils/shared/set_color.dart';
 import 'package:iskompas/utils/shared/colors.dart';
 
+// A bottom navigation bar widget that allows switching between Map, Saved, and Facilities pages
 class Navbar extends StatefulWidget {
   final Map<String, dynamic> mapData;
   final List<dynamic> facilities;
@@ -39,17 +40,20 @@ class _NavbarState extends State<Navbar> {
   void initState() {
     super.initState();
     _selectedIndex = widget.initialPageIndex;
+    // Initialize MapPage with provided data
     _mapPage = MapPage(
       mapData: widget.mapData,
       facilities: widget.facilities,
       focusFacilityName: widget.focusFacilityName,
     );
+    // Initialize FacilitiesPage with provided facilities list
     _facilitiesPage = FacilitiesPage(
       key: _facilitiesPageKey,
       facilities: widget.facilities,
     );
   }
 
+  // Clears the search fields on all pages when switching tabs
   void _clearSearchFields() {
     _mapPageKey.currentState?.clearSearch();
     _savedPageKey.currentState?.clearSearch();
@@ -61,6 +65,7 @@ class _NavbarState extends State<Navbar> {
     return Scaffold(
       extendBody: true,
       backgroundColor: Iskolors.colorTransparent,
+      // Bottom navigation bar for navigating between pages
       bottomNavigationBar: CurvedNavigationBar(
         backgroundColor: Iskolors.colorTransparent,
         color: Iskolors.colorMaroon,
@@ -70,6 +75,7 @@ class _NavbarState extends State<Navbar> {
           _clearSearchFields();
           setState(() {
             _selectedIndex = index;
+            // If the Saved tab is selected, reload the saved facilities list
             if (_selectedIndex == 1) {
               _savedPageKey.currentState?.loadFacilities();
             }
@@ -111,6 +117,7 @@ class _NavbarState extends State<Navbar> {
           ),
         ],
       ),
+      // IndexedStack keeps the state of each page while switching tabs
       body: IndexedStack(
         index: _selectedIndex,
         children: [

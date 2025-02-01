@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// Adds utility methods to the `Color` class for converting colors to integers.
 extension ColorExtension on Color {
   int toInt() {
     final alpha = (a * 255).toInt();

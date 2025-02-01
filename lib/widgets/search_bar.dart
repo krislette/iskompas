@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iskompas/utils/shared/colors.dart';
 
+// A customizable search bar widget with light and dark mode support
 class CustomSearchBar extends StatelessWidget {
   final String hintText;
   final bool isDarkMode;
@@ -21,6 +22,7 @@ class CustomSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Define colors based on theme mode
     final textColor =
         isDarkMode ? Iskolors.colorWhite : Iskolors.colorDarkShade;
     final hintColor =
@@ -33,6 +35,7 @@ class CustomSearchBar extends StatelessWidget {
         isDarkMode ? Iskolors.colorTransparent : Iskolors.colorLightShadow;
 
     return GestureDetector(
+      // Trigger onTap callback when the search bar is tapped
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16),

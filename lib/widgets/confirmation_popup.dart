@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:iskompas/utils/shared/colors.dart';
 
+// A reusable confirmation dialog popup for unsaving a location
 class ConfirmationPopup {
+  // Displays a confirmation dialog when the user attempts to unsave a location
   static Future<bool?> show(BuildContext context, String facilityName) {
     return showDialog<bool>(
       context: context,
