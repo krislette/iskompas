@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:iskompas/utils/shared/colors.dart';
 
+// A floating circular navigation button to trigger navigation actions
 class NavigationButton extends StatelessWidget {
+  // Callback function when the button is pressed
   final VoidCallback onPressed;
 
   const NavigationButton({

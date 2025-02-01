@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:iskompas/utils/shared/colors.dart';
 
+// A popup dialog that appears when the user reaches their destination
 class DestinationReachedPopup {
+  // Displays a confirmation dialog informing the user that they have arrived
   static Future<void> show(BuildContext context) {
     return showDialog(
       context: context,
-      barrierDismissible: false, // Prevent closing by tapping outside
+      // Prevent closing by tapping outside the dialog
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Iskolors.colorWhite,
@@ -33,6 +36,7 @@ class DestinationReachedPopup {
           actions: [
             ElevatedButton(
               onPressed: () {
+                // Close the dialog
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(

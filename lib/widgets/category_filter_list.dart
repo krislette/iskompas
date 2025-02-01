@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iskompas/widgets/category_filter.dart';
 
+// A horizontal list of category filters for selecting and displaying specific categories
 class CategoryFiltersList extends StatelessWidget {
   final String? selectedCategory;
   final bool isDarkMode;
@@ -15,6 +16,7 @@ class CategoryFiltersList extends StatelessWidget {
     required this.clearPolylines,
   });
 
+  // Handles tap events on a category filter, clear polylines and update the selected catgory
   void _handleCategoryTap(String category) {
     clearPolylines();
     onCategorySelected(selectedCategory == category ? null : category);
@@ -22,6 +24,7 @@ class CategoryFiltersList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // List of categories with their icons, labels, and values
     final categories = [
       {
         'icon': Icons.image,

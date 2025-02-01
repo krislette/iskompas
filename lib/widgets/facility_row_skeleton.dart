@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iskompas/utils/shared/colors.dart';
 
+// A skeleton loading placeholder for facility rows, mimicking the structure of the actual content
 class FacilityRowSkeleton extends StatelessWidget {
   const FacilityRowSkeleton({super.key});
 
@@ -8,6 +9,7 @@ class FacilityRowSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
+        // Placeholder for the facility image or icon
         Container(
           width: 50,
           height: 50,

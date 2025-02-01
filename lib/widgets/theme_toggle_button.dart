@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iskompas/utils/shared/colors.dart';
 
+// A toggle button to switch between light and dark mode
 class ThemeToggleButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isNightMode;

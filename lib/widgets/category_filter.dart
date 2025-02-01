@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iskompas/utils/shared/colors.dart';
 
+// A customizable filter widget for categories, displaying an icon and label with dynamic colors based on selection and theme
 class CategoryFilter extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -19,6 +20,7 @@ class CategoryFilter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Determine colors based on selection and theme
     final backgroundColor = isSelected
         ? Iskolors.colorMaroon
         : (isDarkMode ? Iskolors.colorDarkShade : Iskolors.colorWhite);
@@ -29,6 +31,7 @@ class CategoryFilter extends StatelessWidget {
         ? Iskolors.colorWhite
         : (isDarkMode ? Iskolors.colorGrey : Iskolors.colorMaroon);
 
+    // GestureDetector to handle taps and trigger the onTap callback
     return GestureDetector(
       onTap: onTap,
       child: Container(
