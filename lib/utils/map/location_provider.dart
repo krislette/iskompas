@@ -50,9 +50,9 @@ class LocationProvider extends ChangeNotifier {
     // Stop any existing timer to prevent multiple timers
     _locationUpdateTimer?.cancel();
 
-    // Update location every 3 seconds to balance accuracy and battery life
+    // Update location every second to balance accuracy and battery life
     _locationUpdateTimer =
-        Timer.periodic(const Duration(seconds: 3), (_) async {
+        Timer.periodic(const Duration(seconds: 1), (_) async {
       try {
         final userLocation = await location.getLocation();
         currentLocation = Point(

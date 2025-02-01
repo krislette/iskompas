@@ -35,6 +35,9 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
   double totalDistance = 0;
   bool _isDestinationReached = false;
 
+  Point? _previousLocation;
+  static const double _minimumMovementThreshold = 0.000005; // About 0.5 meters
+
   @override
   void initState() {
     super.initState();
@@ -42,7 +45,7 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
     _remainingRoute = List.from(widget.route);
 
     // Start periodic location check
-    _locationCheckTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+    _locationCheckTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       _checkLocationAndUpdateRoute();
     });
   }
@@ -111,6 +114,26 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
     await _polylineAnnotationManager!.create(polylineOptions);
   }
 
+  // Add this helper method to check if significant movement occurred
+  bool _hasSignificantMovement(Point currentLocation) {
+    if (_previousLocation == null) {
+      _previousLocation = currentLocation;
+      return true;
+    }
+
+    final distance = RouteManager.calculateDistance(
+      _previousLocation!,
+      currentLocation,
+    );
+
+    if (distance > _minimumMovementThreshold) {
+      _previousLocation = currentLocation;
+      return true;
+    }
+
+    return false;
+  }
+
   void _checkLocationAndUpdateRoute() {
     if (_isDestinationReached) return;
 
@@ -120,30 +143,31 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
 
     if (currentLocation == null || _remainingRoute.isEmpty) return;
 
-    // Update camera position to follow user
-    if (_remainingRoute.length > 1) {
-      // Retrieve the current camera state to preserve the user-selected pitch
-      _mapboxMap.getCameraState().then((currentCameraState) {
-        final currentPitch = currentCameraState.pitch;
-
-        _mapboxMap.easeTo(
-          CameraOptions(
-            center: currentLocation,
-            bearing: RouteManager.calculateBearing(
-                _remainingRoute[0], _remainingRoute[1]),
-            zoom: 20.0,
-            pitch:
-                currentPitch, // Use the current pitch instead of hardcoding 65.0
-          ),
-          MapAnimationOptions(duration: 1000), // 1 second smooth transition
-        );
-      });
+    // Check if there's significant movement before proceeding with updates
+    if (!_hasSignificantMovement(currentLocation)) {
+      // If no significant movement, only update camera position
+      if (_remainingRoute.length > 1) {
+        _mapboxMap.getCameraState().then((currentCameraState) {
+          final currentPitch = currentCameraState.pitch;
+          _mapboxMap.easeTo(
+            CameraOptions(
+              center: currentLocation,
+              bearing: RouteManager.calculateBearing(
+                  _remainingRoute[0], _remainingRoute[1]),
+              zoom: 20.0,
+              pitch: currentPitch,
+            ),
+            MapAnimationOptions(duration: 1000),
+          );
+        });
+      }
+      return;
     }
 
-    // Optimization: Only check proximity every few seconds
+    // Only proceed with route updates if we detected movement
     if (_lastProximityCheckTime != null &&
         DateTime.now().difference(_lastProximityCheckTime!) <
-            const Duration(seconds: 3)) {
+            const Duration(seconds: 1)) {
       return;
     }
 
@@ -151,8 +175,8 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
     var closestPointIndex = 0;
     var minDistance = double.infinity;
 
-    // Performance improvement: Check every 2nd point
-    for (var i = 0; i < _remainingRoute.length; i += 2) {
+    // Performance improvement: Check every 1st point
+    for (var i = 0; i < _remainingRoute.length; i += 1) {
       final distance =
           RouteManager.calculateDistance(currentLocation, _remainingRoute[i]);
 
@@ -164,7 +188,7 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
 
     // If we're close enough to the closest point, update the route
     // Slightly increased threshold for more stable tracking
-    if (minDistance < 0.0002) {
+    if (minDistance < 0.00015) {
       // About 20 meters
       setState(() {
         // Remove traversed points
@@ -328,7 +352,7 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
                 IconButton(
                   icon: const Icon(Icons.arrow_back,
                       color: Iskolors.colorPureWhite),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.of(context).pop(_remainingRoute),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -401,7 +425,7 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${_calculateWalkingTime(widget.route)} minutes',
+                    '${_calculateWalkingTime(widget.route)} ${_calculateWalkingTime(widget.route) == 1 ? "minute" : "minutes"}',
                     style: TextStyle(
                       color: themeProvider.isDarkMode
                           ? Iskolors.colorYellow // Dark mode text color
