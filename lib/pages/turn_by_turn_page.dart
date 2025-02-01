@@ -9,6 +9,7 @@ import 'package:iskompas/utils/map/location_provider.dart';
 import 'package:iskompas/utils/shared/theme_provider.dart';
 import 'package:iskompas/utils/shared/color_extension.dart';
 import 'package:iskompas/widgets/dest_reached_popup.dart';
+import 'package:iskompas/widgets/gps_off_popup.dart';
 
 // TurnByTurnPage class for displaying route turn-by-turn instructions
 class TurnByTurnPage extends StatefulWidget {
@@ -42,6 +43,8 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
 
   // About 0.5 meters
   static const double _minimumMovementThreshold = 0.000005;
+
+  bool _isGpsDialogShowing = false;
 
   @override
   void initState() {
@@ -155,9 +158,40 @@ class _TurnByTurnPageState extends State<TurnByTurnPage> {
 
     final locationProvider =
         Provider.of<LocationProvider>(context, listen: false);
+
+    if (!locationProvider.isGpsEnabled) {
+      if (!_isGpsDialogShowing) {
+        _isGpsDialogShowing = true;
+        _locationCheckTimer?.cancel();
+
+        GpsOffPopup.show(context).then((value) async {
+          _isGpsDialogShowing = false;
+
+          // Request GPS when popup is closed
+          final gpsEnabled = await locationProvider.requestGps();
+          if (gpsEnabled) {
+            // Restart timer only if GPS is enabled
+            _locationCheckTimer?.cancel();
+            _locationCheckTimer = Timer.periodic(
+              const Duration(seconds: 1),
+              (timer) => _checkLocationAndUpdateRoute(),
+            );
+          } else {
+            // If GPS remains off, go back to map
+            if (mounted) {
+              Navigator.of(context).pop(_remainingRoute);
+            }
+          }
+        });
+      }
+      return;
+    }
+
     final currentLocation = locationProvider.currentLocation;
 
-    if (currentLocation == null || _remainingRoute.isEmpty) return;
+    if (currentLocation == null) return;
+
+    if (_remainingRoute.isEmpty) return;
 
     // Always update camera position regardless of significant movement
     if (_remainingRoute.length > 1) {
